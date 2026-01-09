@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>当番表</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding-top: 5px; /* 上部に余白を追加 */
+        }
+        h2 {
+            text-align: center;
+        }
+        table {
+            width: 600px; /* テーブルの幅を600pxに設定 */
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h2>今週の点呼当番表</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>役割</th>
+                <th>担当者</th>
+            </tr>
+        </thead>
+        <tbody id="schedule">
+            <!-- JavaScriptで動的に生成 -->
+        </tbody>
+    </table>
+
+    <h2>来週の点呼当番表</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>役割</th>
+                <th>担当者</th>
+            </tr>
+        </thead>
+        <tbody id="next-week-schedule">
+            <!-- JavaScriptで動的に生成 -->
+        </tbody>
+    </table>
+
+    <script>
+        // 役割リスト
+        const roles = ["2年生実習", "3年生実習", "3年生課題研究"];
+        
+        // 担当者リスト（7人）
+        let members = ["山口", "永田", "谷口", "近藤", "福士", "木澤畑"];
+
+        // ローカルストレージから現在のシフトを取得（なければ0）
+        let shiftIndex = parseInt(localStorage.getItem("shiftIndex")) || getWeeklyShiftIndex();
+        
+        // 初回表示
+        updateTable();
+
+        // スペースキーを押したらローテーション
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                event.preventDefault(); // ページスクロール防止
+                shiftIndex = (shiftIndex + 1) % members.length;
+                localStorage.setItem("shiftIndex", shiftIndex); // シフトを保存
+                updateTable();
+            }
+        });
+
+        // 当番表を更新する関数
+        function updateTable() {
+            const tbody = document.getElementById("schedule");
+            const nextWeekTbody = document.getElementById("next-week-schedule");
+            tbody.innerHTML = ""; // 今週の表をクリア
+            nextWeekTbody.innerHTML = ""; // 来週の表をクリア
+
+            // 担当者のローテーションを適用
+            const rotatedMembers = members.slice(shiftIndex).concat(members.slice(0, shiftIndex));
+            const nextWeekMembers = members.slice((shiftIndex + 1) % members.length).concat(members.slice(0, (shiftIndex + 1) % members.length));
+
+            roles.forEach((role, index) => {
+                // 今週の担当者
+                let currentRow = document.createElement("tr");
+                currentRow.innerHTML = `<td>${role}</td><td>${rotatedMembers[index]}</td>`;
+                tbody.appendChild(currentRow);
+
+                // 来週の担当者
+                let nextRow = document.createElement("tr");
+                nextRow.innerHTML = `<td>${role}</td><td>${nextWeekMembers[index]}</td>`;
+                nextWeekTbody.appendChild(nextRow);
+            });
+        }
+
+        // 月曜日の朝に自動更新するための関数
+        function getWeeklyShiftIndex() {
+            const now = new Date();
+            const startDate = new Date(2024, 0, 1); // 2024年1月1日を基準（任意の月曜基準でOK）
+            const weeksPassed = Math.floor((now - startDate) / (1000 * 60 * 60 * 24 * 7));
+            return weeksPassed % members.length; // 週ごとにずらす
+        }
+
+        // 月曜の6時にシフトを更新する処理
+        function checkMondayMorning() {
+            const now = new Date();
+            if (now.getDay() === 1 && now.getHours() === 6) { // 月曜の6時
+                shiftIndex = (shiftIndex + 1) % members.length;
+                localStorage.setItem("shiftIndex", shiftIndex);
+                updateTable();
+            }
+        }
+
+        // 1分ごとに月曜チェック（精度を考慮して1秒ではなく1分）
+        setInterval(checkMondayMorning, 60000);
+    </script>
+</body>
+</html>
