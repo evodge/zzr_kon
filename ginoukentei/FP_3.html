@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FP3級 学科試験 模擬演習システム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 26px;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 12px;
+        }
+        .setup-section {
+            background-color: #eef2f7;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 600px) {
+            .setup-grid { grid-template-columns: 1fr; }
+        }
+        .setup-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .setup-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-size: 14px;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            background: #fff;
+        }
+        .section-title {
+            background: #2c3e50;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 18px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .quiz-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .q-header {
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: 10px;
+            font-size: 15px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 5px;
+        }
+        .q-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 15px;
+        }
+        .option-label:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        .footer-actions {
+            margin-top: 40px;
+            text-align: center;
+        }
+        .btn-submit {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #c0392b;
+        }
+        .result-box {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            display: none;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>FP3級 学科試験 模擬演習</h1>
+
+    <div class="setup-section">
+        <div class="setup-grid">
+            <div class="setup-group">
+                <label for="year-select">演習対象年度</label>
+                <select id="year-select" onchange="loadExamYear()">
+                    <option value="202605">2026年5月 公表問題</option>
+                    <option value="202505">2025年5月 公表問題</option>
+                    <option value="202405">2024年5月 公表問題</option>
+                </select>
+            </div>
+            <div class="setup-group">
+                <label for="birthday">ユーザー生年月日</label>
+                <input type="number" id="birthday" placeholder="例: 19790829" min="19000101" max="21001231">
+            </div>
+            <div class="setup-group">
+                <label for="attempt-count">実施回数</label>
+                <select id="attempt-count">
+                    <option value="_1">1回目 (_1)</option>
+                    <option value="_2">2回目 (_2)</option>
+                    <option value="_3">3回目 (_3)</option>
+                    <option value="_4">4回目 (_4)</option>
+                    <option value="_5">5回目 (_5)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <form id="exam-form">
+        <div id="quiz-container">
+            </div>
+
+        <div class="footer-actions">
+            <button type="button" class="btn-submit" onclick="gradeExam()">学科試験の採点を行う</button>
+        </div>
+    </form>
+
+    <div id="result" class="result-box"></div>
+</div>
+
+<script>
+    // 年度別の問題データコンテナ（代表的な傾向・頻出問題をベースとした60問の構造定義）
+    // 各年度ごとに前半30問（◯×）、後半30問（3択）が自動生成されます
+    const examDatabase = {
+        "202605": {
+            title: "2026年5月 公表問題",
+            questions: []
+        },
+        "202505": {
+            title: "2025年5月 公表問題",
+            questions: []
+        },
+        "202405": {
+            title: "2024年5月 公表問題",
+            questions: []
+        }
+    };
+
+    // テスト用データおよび動的生成ロジックの定義
+    function generateMockData() {
+        const years = ["202605", "202505", "202405"];
+        const fields = ["ライフプランニング", "リスク管理", "金融資産運用", "タックスプランニング", "不動産", "相続・事業承継"];
+        
+        years.forEach(yr => {
+            let qList = [];
+            // 問1～問30 (正誤式 ◯×問題)
+            for(let i=1; i<=30; i++) {
+                let field = fields[(i-1) % 6];
+                qList.push({
+                    id: i,
+                    type: "tf",
+                    text: `【${field}】に関する記述である。問題文の内容が正しいか誤っているかを判断しなさい。（※${yr.substring(0,4)}年度法改正対応問題）`,
+                    options: ["◯ 正しい", "× 誤っている"],
+                    answer: (i % 3 === 0) ? "2" : "1" // ダミー正解(1=◯, 2=×)
+                });
+            }
+            // 問31～問60 (三答択一式 3択問題)
+            for(let i=31; i<=60; i++) {
+                let field = fields[(i-1) % 6];
+                qList.push({
+                    id: i,
+                    type: "mc",
+                    text: `【${field}】に関する次の記述の空欄（  ）にあてはまる最も適切なものを選択肢の中から選びなさい。`,
+                    options: ["1) 法律の定める基準に適合する選択肢", "2) 一定の要件を満たさない選択肢", "3) 制限や上限を超える選択肢"],
+                    answer: ((i % 3) + 1).toString() // ダミー正解(1, 2, 3のいずれか)
+                });
+            }
+            examDatabase[yr].questions = qList;
+        });
+    }
+
+    // 特定の過去問テキスト例を一部直接上書き適用（実戦用）
+    function applyRealExamTrend() {
+        // 2026年5月問1のFP業法
+        examDatabase["202605"].questions[0].text = "【ライフプランニング】税理士の登録を受けていないFPが、顧客から相続財産に係る相続税額の計算を依頼されたため、有償・無償を問わず、具体的な税額計算の代行業務を行った。この行為は税理士法に抵触する。";
+        examDatabase["202605"].questions[0].answer = "1"; // ◯
+
+        // 2026年5月問31の付加年金
+        examDatabase["202605"].questions[30].text = "【ライフプランニング】国民年金の付加保険料に係る保険料納付済期間を有する者が、65歳から老齢基礎年金を受給する場合、付加年金の額は、（  ）に付加保険料に係る保険料納付済期間の月数を乗じて得た額となる。";
+        examDatabase["202605"].questions[30].options = ["1) 200円", "2) 400円", "3) 800円"];
+        examDatabase["202605"].questions[30].answer = "1";
+
+        // 新NISA非課税期間問題
+        examDatabase["202605"].questions[32].text = "【金融資産運用】NISA（少額投資非課税制度）の「成長投資枠」や「つみたて投資枠」を利用して購入した商品の非課税保有期間は、（  ）である。";
+        examDatabase["202605"].questions[32].options = ["1) 最長で5年間", "2) 最長で20年間", "3) 無期限"];
+        examDatabase["202605"].questions[32].answer = "3";
+    }
+
+    // 選択された年度の問題を画面にレンダリングする
+    function loadExamYear() {
+        const year = document.getElementById('year-select').value;
+        const container = document.getElementById('quiz-container');
+        container.innerHTML = ""; // 初期化
+
+        const exam = examDatabase[year];
+        
+        // 前半セクションタイトル
+        const hPart1 = document.createElement('div');
+        hPart1.className = "section-title";
+        hPart1.innerText = "第1分冊：第1問～第30問 【正誤式（◯×問題）】";
+        container.appendChild(hPart1);
+
+        exam.questions.forEach((q, idx) => {
+            // 後半セクションタイトルの挿入
+            if(q.id === 31) {
+                const hPart2 = document.createElement('div');
+                hPart2.className = "section-title";
+                hPart2.innerText = "第2分冊：第31問～第60問 【三答択一式（3択問題）】";
+                container.appendChild(hPart2);
+            }
+
+            const card = document.createElement('div');
+            card.className = "quiz-card";
+            
+            const header = document.createElement('div');
+            header.className = "q-header";
+            header.innerText = `問 ${q.id}`;
+            card.appendChild(header);
+
+            const text = document.createElement('div');
+            text.className = "q-text";
+            text.innerHTML = q.text;
+            card.appendChild(text);
+
+            const optGroup = document.createElement('div');
+            optGroup.className = "options-group";
+
+            q.options.forEach((opt, oIdx) => {
+                const label = document.createElement('label');
+                label.className = "option-label";
+                
+                const radio = document.createElement('input');
+                radio.type = "radio";
+                radio.name = `question_${q.id}`;
+                radio.value = (oIdx + 1).toString();
+                radio.required = true;
+
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(opt));
+                optGroup.appendChild(label);
+            });
+
+            card.appendChild(optGroup);
+            container.appendChild(card);
+        });
+        
+        // ページ上部へスクロール
+        window.scrollTo(0,0);
+    }
+
+    // 採点処理
+    function gradeExam() {
+        const birthday = document.getElementById('birthday').value;
+        const attempt = document.getElementById('attempt-count').value;
+        const year = document.getElementById('year-select').value;
+        const resultBox = document.getElementById('result');
+
+        if (!birthday) {
+            alert('採点を行う前に、生年月日（8桁の数字）を入力してください。');
+            return;
+        }
+
+        const userKey = birthday + attempt;
+        const exam = examDatabase[year];
+        let score = 0;
+        let unanswered = [];
+
+        exam.questions.forEach(q => {
+            const selected = document.querySelector(`input[name="question_${q.id}"]:checked`);
+            if (selected) {
+                if (selected.value === q.answer) {
+                    score++;
+                }
+            } else {
+                unanswered.push(q.id);
+            }
+        });
+
+        if (unanswered.length > 0) {
+            alert(`未回答の問題があります。確認してください。\n未回答の設問: 問 ${unanswered.join(', ')}`);
+            return;
+        }
+
+        // 合格基準：60問中36問以上（60%以上）
+        const passStatus = (score >= 36) ? "【合格圏内】" : "【不合格（復習が必要です）】";
+        
+        resultBox.style.display = "block";
+        if (score >= 36) {
+            resultBox.className = "result-box success";
+        } else {
+            resultBox.className = "result-box error";
+        }
+
+        resultBox.innerHTML = `<strong>【送信キー: ${userKey}】</strong><br>` +
+                              `対象試験: ${examDatabase[year].title}<br>` +
+                              `得点: <strong>${score} 点</strong> / 60点満点<br>` +
+                              `判定: <strong>${passStatus}</strong><br><br>` +
+                              `<small>※この結果データは、生成された識別キー [ ${userKey} ] を基に管理システム等に連携させることができます。</small>`;
+        
+        // 結果表示位置へスムーズスクロール
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 初期化ロード
+    generateMockData();
+    applyRealExamTrend();
+    loadExamYear();
+</script>
+
+</body>
+</html>
