@@ -1,70 +1,499 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>自宅環境・RasPiリモートモニター</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #0a0f1e; --panel: #0f1729; --border: #1e3a5f;
-            --cpu-color: #00ff9d; --f2-color: #ff6b35; --f1-color: #00d4ff;
-            --text: #c8e0f4; --text-dim: #4a7fa5;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        
-        header { 
-            margin-bottom: 20px; 
-            padding-bottom: 12px; 
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        h1 { font-size: 1.4rem; color: #00d4ff; letter-spacing: 1px; }
-        .update-time { font-size: 0.8rem; color: var(--text-dim); }
-        
-        /* 画面切り替えタブ */
-        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        .tab-btn {
-            background: #132238; color: var(--text-dim); border: 1px solid var(--border);
-            padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .tab-btn:hover { background: #1a3152; color: var(--text); }
-        .tab-btn.active { background: #00d4ff; color: #0a0f1e; border-color: #00d4ff; }
-        
-        /* コンテンツエリアの表示制御 */
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Climate Monitor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@300;400;700&display=swap');
+  :root {
+    --bg: #0a0f1e; --panel: #0f1729; --border: #1e3a5f;
+    --accent: #00d4ff; --warm: #ff6b35; --green: #00ff9d;
+    --warn: #ffcc00; --danger: #ff3366;
+    --text: #c8e0f4; --text-dim: #4a7fa5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh; padding: 24px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
 
-        /* 最新値表示カード */
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-        .card-title { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
-        .card-value { font-size: 1.8rem; font-weight: bold; }
-        .unit { font-size: 0.9rem; color: var(--text-dim); margin-left: 2px; }
-        .diff-val { font-size: 1.1rem; color: #ffcc00; margin-top: 4px; }
-        
-        /* グラフ・ログパネル */
-        .chart-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
-        .chart-title { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; }
-        
-        .error-msg { color: #ff3366; text-align: center; padding: 20px; display: none; background: rgba(255,51,102,0.1); border: 1px solid #ff3366; border-radius: 8px; margin-bottom: 20px; }
-    </style>
+  /* ヘッダー */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 12px;
+  }
+  .logo { font-family: 'Share Tech Mono', monospace; font-size: 1.3rem; color: var(--accent); letter-spacing: 2px; }
+  .logo span { color: var(--text-dim); font-size: 0.72rem; display: block; margin-top: 2px; }
+  .status-area { display: flex; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-dim); }
+  .status-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green); box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite; display: inline-block;
+  }
+  .status-dot.stale { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+  .status-dot.offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); animation: none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* 更新時刻バナー */
+  .update-banner {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 18px; margin-bottom: 20px;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; color: var(--text-dim);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .update-banner span { color: var(--accent); }
+
+  /* カードグリッド */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 22px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .card.warm::before  { background: linear-gradient(90deg, var(--warm), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+  .card-label { font-size: 0.68rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+  .card-value { font-family: 'Share Tech Mono', monospace; font-size: 2rem; line-height: 1; color: var(--accent); }
+  .card-value.warm    { color: var(--warm); }
+  .card-value.green   { color: var(--green); }
+  .card-value.warn    { color: var(--warn); }
+  .card-value.danger  { color: var(--danger); }
+  .card-unit { font-size: 0.9rem; color: var(--text-dim); }
+
+  /* 温度差バナー */
+  .diff-banner {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 24px; margin-bottom: 22px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 32px; flex-wrap: wrap;
+  }
+  .diff-item { text-align: center; }
+  .diff-label { font-size: 0.68rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
+  .diff-value { font-family: 'Share Tech Mono', monospace; font-size: 2.4rem; line-height: 1; }
+  .diff-sep { font-family: 'Share Tech Mono', monospace; font-size: 1.8rem; color: var(--border); }
+
+  /* チャート */
+  .chart-panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 22px; margin-bottom: 20px;
+  }
+  .chart-title { font-size: 0.72rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+
+  /* フロアグリッド */
+  .floor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
+  @media(max-width: 580px){ .floor-grid { grid-template-columns: 1fr; } }
+  .floor-card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px; position: relative; overflow: hidden;
+  }
+  .floor-card.f2::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background: linear-gradient(90deg, var(--warm), transparent); }
+  .floor-card.f1::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background: linear-gradient(90deg, var(--accent), transparent); }
+  .floor-title { font-size: 0.72rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+  .sensor-row { display: flex; gap: 14px; }
+  .sensor-box { flex: 1; }
+  .sensor-label { font-size: 0.62rem; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+  .sensor-value { font-family: 'Share Tech Mono', monospace; font-size: 1.9rem; line-height: 1; }
+  .sensor-unit { font-size: 0.85rem; color: var(--text-dim); }
+  .floor-update { font-size: 0.68rem; color: var(--text-dim); margin-top: 10px; }
+
+  /* テーブル */
+  .table-panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 22px; overflow-x: auto; margin-bottom: 20px;
+  }
+  .table-title { font-size: 0.72rem; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 8px 12px; font-size: 0.68rem; color: var(--text-dim); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 8px 12px; font-family: 'Share Tech Mono', monospace; font-size: 0.83rem; border-bottom: 1px solid rgba(30,58,95,0.5); }
+  tr:hover td { background: rgba(0,212,255,0.03); }
+  .badge { font-size: 0.62rem; padding: 2px 6px; border-radius: 3px; }
+  .badge-2f { background: rgba(255,107,53,0.15); color: var(--warm); border: 1px solid var(--warm); }
+  .badge-1f { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid var(--accent); }
+  .badge-cpu { background: rgba(0,255,157,0.1); color: var(--green); border: 1px solid var(--green); }
+
+  .note { font-size: 0.7rem; color: var(--text-dim); text-align: right; margin-top: 12px; }
+
+  /* week bar */
+  .week-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .week-bar-bg { flex: 1; height: 5px; background: rgba(30,58,95,0.6); border-radius: 3px; overflow: hidden; }
+  .week-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #00d4ff, #ff6b35); transition: width 0.4s; }
+  .today-badge { font-size: 0.62rem; background: rgba(0,212,255,0.15); color: var(--accent); border: 1px solid var(--accent); border-radius: 3px; padding: 1px 5px; margin-left: 4px; }
+
+  /* オフライン表示 */
+  .offline-msg {
+    text-align: center; padding: 60px 20px;
+    font-family: 'Share Tech Mono', monospace; color: var(--text-dim);
+  }
+  .offline-msg .code { font-size: 3rem; color: var(--danger); margin-bottom: 12px; }
+
+  /* セクション区切り */
+  .section-divider {
+    font-size: 0.68rem; letter-spacing: 3px; color: var(--border);
+    text-transform: uppercase; text-align: center;
+    margin: 28px 0 20px; position: relative;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; position: absolute; top: 50%; width: 40%; height: 1px;
+    background: var(--border);
+  }
+  .section-divider::before { left: 0; }
+  .section-divider::after { right: 0; }
+</style>
 </head>
 <body>
-
 <div class="container">
-    <header>
-        <div>
-            <h1>HOME CLIMATE & SERVER MONITOR</h1>
-        </div>
-        <div class="update-time" id="last-update">データ同期中...</div>
-    </header>
 
-    <div id="error-area" class="error-msg">data.json の読み込みに失敗しました
+  <header>
+    <div class="logo">
+      HOME CLIMATE MONITOR
+      <span>POWERED BY RASPBERRY PI — evodge/zzr_kon</span>
+    </div>
+    <div class="status-area">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">読み込み中...</span>
+    </div>
+  </header>
+
+  <div class="update-banner">
+    <div>ラズパイ最終送信: <span id="raspi-updated">--</span></div>
+    <div>ページ最終取得: <span id="page-fetched">--</span></div>
+    <div>※ データは約5分ごとに更新されます</div>
+  </div>
+
+  <!-- 温湿度 上下階比較 -->
+  <div class="diff-banner" id="diff-banner">
+    <div class="diff-item">
+      <div class="diff-label">2階 温度</div>
+      <div class="diff-value" id="diff-2f" style="color:var(--warm)">--<span style="font-size:1rem;color:var(--text-dim)">°C</span></div>
+    </div>
+    <div class="diff-sep">vs</div>
+    <div class="diff-item">
+      <div class="diff-label">1階 温度</div>
+      <div class="diff-value" id="diff-1f" style="color:var(--accent)">--<span style="font-size:1rem;color:var(--text-dim)">°C</span></div>
+    </div>
+    <div class="diff-sep">=</div>
+    <div class="diff-item">
+      <div class="diff-label">温度差（2階 − 1階）</div>
+      <div class="diff-value" id="diff-val" style="color:var(--green)">--<span style="font-size:1rem;color:var(--text-dim)">°C</span></div>
+    </div>
+  </div>
+
+  <!-- 各フロアカード -->
+  <div class="floor-grid">
+    <div class="floor-card f2">
+      <div class="floor-title">▸ 2階</div>
+      <div class="sensor-row">
+        <div class="sensor-box">
+          <div class="sensor-label">温度</div>
+          <div class="sensor-value" id="f2-temp" style="color:var(--warm)">--<span class="sensor-unit">°C</span></div>
+        </div>
+        <div class="sensor-box">
+          <div class="sensor-label">湿度</div>
+          <div class="sensor-value" id="f2-hum" style="color:var(--warn)">--<span class="sensor-unit">%</span></div>
+        </div>
+      </div>
+      <div class="floor-update" id="f2-time">最終受信: --</div>
+    </div>
+    <div class="floor-card f1">
+      <div class="floor-title">▸ 1階</div>
+      <div class="sensor-row">
+        <div class="sensor-box">
+          <div class="sensor-label">温度</div>
+          <div class="sensor-value" id="f1-temp" style="color:var(--accent)">--<span class="sensor-unit">°C</span></div>
+        </div>
+        <div class="sensor-box">
+          <div class="sensor-label">湿度</div>
+          <div class="sensor-value" id="f1-hum" style="color:var(--warn)">--<span class="sensor-unit">%</span></div>
+        </div>
+      </div>
+      <div class="floor-update" id="f1-time">最終受信: --</div>
+    </div>
+  </div>
+
+  <!-- 温湿度チャート -->
+  <div class="chart-panel">
+    <div class="chart-title">▸ 温度推移（直近データ）</div>
+    <canvas id="tempChart" height="75"></canvas>
+  </div>
+  <div class="chart-panel">
+    <div class="chart-title">▸ 湿度推移（直近データ）</div>
+    <canvas id="humChart" height="75"></canvas>
+  </div>
+
+  <!-- 受信ログ -->
+  <div class="table-panel">
+    <div class="table-title">▸ 受信ログ（最新50件）</div>
+    <table>
+      <thead><tr><th>時刻</th><th>場所</th><th>温度 (°C)</th><th>湿度 (%)</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px">読み込み中...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section-divider">CPU TEMPERATURE</div>
+
+  <!-- CPU温度カード -->
+  <div class="cards">
+    <div class="card green">
+      <div class="card-label">CPU 現在温度</div>
+      <div class="card-value green" id="cpu-now">--<span class="card-unit">°C</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">CPU 最高（記録分）</div>
+      <div class="card-value" id="cpu-max">--<span class="card-unit">°C</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">CPU 最低（記録分）</div>
+      <div class="card-value" id="cpu-min">--<span class="card-unit">°C</span></div>
+    </div>
+    <div class="card">
+      <div class="card-label">CPU 平均（記録分）</div>
+      <div class="card-value" id="cpu-avg">--<span class="card-unit">°C</span></div>
+    </div>
+  </div>
+
+  <!-- CPU温度チャート -->
+  <div class="chart-panel">
+    <div class="chart-title">▸ CPU温度推移</div>
+    <canvas id="cpuChart" height="75"></canvas>
+  </div>
+
+  <!-- 週間最高温度 -->
+  <div class="table-panel">
+    <div class="table-title">▸ 過去1週間の日別最大CPU温度</div>
+    <table>
+      <thead><tr><th>日付</th><th>曜日</th><th>最大温度 (°C)</th><th></th></tr></thead>
+      <tbody id="weekly-tbody"><tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px">読み込み中...</td></tr></tbody>
+    </table>
+    <div class="note">※ 再起動しても記録は保持されます（DB永続化）</div>
+  </div>
+
+</div>
+
+<script>
+// =========================================================
+// データ取得先 — ラズパイがプッシュするJSONファイルのURL
+// =========================================================
+const DATA_URL = 'https://raw.githubusercontent.com/evodge/zzr_kon/main/home_temp/data.json';
+
+// キャッシュ回避のためタイムスタンプを付与
+function dataUrl() {
+  return DATA_URL + '?t=' + Date.now();
+}
+
+// =========================================================
+// チャート初期化
+// =========================================================
+function makeChart(id, datasets, unit, height) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets },
+    options: {
+      responsive: true,
+      animation: { duration: 300 },
+      plugins: {
+        legend: { labels: { color: '#4a7fa5', font: { family: 'Share Tech Mono', size: 11 } } },
+        tooltip: { backgroundColor: '#0f1729', borderColor: '#1e3a5f', borderWidth: 1, titleColor: '#00d4ff', bodyColor: '#c8e0f4' }
+      },
+      scales: {
+        x: { ticks: { color: '#4a7fa5', font: { family: 'Share Tech Mono', size: 9 }, maxTicksLimit: 12 }, grid: { color: 'rgba(30,58,95,0.4)' } },
+        y: { ticks: { color: '#4a7fa5', font: { family: 'Share Tech Mono' }, callback: v => v + unit }, grid: { color: 'rgba(30,58,95,0.4)' } }
+      }
+    }
+  });
+}
+
+const tempChart = makeChart('tempChart', [
+  { label: '2階', data: [], borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.07)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+  { label: '1階', data: [], borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.07)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false }
+], '°C');
+
+const humChart = makeChart('humChart', [
+  { label: '2階', data: [], borderColor: '#ff6b35', backgroundColor: 'rgba(255,107,53,0.05)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false },
+  { label: '1階', data: [], borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.05)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: false }
+], '%');
+
+const cpuChart = makeChart('cpuChart', [
+  { label: 'CPU温度', data: [], borderColor: '#00ff9d', backgroundColor: 'rgba(0,255,157,0.07)', borderWidth: 2, pointRadius: 2, tension: 0.3, fill: true }
+], '°C');
+
+// =========================================================
+// ステータス更新
+// =========================================================
+function setStatus(state, text) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (state === 'ok' ? '' : state === 'stale' ? ' stale' : ' offline');
+  document.getElementById('status-text').textContent = text;
+}
+
+// =========================================================
+// 温度→CSSクラス
+// =========================================================
+function tempClass(t) {
+  if (t == null) return '';
+  if (t < 20) return 'accent';
+  if (t < 26) return 'green';
+  if (t < 30) return 'warn';
+  return 'danger';
+}
+function cpuClass(t) {
+  if (t == null) return '';
+  if (t < 50) return 'green';
+  if (t < 60) return '';   // accent (default)
+  if (t < 70) return 'warn';
+  return 'danger';
+}
+
+// =========================================================
+// メイン: データ取得 & 描画
+// =========================================================
+async function fetchAndRender() {
+  try {
+    const res = await fetch(dataUrl());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const d = await res.json();
+
+    document.getElementById('page-fetched').textContent =
+      new Date().toLocaleString('ja-JP');
+
+    // --- 更新時刻 & ステータス ---
+    const updated = d.updated ? new Date(d.updated) : null;
+    if (updated) {
+      document.getElementById('raspi-updated').textContent =
+        updated.toLocaleString('ja-JP');
+      const ageMin = (Date.now() - updated.getTime()) / 60000;
+      if (ageMin < 10)       setStatus('ok',     'オンライン');
+      else if (ageMin < 30)  setStatus('stale',  '遅延あり（' + Math.round(ageMin) + '分前）');
+      else                   setStatus('offline', 'オフライン（' + Math.round(ageMin) + '分前）');
+    }
+
+    // --- 温湿度センサー ---
+    const sensors = d.sensors || {};
+    if (sensors['2F']) {
+      const s = sensors['2F'];
+      document.getElementById('f2-temp').innerHTML = s.temp + '<span class="sensor-unit">°C</span>';
+      document.getElementById('f2-hum').innerHTML  = s.humidity + '<span class="sensor-unit">%</span>';
+      document.getElementById('f2-time').textContent = '最終受信: ' + (s.ts ? new Date(s.ts).toLocaleString('ja-JP') : s.time || '--');
+      document.getElementById('diff-2f').innerHTML = s.temp + '<span style="font-size:1rem;color:var(--text-dim)">°C</span>';
+    }
+    if (sensors['1F']) {
+      const s = sensors['1F'];
+      document.getElementById('f1-temp').innerHTML = s.temp + '<span class="sensor-unit">°C</span>';
+      document.getElementById('f1-hum').innerHTML  = s.humidity + '<span class="sensor-unit">%</span>';
+      document.getElementById('f1-time').textContent = '最終受信: ' + (s.ts ? new Date(s.ts).toLocaleString('ja-JP') : s.time || '--');
+      document.getElementById('diff-1f').innerHTML = s.temp + '<span style="font-size:1rem;color:var(--text-dim)">°C</span>';
+    }
+    if (sensors['1F'] && sensors['2F']) {
+      const diff = Math.round((sensors['2F'].temp - sensors['1F'].temp) * 10) / 10;
+      const sign = diff > 0 ? '+' : '';
+      document.getElementById('diff-val').innerHTML =
+        sign + diff + '<span style="font-size:1rem;color:var(--text-dim)">°C</span>';
+      document.getElementById('diff-val').style.color =
+        diff > 3 ? 'var(--danger)' : diff > 1 ? 'var(--warn)' : 'var(--green)';
+    }
+
+    // --- 温湿度グラフ ---
+    const hist = d.sensor_history || {};
+    const f2h = hist['2F'] || [];
+    const f1h = hist['1F'] || [];
+    const labels = (f2h.length >= f1h.length ? f2h : f1h).map(h => h.time);
+    tempChart.data.labels = labels;
+    tempChart.data.datasets[0].data = f2h.map(h => h.temp);
+    tempChart.data.datasets[1].data = f1h.map(h => h.temp);
+    tempChart.update();
+    humChart.data.labels = labels;
+    humChart.data.datasets[0].data = f2h.map(h => h.humidity);
+    humChart.data.datasets[1].data = f1h.map(h => h.humidity);
+    humChart.update();
+
+    // --- 受信ログ ---
+    const log = d.sensor_log || [];
+    if (log.length) {
+      document.getElementById('log-tbody').innerHTML = log.map(r =>
+        `<tr>
+          <td>${r.time}</td>
+          <td><span class="badge ${r.location==='2F'?'badge-2f':'badge-1f'}">${r.location}</span></td>
+          <td>${r.temp}</td>
+          <td>${r.humidity}</td>
+        </tr>`
+      ).join('');
+    } else {
+      document.getElementById('log-tbody').innerHTML =
+        '<tr><td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px">データなし</td></tr>';
+    }
+
+    // --- CPU温度 ---
+    const cpuHist = d.cpu_history || [];
+    if (cpuHist.length) {
+      const temps = cpuHist.map(h => h.temp);
+      const latest = temps[temps.length - 1];
+      const max = Math.max(...temps), min = Math.min(...temps);
+      const avg = (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1);
+      document.getElementById('cpu-now').className = 'card-value ' + cpuClass(latest);
+      document.getElementById('cpu-now').innerHTML = latest + '<span class="card-unit">°C</span>';
+      document.getElementById('cpu-max').innerHTML = max + '<span class="card-unit">°C</span>';
+      document.getElementById('cpu-min').innerHTML = min + '<span class="card-unit">°C</span>';
+      document.getElementById('cpu-avg').innerHTML = avg + '<span class="card-unit">°C</span>';
+      cpuChart.data.labels = cpuHist.map(h => h.time);
+      cpuChart.data.datasets[0].data = temps;
+      cpuChart.update();
+    }
+
+    // --- 週間最高温度 ---
+    const weekly = d.weekly || [];
+    const DAY_JA = ['日','月','火','水','木','金','土'];
+    if (weekly.length) {
+      const weekMax = Math.max(...weekly.map(w => w.max_temp));
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('weekly-tbody').innerHTML =
+        [...weekly].reverse().map(w => {
+          const dt = new Date(w.date);
+          const dayStr = DAY_JA[dt.getDay()];
+          const isToday = w.date === today;
+          const pct = Math.round((w.max_temp / weekMax) * 100);
+          const cls = w.max_temp < 50 ? 'color:var(--green)' : w.max_temp < 60 ? 'color:var(--accent)' : w.max_temp < 70 ? 'color:var(--warn)' : 'color:var(--danger)';
+          return `<tr>
+            <td>${w.date}${isToday ? '<span class="today-badge">TODAY</span>' : ''}</td>
+            <td style="color:var(--text-dim)">${dayStr}曜日</td>
+            <td style="${cls}">${w.max_temp}</td>
+            <td style="min-width:110px">
+              <div class="week-bar-wrap">
+                <div class="week-bar-bg"><div class="week-bar-fill" style="width:${pct}%"></div></div>
+                <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim)">${pct}%</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+    }
+
+  } catch(e) {
+    console.error(e);
+    setStatus('offline', 'データ取得失敗');
+  }
+}
+
+fetchAndRender();
+// 5分ごとに自動再取得
+setInterval(fetchAndRender, 5 * 60 * 1000);
+</script>
+</body>
+</html>
