@@ -1,1 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自宅環境リモートモニター</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0a0f1e; --panel: #0f1729; --border: #1e3a5f;
+            --cpu-color: #00ff9d; --f2-color: #ff6b35; --f1-color: #00d4ff;
+            --text: #c8e0f4; --text-dim: #4a7fa5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        h1 { font-size: 1.5rem; color: #00d4ff; letter-spacing: 1px; }
+        .update-time { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+        
+        /* 最新値表示カード */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .card-title { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+        .card-value { font-size: 1.8rem; font-weight: bold; }
+        .unit { font-size: 0.9rem; color: var(--text-dim); margin-left: 2px; }
+        
+        .chart-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+        .chart-title { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 12px; }
+        .error-msg { color: #ff3366; text-align: center; padding: 20px; display: none; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <header>
+        <h1>REMOTE CLIMATE MONITOR</h1>
+        <div class="update-time" id="last-update">データ読み込み中...</div>
+    </header>
+
+    <div class="cards">
+        <div class="card">
+            <div class="card-title" style="color: var(--cpu-color);">▸ RasPi CPU温度</div>
+            <div class="card-value" id="val-cpu" style="color: var(--cpu-color);">--<span class="unit">°C</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="color: var(--f2-color);">▸ 2階 室内環境</div>
+            <div class="card-value" id="val-f2">--<span class="unit">°C</span> / --<span class="unit">%</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="color: var(--f1-color);">▸ 1階 室内環境</div>
+            <div class="card-value" id="val-f1">--<span class="unit">°C</span> / --<span class="unit">%</span></div>
+        </div>
+    </div>
+
+    <div class="chart-panel">
+        <div class="chart-title">▸ 直近24時間の温度推移</div>
+        <canvas id="tempChart" height="100"></canvas>
+    </div>
+    <div class="chart-panel">
+        <div class="chart-title">▸ 直近24時間の湿度推移</div>
+        <canvas id="humChart" height="100"></canvas>
+    </div>
+    
+    <div id="error-area" class="error-msg">data.json の読み込みに失敗しました。ラズパイからの送信を待っています。</div>
+</div>
+
+<script>
+// 共通のグラフ設定
+const chartConfig = (yUnit) => ({
+    type: 'line',
+    data: { labels: [], datasets: [] },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#4a7fa5' } } },
+        scales: {
+            x: { ticks: { color: '#4a7fa5', maxTicksLimit: 10 }, grid: { color: 'rgba(30,58,95,0.3)' } },
+            y: { ticks: { color: '#4a7fa5', callback: v => v + yUnit }, grid: { color: 'rgba(30,58,95,0.3)' } }
+        }
+    }
+});
+
+const tempCtx = document.getElementById('tempChart').getContext('2d');
+const humCtx = document.getElementById('humChart').getContext('2d');
+const tempChart = new Chart(tempCtx, chartConfig('°C'));
+const humChart = new Chart(humCtx, chartConfig('%'));
+
+async function loadData() {
+    try {
+        // 同じフォルダにある data.json を読み込む（キャッシュ回避のためタイムスタンプを付与）
+        const response = await fetch('./data.json?t=' + new Date().getTime());
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        
+        if (data.length === 0) return;
+
+        // データの分離処理 (時系列順)
+        const labels = [...new Set(data.map(d => d.datetime.substring(11, 16)))]; // 時刻(hh:mm)のみ抽出
+        
+        // 各ロケーションごとのデータ配列を作成
+        const cpuData = data.filter(d => d.location === 'CPU');
+        const f2Data = data.filter(d => d.location === '2F');
+        const f1Data = data.filter(d => d.location === '1F');
+
+        // デジタルパネルの最新値更新
+        if(cpuData.length) document.getElementById('val-cpu').innerHTML = cpuData[cpuData.length-1].temp + '<span class="unit">°C</span>';
+        if(f2Data.length)  document.getElementById('val-f2').innerHTML  = f2Data[f2Data.length-1].temp + '<span class="unit">°C</span> / ' + f2Data[f2Data.length-1].humidity + '<span class="unit">%</span>';
+        if(f1Data.length)  document.getElementById('val-f1').innerHTML  = f1Data[f1Data.length-1].temp + '<span class="unit">°C</span> / ' + f1Data[f1Data.length-1].humidity + '<span class="unit">%</span>';
+        
+        document.getElementById('last-update').textContent = '最終同期時刻: ' + data[data.length-1].datetime + ' (自動更新: 5分ごと)';
+
+        // 温度グラフの更新
+        tempChart.data.labels = [...new Set(data.map(d => d.datetime.substring(5, 16)))]; // 日付+時刻
+        tempChart.data.datasets = [
+            { label: 'CPU温度', data: tempChart.data.labels.map(l => data.find(d => d.location==='CPU' && d.datetime.substring(5,16)===l)?.temp || null), borderColor: '#00ff9d', tension: 0.2, pointRadius: 0 },
+            { label: '2階 温度', data: tempChart.data.labels.map(l => data.find(d => d.location==='2F' && d.datetime.substring(5,16)===l)?.temp || null), borderColor: '#ff6b35', tension: 0.2, pointRadius: 0 },
+            { label: '1階 温度', data: tempChart.data.labels.map(l => data.find(d => d.location==='1F' && d.datetime.substring(5,16)===l)?.temp || null), borderColor: '#00d4ff', tension: 0.2, pointRadius: 0 }
+        ];
+        tempChart.update();
+
+        // 湿度グラフの更新
+        humChart.data.labels = tempChart.data.labels;
+        humChart.data.datasets = [
+            { label: '2階 湿度', data: humChart.data.labels.map(l => data.find(d => d.location==='2F' && d.datetime.substring(5,16)===l)?.humidity || null), borderColor: '#ffcc00', tension: 0.2, pointRadius: 0 },
+            { label: '1階 湿度', data: humChart.data.labels.map(l => data.find(d => d.location==='1F' && d.datetime.substring(5,16)===l)?.humidity || null), borderColor: '#00d4ff', tension: 0.2, pointRadius: 0 }
+        ];
+        humChart.update();
+
+    } catch (e) {
+        document.getElementById('error-area').style.display = 'block';
+    }
+}
+
+// 初回読み込みと、5分ごとの自動リフレッシュ
+loadData();
+setInterval(loadData, 300000); 
+</script>
+</body>
+</html>
