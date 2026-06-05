@@ -3,1023 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機械加工技能検定 練習システム</title>
+    <title>機械加工技能検定２級学科試験 練習システム</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .section {
-            display: none;
-        }
-        
-        .section.active {
-            display: block;
-        }
-        
-        /* ===== ログイン画面 ===== */
-        .login-section {
-            text-align: center;
-        }
-        
-        .login-section h2 {
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #555;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            max-width: 300px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .info-box {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-            text-align: left;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* ===== 年度・問題選択画面 ===== */
-        .select-section h2 {
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .button-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .year-btn {
-            padding: 20px;
-            background: #f5f5f5;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .year-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-            transform: translateY(-2px);
-        }
-        
-        .year-btn.selected {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        
-        /* ===== 問題表示画面 ===== */
-        .quiz-section h2 {
-            margin-bottom: 10px;
-            color: #333;
-        }
-        
-        .quiz-header {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .quiz-header span {
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        .question-block {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #fafafa;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .question-number {
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .question-text {
-            margin-bottom: 15px;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .options {
-            margin: 15px 0;
-        }
-        
-        .option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .option:hover {
-            background: #f0f4ff;
-        }
-        
-        .option input[type="radio"] {
-            margin-right: 12px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .option label {
-            margin: 0;
-            cursor: pointer;
-            flex: 1;
-            font-weight: normal;
-        }
-        
-        /* ===== ボタン類 ===== */
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        
-        button {
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: #f0f0f0;
-            color: #333;
-            border: 2px solid #ddd;
-        }
-        
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-        
-        .btn-small {
-            padding: 8px 15px;
-            font-size: 14px;
-        }
-        
-        /* ===== 結果画面 ===== */
-        .result-section h2 {
-            margin-bottom: 30px;
-            color: #333;
-            text-align: center;
-        }
-        
-        .score-display {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .total-score {
-            font-size: 48px;
-            color: #667eea;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        
-        .score-detail {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        
-        .score-card {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 2px solid #ddd;
-        }
-        
-        .score-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        
-        .score-card .value {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .pass-badge {
-            display: inline-block;
-            padding: 10px 30px;
-            background: #4caf50;
-            color: white;
-            border-radius: 25px;
-            font-weight: bold;
-            margin: 20px 0;
-            font-size: 18px;
-        }
-        
-        .fail-badge {
-            display: inline-block;
-            padding: 10px 30px;
-            background: #f44336;
-            color: white;
-            border-radius: 25px;
-            font-weight: bold;
-            margin: 20px 0;
-            font-size: 18px;
-        }
-        
-        .answer-review {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        
-        .answer-review h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-        
-        .answer-item {
-            background: white;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .answer-item.correct {
-            border-left-color: #4caf50;
-        }
-        
-        .answer-item.incorrect {
-            border-left-color: #f44336;
-        }
-        
-        /* ===== 履歴画面 ===== */
-        .history-section h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .history-table thead {
-            background: #667eea;
-            color: white;
-        }
-        
-        .history-table th,
-        .history-table td {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .history-table tbody tr:hover {
-            background: #f9f9f9;
-        }
-        
-        .history-table th {
-            font-weight: bold;
-        }
-        
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .badge.pass {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-        
-        .badge.fail {
-            background: #ffcdd2;
-            color: #c62828;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        /* ===== ユーティリティ ===== */
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s;
-        }
-        
-        .user-info {
-            background: #f0f4ff;
-            padding: 12px 20px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .user-info span {
-            color: #667eea;
-            font-weight: bold;
-        }
-        
-        @media (max-width: 768px) {
-            .button-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .history-table th,
-            .history-table td {
-                padding: 10px;
-                font-size: 13px;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; text-align: center; position: relative; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        
+        /* ログイン画面 */
+        .login-screen { padding: 40px; text-align: center; }
+        .login-box { max-width: 400px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #ddd; }
+        .login-box h2 { margin-bottom: 20px; font-size: 18px; color: #1e3c72; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; text-align: center; }
+        .login-box button { width: 100%; padding: 12px; background: #2a5298; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .login-box button:hover { background: #1e3c72; }
+
+        /* メイン画面 */
+        .user-info { display: flex; justify-content: space-between; background: #e9ecef; padding: 10px 20px; font-size: 14px; font-weight: bold; border-bottom: 1px solid #dee2e6; }
+        .quiz-layout { display: flex; flex-direction: column; padding: 20px; }
+        .setup-area { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e3e6f0; display: flex; gap: 15px; align-items: center; }
+        .setup-area select { padding: 8px 12px; font-size: 15px; border-radius: 4px; }
+        .start-btn { padding: 8px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        /* 試験エリア */
+        .exam-area { display: none; }
+        .statusbar { display: flex; justify-content: space-between; align-items: center; background: #fff3cd; color: #856404; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; }
+        .timer { font-size: 18px; color: #dc3545; }
+        
+        /* 問題ナビゲーション */
+        .nav-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 6px; }
+        .nav-item { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .nav-item.answered { background: #6c757d; color: white; border-color: #6c757d; }
+        .nav-item.current { border: 2px solid #007bff; color: #007bff; }
+
+        /* 問題カード */
+        .question-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .q-header { font-size: 16px; font-weight: bold; color: #4e73df; margin-bottom: 15px; border-bottom: 2px solid #4e73df; padding-bottom: 5px; }
+        .q-text { font-size: 18px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+        .q-image { max-width: 100%; height: auto; margin-bottom: 20px; border: 1px solid #ddd; display: block; }
+        
+        /* 回答ボタン */
+        .options-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .option-btn { flex: 1; min-width: 120px; padding: 15px; font-size: 18px; font-weight: bold; background: #f8f9fa; border: 2px solid #ced4da; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .option-btn:hover { background: #e2e6ea; }
+        .option-btn.selected { background: #4e73df; color: white; border-color: #4e73df; }
+
+        /* 制御ボタン */
+        .ctrl-btns { display: flex; justify-content: space-between; margin-top: 20px; }
+        .action-btn { padding: 12px 25px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+        .prev-btn { background: #6c757d; color: white; }
+        .next-btn { background: #007bff; color: white; }
+        .submit-btn { background: #dc3545; color: white; margin-left: auto; }
+
+        /* 結果表示 */
+        .result-area { display: none; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #dee2e6; }
+        .result-score { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #28a745; }
+        .history-list { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>⚙️ 機械加工技能検定</h1>
-            <p>2級 機械加工 学科試験問題 練習システム</p>
-        </div>
-        
-        <div class="content">
-            <!-- ===== ログイン画面 ===== -->
-            <div class="section active login-section">
-                <h2>受験者情報入力</h2>
-                <form onsubmit="login(event)">
-                    <div class="form-group">
-                        <label for="birthday">🎂 誕生日（西暦8桁）</label>
-                        <input type="text" id="birthday" placeholder="例：19790829" maxlength="8" pattern="\d{8}" required>
-                        <div class="info-box">
-                            <strong>入力例：</strong><br>
-                            1979年8月29日の場合 → 19790829
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">ログイン</button>
-                </form>
-            </div>
-            
-            <!-- ===== 年度・問題選択画面 ===== -->
-            <div class="section select-section">
-                <div class="user-info">
-                    <span id="userDisplay"></span>
-                    <button class="btn-secondary btn-small" onclick="logout()">ログアウト</button>
-                </div>
-                
-                <h2>実施年度を選択</h2>
-                <div class="button-grid">
-                    <button class="year-btn" onclick="selectYear(2022)">令和4年度<br>(2022年)</button>
-                    <button class="year-btn" onclick="selectYear(2023)">令和5年度<br>(2023年)</button>
-                    <button class="year-btn" onclick="selectYear(2024)">令和6年度<br>(2024年)</button>
-                    <button class="year-btn" onclick="selectYear(2025)">令和7年度<br>(2025年)</button>
-                </div>
-                
-                <h2 style="margin-top: 40px;">過去の成績を確認</h2>
-                <button class="btn-primary" onclick="showHistory()">📊 成績履歴一覧</button>
-            </div>
-            
-            <!-- ===== 問題表示画面 ===== -->
-            <div class="section quiz-section">
-                <div class="user-info">
-                    <span id="quizUserDisplay"></span>
-                    <button class="btn-secondary btn-small" onclick="backToSelect()">年度選択に戻る</button>
-                </div>
-                
-                <h2>令和<span id="quizYearDisplay"></span>年度 試験問題</h2>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressBar" style="width: 0%"></div>
-                </div>
-                <div class="quiz-header">
-                    <span>問題 <span id="currentQuestion">1</span> / <span id="totalQuestion">50</span></span>
-                    <span id="timer" style="color: #f44336; font-size: 18px;"></span>
-                </div>
-                
-                <div id="quizContainer"></div>
-                
-                <div class="button-group">
-                    <button class="btn-secondary" onclick="previousQuestion()" id="prevBtn">← 前へ</button>
-                    <button class="btn-secondary" onclick="nextQuestion()" id="nextBtn">次へ →</button>
-                    <button class="btn-primary" onclick="submitQuiz()">採点する</button>
-                </div>
-            </div>
-            
-            <!-- ===== 結果画面 ===== -->
-            <div class="section result-section">
-                <h2>試験結果</h2>
-                
-                <div class="score-display">
-                    <div id="passMessage"></div>
-                    <div class="total-score" id="totalScoreDisplay">0/100</div>
-                    
-                    <div class="score-detail">
-                        <div class="score-card">
-                            <h3>A問題（真偽法）</h3>
-                            <div class="value" id="scoreA">0</div>
-                            <small>/50点</small>
-                        </div>
-                        <div class="score-card">
-                            <h3>B問題（多肢選一法）</h3>
-                            <div class="value" id="scoreB">0</div>
-                            <small>/50点</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="answer-review">
-                    <h3>📋 解答確認</h3>
-                    <div id="reviewContainer"></div>
-                </div>
-                
-                <div class="button-group">
-                    <button class="btn-primary" onclick="retakeQuiz()">🔄 もう一度チャレンジ</button>
-                    <button class="btn-secondary" onclick="backToSelect()">📚 年度選択に戻る</button>
-                </div>
-            </div>
-            
-            <!-- ===== 履歴画面 ===== -->
-            <div class="section history-section">
-                <button class="btn-secondary" onclick="backToSelect()">← 戻る</button>
-                <h2 style="margin-top: 20px;">📊 成績履歴</h2>
-                <div id="historyContainer"></div>
-            </div>
+
+<div class="container">
+    <div class="header">
+        <h1>機械加工技能検定２級学科試験 練習システム</h1>
+        <p>普通旋盤作業・数値制御旋盤作業 対応</p>
+    </div>
+
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h2>生年月日を8桁の西暦で入力してください</h2>
+            <input type="text" id="birthdayInput" placeholder="例: 19790829" maxlength="8">
+            <button onclick="login()">ログイン</button>
         </div>
     </div>
 
-    <script>
-        // ===== グローバル変数 =====
-        let currentUser = null;
-        let currentYear = null;
-        let currentQuestion = 0;
-        let answers = {};
-        let quizData = null;
-        let startTime = null;
-        let timeLimit = 40 * 60; // 40分
+    <div id="mainScreen" class="quiz-layout" style="display:none;">
+        <div class="user-info">
+            <span id="userDisplay">👤 ユーザー: </span>
+            <span id="logoutBtn" style="color:#dc3545; cursor:pointer;" onclick="logout()">ログアウト</span>
+        </div>
 
-        // ===== 問題データ（正答含む） =====
-        const questionsData = {
-            2022: {
-                year: '令和4年度',
-                yearNum: 4,
-                answerKey: {
-                    A: ['×', '○', '×', '×', '○', '○', '○', '○', '×', '×', '○', '×', '×', '○', '○', '○', '×', '×', '×', '○', '○', '○', '○', '×', '×'],
-                    B: ['ハ', 'ハ', 'ハ', 'ハ', 'ロ', 'ハ', 'ロ', 'ロ', 'イ', 'イ', 'イ', 'ハ', 'ニ', 'ニ', 'ハ', 'ハ', 'ニ', 'ハ', 'ニ', 'ロ', 'ハ', 'ハ', 'ハ', 'ニ', 'イ']
-                },
-                questions: {
-                    A: [
-                        { num: 1, text: '超硬バイトの寿命判定基準として、フランク摩耗の幅やクレータ摩耗の深さがある。' },
-                        { num: 2, text: '普通旋盤の縦送りは、工作物の回転軸に平行となっている。' },
-                        { num: 3, text: '数値制御旋盤のベッド形状の一つにスラッドベッドがある。' },
-                        { num: 4, text: '普通旋盤作業において、面板を用いて異形の工作物を取り付ける場合は、主軸の回転バランスを考慮する必要がある。' },
-                        { num: 5, text: '数値制御旋盤における工具位置オフセット機能とは、バイトのノーズRを補正するための機能である。' },
-                        { num: 6, text: '数値制御工作機械において自動運転中であっても、送り(速度)オーバーライドにより、NC指令された主軸回転速度を変更することができる。' },
-                        { num: 7, text: '日本産業規格(JIS)によれば、刃先交換チップの形状は、正三角形、正方形及び正六角形の3種類である。' },
-                        { num: 8, text: '日本産業規格(JIS)によれば、コーティング工具とは、刃部の材料の表面に、炭化物、窒化物、酸化物、ダイヤモンドなどを一層又は多層に、化学的又は物理的に被覆させた工具材料を使用した工具である。' },
-                        { num: 9, text: 'スパイラルポイントタップは、止まり穴のねじ加工に適している。' },
-                        { num: 10, text: 'ドリルのバックテーパは、切りくずの排出をよくするために付けてである。' },
-                        { num: 11, text: '鋳鉄を切削する場合の切削用超硬質工具材料は、融別記号Pの方がP30より硬い。' },
-                        { num: 12, text: '超硬バイトの切れ刃のエッジを、寿命を延ばすためにハンドラッパで軽くラッピングする方法がある。' },
-                        { num: 13, text: 'セラミック工具は、超硬工具と比較して、じん性が劣っている。' },
-                        { num: 14, text: '日本産業規格(JIS)によれば、刃先交換チップのチップ厚さは、チップの下面から切れ刃までの高さとしている。' },
-                        { num: 15, text: '同一材料の切削において、通常、切削速度を上げても切削温度は変化しない。' },
-                        { num: 16, text: '超硬バイトにクレータ摩耗が生じた場合、刃先が欠けやすくなる。' },
-                        { num: 17, text: '普通旋盤では、チェーザによるねじ切り加工はできない。' },
-                        { num: 18, text: '日本産業規格(JIS)によれば、加工における切りくずの生成形態は、流れ形とせん断形の2形態に分類されている。' },
-                        { num: 19, text: 'バイトのすくい角が大きいほど、切削抵抗は大きくなる。' },
-                        { num: 20, text: '高速回転でセンターワーク作業を行う場合は、回転センタを用いるとよい。' },
-                        { num: 21, text: 'テーパが1/20の穴を切削するとき、直径で0.2mmの研削代を残すには、下図に示すaの長さは、2mmである。' },
-                        { num: 22, text: '旋削において、同一の旋削条件では、理論上、工具先端部のコーナ半径が大きいほど面粗さは向上する。' },
-                        { num: 23, text: 'バイトのフランク摩耗は、仕上げ面に影響を及ぼす。' },
-                        { num: 24, text: '構成刃先を防ぐ方法の一つとして、切削速度を速くすることが挙げられる。' },
-                        { num: 25, text: '旋削において、バイトが原因でびびりが生じる場合は、一般に、バイトの突出し量を長くするとよい。' }
-                    ],
-                    B: [
-                        { num: 26, text: '下図の数値制御旋盤の座標軸①及び②の組合せとして、正しいものはどれか。', options: ['X軸 Z軸', 'X軸 Y軸', 'Y軸 X軸', 'Z軸 X軸'] },
-                        { num: 27, text: '研削といいの表示WA60K8Vに関する記述として、誤っているものはどれか。', options: ['WAは上粒の属類を示す。', '60は、集中度を示す。', 'Kは、結合度を示す。', 'Vは、結合剤の種類を示す。'] },
-                        { num: 28, text: '切削油剤における極圧添加剤の作用に関する記述として、正しいものはどれか。', options: ['潤滑作用を抑制する。', '仕上げ面を悪化させる。', '切削性を低下させる。', '切削熱を抑制する。'] },
-                        { num: 29, text: '文中の( )内に当てはまる語句として、適切なものはどれか。空気又は他の気体の流れの中に潤滑剤を注入することによって作られた霧状の潤滑剤をしゅう動面に供給する潤滑方式を( )という。', options: ['強制潤滑', '滴下潤滑', 'オイルミスト潤滑', '油浴潤滑'] },
-                        { num: 30, text: '次の油圧回路の弁のうち、流量制御弁で該当するものはどれか。', options: ['逆止め弁(チェック弁)', 'シャットル弁', '分流弁', '減圧弁'] },
-                        { num: 31, text: 'ジグ用ジグに関する記述として、誤っているものはどれか。', options: ['固定ジグは、ドリル用及びリーマ用として用いられる。', '巻込みジグには、左右回り切欠き形のジグがある。', 'ジグの硬さは30HRC以下とする。', 'つばなし固定ジグは、ジグの同一次の上下にも用いられる。'] },
-                        { num: 32, text: '次の測定器のうち、比較測定器はどれか。', options: ['ダイアルゲージ', 'デプスマイクロメータ', '直尺(ものさし)', 'ノギス'] },
-                        { num: 33, text: '品質管理に関する記述として、正しいものはどれか。', options: ['パレート図は、不良品等の発生数を原因別に左から少ない順に並べた図である。', '管理図は、工程に異常が発生しているかどうかを判定するために用いられる。', 'ヒストグラムは、間隔の現象を層別し、データを大きい順に並べる。', '特性要因図は、集めたデータを表に整理し、区間ごとに度数を数える。'] },
-                        { num: 34, text: '下図のうち、ねじ歯車はどれか。', options: ['三角ねじ', 'ボールねじ', '角ねじ', '台形ねじ'] },
-                        { num: 35, text: 'Vベルト伝動に関する記述として、正しいものはどれか。', options: ['Vベルトは、強い力を伝えるためクロスベルト(十字掛け)で使用するのが一般的である。', 'Vプーリの溝の角度は、直径の大小に関係なく40°である。', 'Vベルトは、平ベルトよりも溝がかかわないので、大きな動力を伝動することができる。', 'Vベルトは、平ベルトよりも短い軸間距離で大きな回転比をもたせることに適している。'] },
-                        { num: 36, text: 'ねじに関する記述として、誤っているものはどれか。', options: ['日本産業規格(JIS)によれば、一般用メートルねじのねじ山の角度は、55°である。', 'メートル細目ねじは、メートル並目ねじよりも谷が浅い。', 'ボールねじは、すべり接触の一般のねじに比べて伝動効率がよい。', 'リードとは、ねじを1回転したとき、ねじ上し1点が軸方向に移動する距離である。'] },
-                        { num: 37, text: '一般的なばが作業に関する記述として、誤っているものはどれか。', options: ['工作物を定盤上に定置して置くことができないときは、豆ジャッキ等を用いる。', '精密ばがきをするときは、ハイトゲージを用いる。', 'スコヤは、定盤に対して、垂直なばがき線を引くときにも使用される。', 'トーラスカンは、定盤上に設置した工作物の側面に当て垂直を確認するために使用する。'] },
-                        { num: 38, text: 'やすり仕上げに関する記述として、誤っているものはどれか。', options: ['やすり仕上げは、工作物の表面の凹凸をなくしたり、ばりを取ったりして、目的とする平面や曲面に仕上げる作業である。', '鉄工やすりの形状は、平、角、丸、半丸、三角がある。', '鉄工やすりは、荒目、中目、細目、油目の順に目が細かくなる。', '食い付きをよくするために、油を塗るとよい。'] },
-                        { num: 39, text: '溶接棒又は溶接材を使わない溶接はどれか。', options: ['被覆アーク溶接', 'ティグ溶接', 'ガス溶接', 'スポット溶接'] },
-                        { num: 40, text: '銅の性質に及ぼす元素の影響で、赤熱もろさ(赤熱脆性)の原因となるものはどれか。', options: ['マンガン', 'りん', 'けい素', '硫黄'] },
-                        { num: 41, text: '日本産業規格(JIS)によれば、金属製品を所定の高温状態から急冷する処理はどれか。', options: ['焼なまし', '焼戻し', '焼なまし', '焼入れ'] },
-                        { num: 42, text: '材料の非破壊試験でないものはどれか。', options: ['放射線透過試験', 'クリープ試験', '超音波探傷試験', '浸透探傷試験'] },
-                        { num: 43, text: '材料力学で力のモーメントの単位として使用されるものはどれか。', options: ['N・m', 'N/m²', 'kg/h', 'N'] },
-                        { num: 44, text: '日本産業規格(JIS)の機械製図における平行度の図示として、正しいものはどれか。', options: ['∧∧', '三=', '∧∧', '◇'] },
-                        { num: 45, text: '文中の( )内に当てはまる語句として、正しいものはどれか。日本産業規格(JIS)によれば、( )を表す種類の記号をFCD で表される。', options: ['球状黒鉛鋳鉄品', 'ねずみ鋳鉄品', '黒心可鍛鋳鉄品', '炭素鋼鋳鉄品'] }
-                    ]
-                }
-            },
-            2023: {
-                year: '令和5年度',
-                yearNum: 5,
-                answerKey: {
-                    A: ['×', '○', '×', '×', '○', '○', '○', '○', '×', '×', '○', '×', '×', '○', '○', '○', '×', '×', '×', '○', '○', '○', '○', '×', '×'],
-                    B: ['ハ', 'ハ', 'ハ', 'ハ', 'ロ', 'ハ', 'ロ', 'ロ', 'イ', 'イ', 'イ', 'ハ', 'ニ', 'ニ', 'ハ', 'ハ', 'ニ', 'ハ', 'ニ', 'ロ', 'ハ', 'ハ', 'ハ', 'ニ', 'イ']
-                },
-                questions: {
-                    A: [
-                        { num: 1, text: '数値制御旋盤における工具位置オフセット機能とは、バイトのノーズRを補正するための機能である。' },
-                        { num: 2, text: '普通旋盤の縦送りは、工作物の回転軸に平行となっている。' },
-                        { num: 3, text: '超硬バイトの寿命判定基準として、フランク摩耗の幅やクレータ摩耗の深さがある。' },
-                        { num: 4, text: '普通旋盤作業において、面板を用いて異形の工作物を取り付ける場合は、主軸の回転バランスを考慮する必要がある。' },
-                        { num: 5, text: '数値制御旋盤のベッド形状の一つにスラッドベッドがある。' },
-                        { num: 6, text: '日本産業規格(JIS)によれば、刃先交換チップの形状は、正三角形、正方形及び正六角形の3種類である。' },
-                        { num: 7, text: '日本産業規格(JIS)によれば、コーティング工具とは、刃部の材料の表面に、炭化物、窒化物、酸化物、ダイヤモンドなどを一層又は多層に、化学的又は物理的に被覆させた工具材料を使用した工具である。' },
-                        { num: 8, text: '数値制御工作機械において自動運転中であっても、送り(速度)オーバーライドにより、NC指令された主軸回転速度を変更することができる。' },
-                        { num: 9, text: 'スパイラルポイントタップは、止まり穴のねじ加工に適している。' },
-                        { num: 10, text: 'ドリルのバックテーパは、切りくずの排出をよくするために付けてである。' },
-                        { num: 11, text: '鋳鉄を切削する場合の切削用超硬質工具材料は、融別記号Pの方がP30より硬い。' },
-                        { num: 12, text: '超硬バイトの切れ刃のエッジを、寿命を延ばすためにハンドラッパで軽くラッピングする方法がある。' },
-                        { num: 13, text: 'セラミック工具は、超硬工具と比較して、じん性が劣っている。' },
-                        { num: 14, text: '日本産業規格(JIS)によれば、刃先交換チップのチップ厚さは、チップの下面から切れ刃までの高さとしている。' },
-                        { num: 15, text: '同一材料の切削において、通常、切削速度を上げても切削温度は変化しない。' },
-                        { num: 16, text: '超硬バイトにクレータ摩耗が生じた場合、刃先が欠けやすくなる。' },
-                        { num: 17, text: '普通旋盤では、チェーザによるねじ切り加工はできない。' },
-                        { num: 18, text: '日本産業規格(JIS)によれば、加工における切りくずの生成形態は、流れ形とせん断形の2形態に分類されている。' },
-                        { num: 19, text: 'バイトのすくい角が大きいほど、切削抵抗は大きくなる。' },
-                        { num: 20, text: '高速回転でセンターワーク作業を行う場合は、回転センタを用いるとよい。' },
-                        { num: 21, text: 'テーパが1/20の穴を切削するとき、直径で0.2mmの研削代を残すには、下図に示すaの長さは、2mmである。' },
-                        { num: 22, text: '旋削において、同一の旋削条件では、理論上、工具先端部のコーナ半径が大きいほど面粗さは向上する。' },
-                        { num: 23, text: 'バイトのフランク摩耗は、仕上げ面に影響を及ぼす。' },
-                        { num: 24, text: '構成刃先を防ぐ方法の一つとして、切削速度を速くすることが挙げられる。' },
-                        { num: 25, text: '旋削において、バイトが原因でびびりが生じる場合は、一般に、バイトの突出し量を長くするとよい。' }
-                    ],
-                    B: Array(25).fill(null).map((_, i) => ({ num: 26 + i, text: `B問題${26 + i}番の問題文`, options: ['イ', 'ロ', 'ハ', 'ニ'] }))
-                }
-            },
-            2024: {
-                year: '令和6年度',
-                yearNum: 6,
-                answerKey: {
-                    A: ['×', '○', '×', '×', '○', '○', '○', '○', '×', '×', '○', '×', '×', '○', '○', '○', '×', '×', '×', '○', '○', '○', '○', '×', '×'],
-                    B: ['ハ', 'ハ', 'ハ', 'ハ', 'ロ', 'ハ', 'ロ', 'ロ', 'イ', 'イ', 'イ', 'ハ', 'ニ', 'ニ', 'ハ', 'ハ', 'ニ', 'ハ', 'ニ', 'ロ', 'ハ', 'ハ', 'ハ', 'ニ', 'イ']
-                },
-                questions: {
-                    A: Array(25).fill(null).map((_, i) => ({ num: 1 + i, text: `A問題${1 + i}番の問題文` })),
-                    B: Array(25).fill(null).map((_, i) => ({ num: 26 + i, text: `B問題${26 + i}番の問題文`, options: ['イ', 'ロ', 'ハ', 'ニ'] }))
-                }
-            },
-            2025: {
-                year: '令和7年度',
-                yearNum: 7,
-                answerKey: {
-                    A: ['×', '○', '×', '×', '○', '○', '○', '○', '×', '×', '○', '×', '×', '○', '○', '○', '×', '×', '×', '○', '○', '○', '○', '×', '×'],
-                    B: ['○', '×', '○', '○', '○', '×', '×', '○', '○', 'ハ', 'ハ', '×', '×', '○', '×', 'ハ', 'ハ', 'ハ', 'ハ', 'ロ', 'ハ', 'ロ', 'ロ', 'イ', 'イ']
-                },
-                questions: {
-                    A: Array(25).fill(null).map((_, i) => ({ num: 1 + i, text: `A問題${1 + i}番の問題文` })),
-                    B: Array(25).fill(null).map((_, i) => ({ num: 26 + i, text: `B問題${26 + i}番の問題文`, options: ['イ', 'ロ', 'ハ', 'ニ'] }))
-                }
-            }
-        };
+        <div id="setupArea" class="setup-area">
+            <label for="yearSelect">実施年度を選択: </label>
+            <select id="yearSelect"></select>
+            <button class="start-btn" onclick="startExam()">試験開始</button>
+        </div>
 
-        // ===== ログイン処理 =====
-        function login(e) {
-            e.preventDefault();
-            const birthday = document.getElementById('birthday').value;
-            
-            if (birthday.length !== 8 || isNaN(birthday)) {
-                alert('正しい誕生日（8桁）を入力してください');
-                return;
-            }
-            
-            currentUser = birthday;
-            updateUserDisplay();
-            showSection('select-section');
-        }
+        <div id="examArea" class="exam-area">
+            <div class="statusbar">
+                <span id="currentProgress">問題 1 / 50</span>
+                <span id="timer" class="timer">⏱ 1:40:00</span>
+            </div>
 
-        function logout() {
-            currentUser = null;
-            currentYear = null;
-            answers = {};
-            showSection('login-section');
-        }
+            <div id="navGrid" class="nav-grid"></div>
 
-        // ===== 年度選択 =====
-        function selectYear(year) {
-            currentYear = year;
-            answers = {};
-            quizData = questionsData[year];
-            
-            // ボタンのハイライト更新
-            document.querySelectorAll('.year-btn').forEach(btn => btn.classList.remove('selected'));
-            event.target.classList.add('selected');
-            
-            // 問題読み込み
-            loadQuiz();
-        }
-
-        // ===== 問題読み込みと表示 =====
-        function loadQuiz() {
-            currentQuestion = 0;
-            showQuestion();
-            showSection('quiz-section');
-            startTime = Date.now();
-            startTimer();
-        }
-
-        function showQuestion() {
-            const totalQuestions = 50;
-            const progressPercent = ((currentQuestion + 1) / totalQuestions) * 100;
-            document.getElementById('progressBar').style.width = progressPercent + '%';
-            document.getElementById('currentQuestion').textContent = currentQuestion + 1;
-            document.getElementById('totalQuestion').textContent = totalQuestions;
-            
-            const isGroupA = currentQuestion < 25;
-            const questionIndex = currentQuestion % 25;
-            const groupKey = isGroupA ? 'A' : 'B';
-            const question = quizData.questions[groupKey][questionIndex];
-            const groupLabel = isGroupA ? 'A問題（真偽法）' : 'B問題（多肢選一法）';
-            
-            let htmlContent = `
-                <div class="question-block">
-                    <div class="question-number">${groupLabel} - 第${question.num}問</div>
-                    <div class="question-text">${question.text}</div>
-                    <div class="options">
-            `;
-            
-            let answerKey;
-            if (isGroupA) {
-                // 真偽法
-                answerKey = ['×', '○'];
-                const selected = answers[currentQuestion] || '';
-                answerKey.forEach((option, idx) => {
-                    const id = `option-${currentQuestion}-${idx}`;
-                    const checked = selected === option ? 'checked' : '';
-                    htmlContent += `
-                        <label class="option">
-                            <input type="radio" name="question-${currentQuestion}" value="${option}" id="${id}" 
-                                   ${checked} onchange="saveAnswer(${currentQuestion}, '${option}')">
-                            <label for="${id}" style="margin: 0;">${option}</label>
-                        </label>
-                    `;
-                });
-            } else {
-                // 多肢選一法
-                answerKey = ['イ', 'ロ', 'ハ', 'ニ'];
-                const selected = answers[currentQuestion] || '';
-                answerKey.forEach((option, idx) => {
-                    const id = `option-${currentQuestion}-${idx}`;
-                    const checked = selected === option ? 'checked' : '';
-                    htmlContent += `
-                        <label class="option">
-                            <input type="radio" name="question-${currentQuestion}" value="${option}" id="${id}" 
-                                   ${checked} onchange="saveAnswer(${currentQuestion}, '${option}')">
-                            <label for="${id}" style="margin: 0;">${option}</label>
-                        </label>
-                    `;
-                });
-            }
-            
-            htmlContent += '</div></div>';
-            document.getElementById('quizContainer').innerHTML = htmlContent;
-            
-            // ボタンの有効/無効
-            document.getElementById('prevBtn').disabled = currentQuestion === 0;
-            document.getElementById('nextBtn').disabled = currentQuestion === 49;
-            
-            updateUserDisplay('quizUserDisplay');
-            document.getElementById('quizYearDisplay').textContent = quizData.yearNum;
-        }
-
-        function nextQuestion() {
-            if (currentQuestion < 49) {
-                currentQuestion++;
-                showQuestion();
-            }
-        }
-
-        function previousQuestion() {
-            if (currentQuestion > 0) {
-                currentQuestion--;
-                showQuestion();
-            }
-        }
-
-        function saveAnswer(questionNum, answer) {
-            answers[questionNum] = answer;
-        }
-
-        // ===== 採点 =====
-        function submitQuiz() {
-            let scoreA = 0;
-            let scoreB = 0;
-            
-            // A問題（0-24）
-            for (let i = 0; i < 25; i++) {
-                if (answers[i] === quizData.answerKey.A[i]) {
-                    scoreA += 2;
-                }
-            }
-            
-            // B問題（25-49）
-            for (let i = 25; i < 50; i++) {
-                if (answers[i] === quizData.answerKey.B[i - 25]) {
-                    scoreB += 2;
-                }
-            }
-            
-            const totalScore = scoreA + scoreB;
-            const passed = totalScore >= 60;
-            
-            // 履歴に保存
-            saveToHistory(scoreA, scoreB, totalScore, passed);
-            
-            // 結果表示
-            showResult(scoreA, scoreB, totalScore, passed);
-        }
-
-        function showResult(scoreA, scoreB, totalScore, passed) {
-            const passMessage = passed ? 
-                '<div class="pass-badge">✓ 合格</div>' : 
-                '<div class="fail-badge">✗ 不合格</div>';
-            
-            document.getElementById('passMessage').innerHTML = passMessage;
-            document.getElementById('totalScoreDisplay').textContent = totalScore + '/100';
-            document.getElementById('scoreA').textContent = scoreA;
-            document.getElementById('scoreB').textContent = scoreB;
-            
-            // 解答確認
-            let reviewHTML = '';
-            for (let i = 0; i < 50; i++) {
-                const isGroupA = i < 25;
-                const correctAnswer = isGroupA ? 
-                    quizData.answerKey.A[i] : 
-                    quizData.answerKey.B[i - 25];
-                const userAnswer = answers[i] || '未解答';
-                const isCorrect = userAnswer === correctAnswer;
-                const statusClass = isCorrect ? 'correct' : 'incorrect';
-                const statusIcon = isCorrect ? '✓' : '✗';
-                const groupLabel = isGroupA ? 'A' : 'B';
+            <div class="question-card">
+                <div id="qHeader" class="q-header">A群：真偽法（第 1 問）</div>
+                <div id="qText" class="q-text">問題文がここに表示されます。</div>
+                <img id="qImage" class="q-image" src="" alt="問題画像" style="display:none;">
                 
-                reviewHTML += `
-                    <div class="answer-item ${statusClass}">
-                        <strong>${groupLabel}問題${isGroupA ? i + 1 : i - 24}:</strong> 
-                        あなたの答え: <strong>${userAnswer}</strong> 
-                        → 正答: <strong>${correctAnswer}</strong> 
-                        <strong style="float: right;">${statusIcon}</strong>
-                    </div>
-                `;
+                <div id="optionsContainer" class="options-container"></div>
+            </div>
+
+            <div class="ctrl-btns">
+                <button class="action-btn prev-btn" onclick="prevQuestion()">前の問題</button>
+                <button id="nextBtn" class="action-btn next-btn" onclick="nextQuestion()">次の問題</button>
+                <button class="action-btn submit-btn" onclick="confirmSubmit()">解答を提出する</button>
+            </div>
+        </div>
+
+        <div id="resultArea" class="result-area">
+            <div class="result-score" id="resultScore"></div>
+            <button class="start-btn" onclick="backToSetup()" style="background:#007bff;">トップに戻る</button>
+            
+            <div class="history-list">
+                <h3>過去の挑戦履歴</h3>
+                <div id="historyLogs"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+
+<script>
+    let currentYear = "";
+    let currentQuestions = [];
+    let userAnswers = {};
+    let currentIndex = 0;
+    let timerInterval = null;
+    let timeLeft = 6000; // 1時間40分 = 100分 = 6000秒
+
+    window.onload = function() {
+        checkLogin();
+    };
+
+    function checkLogin() {
+        const birthday = localStorage.getItem('senban_user_birthday');
+        if (birthday && birthday.length === 8) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'flex';
+            
+            const y = birthday.substring(0, 4);
+            const m = birthday.substring(4, 6);
+            const d = birthday.substring(6, 8);
+            document.getElementById('userDisplay').textContent = `👤 ${y}年${m}月${d}日生まれ`;
+            
+            initYearSelect();
+            showHistory();
+        } else {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+    }
+
+    function login() {
+        const input = document.getElementById('birthdayInput').value.trim();
+        if (/^\d{8}$/.test(input)) {
+            localStorage.setItem('senban_user_birthday', input);
+            checkLogin();
+        } else {
+            alert('生年月日は8桁の半角数字（西暦）で入力してください。例: 19790829');
+        }
+    }
+
+    function logout() {
+        if(confirm('ログアウトしますか？実績データはブラウザに保持されます。')) {
+            localStorage.removeItem('senban_user_birthday');
+            checkLogin();
+        }
+    }
+
+    function initYearSelect() {
+        const select = document.getElementById('yearSelect');
+        select.innerHTML = "";
+        if (typeof examData !== 'undefined') {
+            for (let year in examData) {
+                let opt = document.createElement('option');
+                opt.value = year;
+                opt.textContent = examData[year].title;
+                select.appendChild(opt);
             }
-            
-            document.getElementById('reviewContainer').innerHTML = reviewHTML;
-            showSection('result-section');
+        } else {
+            let opt = document.createElement('option');
+            opt.textContent = "データファイル (questions.js) が見つかりません";
+            select.appendChild(opt);
         }
+    }
 
-        // ===== 履歴管理 =====
-        function saveToHistory(scoreA, scoreB, totalScore, passed) {
-            let history = JSON.parse(localStorage.getItem(`history_${currentUser}`) || '[]');
-            
-            history.push({
-                date: new Date().toLocaleString('ja-JP'),
-                year: currentYear,
-                yearDisplay: quizData.year,
-                scoreA: scoreA,
-                scoreB: scoreB,
-                totalScore: totalScore,
-                passed: passed
-            });
-            
-            localStorage.setItem(`history_${currentUser}`, JSON.stringify(history));
-        }
+    function startExam() {
+        const select = document.getElementById('yearSelect');
+        currentYear = select.value;
+        if (!currentYear || !examData[currentYear]) return;
 
-        function showHistory() {
-            const history = JSON.parse(localStorage.getItem(`history_${currentUser}`) || '[]');
-            let html = '';
-            
-            if (history.length === 0) {
-                html = '<div class="no-data">📝 まだ解いた問題がありません</div>';
-            } else {
-                html = `
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>実施日時</th>
-                                <th>年度</th>
-                                <th>A問題</th>
-                                <th>B問題</th>
-                                <th>合計</th>
-                                <th>合否</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-                
-                history.forEach(record => {
-                    const badgeClass = record.passed ? 'pass' : 'fail';
-                    const badgeText = record.passed ? '合格' : '不合格';
-                    html += `
-                        <tr>
-                            <td>${record.date}</td>
-                            <td>${record.yearDisplay}</td>
-                            <td>${record.scoreA}点</td>
-                            <td>${record.scoreB}点</td>
-                            <td><strong>${record.totalScore}点</strong></td>
-                            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                        </tr>
-                    `;
-                });
-                
-                html += '</tbody></table>';
+        // 配列の順番通りにセット（シャッフルなし）
+        currentQuestions = examData[currentYear].questions;
+        userAnswers = {};
+        currentIndex = 0;
+        timeLeft = 6000; // 1時間40分固定
+
+        document.getElementById('setupArea').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'none';
+        document.getElementById('examArea').style.display = 'block';
+
+        buildNavGrid();
+        showQuestion(0);
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('制限時間になりました。自動的に提出します。');
+                submitExam();
             }
-            
-            document.getElementById('historyContainer').innerHTML = html;
-            showSection('history-section');
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const h = Math.floor(timeLeft / 3600);
+        const m = Math.floor((timeLeft % 3600) / 60);
+        const s = timeLeft % 60;
+        document.getElementById('timer').textContent = `⏱ ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+
+    function buildNavGrid() {
+        const grid = document.getElementById('navGrid');
+        grid.innerHTML = "";
+        currentQuestions.forEach((q, index) => {
+            let item = document.createElement('div');
+            item.className = 'nav-item';
+            item.id = `nav-${index}`;
+            item.textContent = q.id;
+            item.onclick = () => showQuestion(index);
+            grid.appendChild(item);
+        });
+    }
+
+    function showQuestion(index) {
+        currentIndex = index;
+        const q = currentQuestions[index];
+
+        // ナビゲーション表示の更新
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('current'));
+        document.getElementById(`nav-${index}`).classList.add('current');
+
+        document.getElementById('currentProgress').textContent = `問題 ${index + 1} / ${currentQuestions.length}`;
+        
+        // ヘッダー情報切替
+        if (q.group === "A") {
+            document.getElementById('qHeader').textContent = `A群：真偽法（第 ${q.id} 問）`;
+        } else {
+            document.getElementById('qHeader').textContent = `B群：多肢択一法（第 ${q.id} 問）`;
         }
 
-        // ===== UI操作 =====
-        function showSection(sectionName) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelector('.' + sectionName).classList.add('active');
+        document.getElementById('qText').textContent = q.text;
+
+        // 画像表示（A案：パスがあれば表示、なければ非表示）
+        const imgEl = document.getElementById('qImage');
+        if (q.image) {
+            imgEl.src = q.image;
+            imgEl.style.display = 'block';
+        } else {
+            imgEl.style.display = 'none';
         }
 
-        function retakeQuiz() {
-            selectYear(currentYear);
-        }
+        // 回答ボタン生成
+        const optContainer = document.getElementById('optionsContainer');
+        optContainer.innerHTML = "";
 
-        function backToSelect() {
-            showSection('select-section');
-            updateUserDisplay();
-        }
+        q.options.forEach(opt => {
+            let btn = document.createElement('button');
+            btn.className = 'option-btn';
+            if (userAnswers[q.id] === opt) btn.classList.add('selected');
+            btn.textContent = opt;
+            btn.onclick = () => selectAnswer(q.id, opt, index);
+            optContainer.appendChild(btn);
+        });
 
-        function updateUserDisplay(elementId = 'userDisplay') {
-            if (currentUser) {
-                const year = currentUser.substring(0, 4);
-                const month = currentUser.substring(4, 6);
-                const day = currentUser.substring(6, 8);
-                const displayText = `👤 ${year}年${month}月${day}日生まれ`;
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = displayText;
-                }
+        // ボタンの表示制御
+        document.getElementById('nextBtn').style.display = (index === currentQuestions.length - 1) ? 'none' : 'inline-block';
+    }
+
+    function selectAnswer(qId, val, index) {
+        userAnswers[qId] = val;
+        document.getElementById(`nav-${index}`).classList.add('answered');
+        showQuestion(index);
+    }
+
+    function prevQuestion() {
+        if (currentIndex > 0) showQuestion(currentIndex - 1);
+    }
+
+    function nextQuestion() {
+        if (currentIndex < currentQuestions.length - 1) showQuestion(currentIndex + 1);
+    }
+
+    function confirmSubmit() {
+        const unanswered = currentQuestions.filter(q => !userAnswers[q.id]).length;
+        let msg = '解答を提出して採点しますか？';
+        if (unanswered > 0) {
+            msg = `未解答の問題が ${unanswered} 問あります。提出してよろしいですか？`;
+        }
+        if (confirm(msg)) {
+            submitExam();
+        }
+    }
+
+    function submitExam() {
+        clearInterval(timerInterval);
+        let correctCount = 0;
+        
+        currentQuestions.forEach(q => {
+            if (userAnswers[q.id] === q.answer) {
+                correctCount++;
             }
-        }
+        });
 
-        // ===== タイマー =====
-        function startTimer() {
-            const timerElement = document.getElementById('timer');
-            const updateTimer = () => {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const remaining = timeLimit - elapsed;
-                
-                if (remaining <= 0) {
-                    timerElement.textContent = '時間です！';
-                    timerElement.style.color = '#f44336';
-                    return;
-                }
-                
-                const minutes = Math.floor(remaining / 60);
-                const seconds = remaining % 60;
-                timerElement.textContent = `⏱ ${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (remaining < 300) {
-                    timerElement.style.color = '#ff9800';
-                } else if (remaining < 600) {
-                    timerElement.style.color = '#f44336';
-                }
-                
-                setTimeout(updateTimer, 1000);
-            };
-            updateTimer();
+        // 1問2点の100点満点計算
+        const score = Math.round((correctCount / currentQuestions.length) * 100);
+        
+        document.getElementById('examArea').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'block';
+        document.getElementById('resultScore').innerHTML = `採点結果: ${correctCount} / ${currentQuestions.length} 問正解<br><span style="font-size:32px; color:#dc3545;">${score} 点 / 100点満点</span>`;
+
+        // 履歴保存
+        saveHistory(currentYear, score);
+        showHistory();
+        document.getElementById('setupArea').style.display = 'block';
+    }
+
+    function saveHistory(year, score) {
+        let logs = JSON.parse(localStorage.getItem('senban_history')) || [];
+        const now = new Date();
+        const timeStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+        logs.unshift({
+            date: timeStr,
+            title: examData[year].title,
+            score: score
+        });
+        localStorage.setItem('senban_history', JSON.stringify(logs));
+    }
+
+    function showHistory() {
+        const logs = JSON.parse(localStorage.getItem('senban_history')) || [];
+        const container = document.getElementById('historyLogs');
+        container.innerHTML = "";
+        if(logs.length === 0) {
+            container.textContent = "まだ挑戦履歴はありません。";
+            return;
         }
-    </script>
+        logs.forEach(log => {
+            let item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `<span>${log.date} - ${log.title}</span><strong>${log.score}点</strong>`;
+            container.appendChild(item);
+        });
+    }
+
+    function backToSetup() {
+        document.getElementById('resultArea').style.display = 'none';
+        document.getElementById('setupArea').style.display = 'flex';
+    }
+</script>
 </body>
 </html>
