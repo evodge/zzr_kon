@@ -2,65 +2,79 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>機械加工技能検定２級学科試験 練習システム</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 10px; }
         .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; text-align: center; position: relative; }
-        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 15px; text-align: center; }
+        .header h1 { font-size: 20px; margin-bottom: 5px; }
+        .header p { font-size: 13px; opacity: 0.9; }
         
         /* ログイン画面 */
-        .login-screen { padding: 40px; text-align: center; }
-        .login-box { max-width: 400px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #ddd; }
-        .login-box h2 { margin-bottom: 20px; font-size: 18px; color: #1e3c72; }
-        .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; text-align: center; }
+        .login-screen { padding: 30px 15px; text-align: center; }
+        .login-box { max-width: 400px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #ddd; }
+        .login-box h2 { margin-bottom: 15px; font-size: 16px; color: #1e3c72; line-height: 1.4; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; text-align: center; -webkit-appearance: none; }
         .login-box button { width: 100%; padding: 12px; background: #2a5298; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .login-box button:hover { background: #1e3c72; }
 
-        /* メイン画面 */
-        .user-info { display: flex; justify-content: space-between; background: #e9ecef; padding: 10px 20px; font-size: 14px; font-weight: bold; border-bottom: 1px solid #dee2e6; }
-        .quiz-layout { display: flex; flex-direction: column; padding: 20px; }
-        .setup-area { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e3e6f0; display: flex; gap: 15px; align-items: center; }
-        .setup-area select { padding: 8px 12px; font-size: 15px; border-radius: 4px; }
-        .start-btn { padding: 8px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        /* メイン画面・ユーザー情報 */
+        .user-info { display: flex; justify-content: space-between; background: #e9ecef; padding: 10px 15px; font-size: 13px; font-weight: bold; border-bottom: 1px solid #dee2e6; }
+        .quiz-layout { display: flex; flex-direction: column; padding: 15px; }
+        
+        /* 【重要】設定エリアのスマホ最適化（横幅が狭いと縦並びに自動変化） */
+        .setup-area { margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e3e6f0; display: flex; flex-direction: column; gap: 12px; }
+        .setup-area label { font-size: 15px; font-weight: bold; color: #4e73df; }
+        .setup-area select { width: 100%; padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; background-color: #fff; }
+        .start-btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         /* 試験エリア */
         .exam-area { display: none; }
-        .statusbar { display: flex; justify-content: space-between; align-items: center; background: #fff3cd; color: #856404; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: bold; }
-        .timer { font-size: 18px; color: #dc3545; }
+        .statusbar { display: flex; justify-content: space-between; align-items: center; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
+        .timer { font-size: 16px; color: #dc3545; font-weight: bold; }
         
-        /* 問題ナビゲーション */
-        .nav-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 6px; }
-        .nav-item { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        /* 問題ナビゲーション（スマホでもはみ出さないように折り返し） */
+        .nav-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; justify-content: flex-start; }
+        .nav-item { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .nav-item.answered { background: #6c757d; color: white; border-color: #6c757d; }
-        .nav-item.current { border: 2px solid #007bff; color: #007bff; }
+        .nav-item.current { border: 2px solid #007bff; color: #007bff; background: #e7f1ff; }
 
         /* 問題カード */
-        .question-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .q-header { font-size: 16px; font-weight: bold; color: #4e73df; margin-bottom: 15px; border-bottom: 2px solid #4e73df; padding-bottom: 5px; }
-        .q-text { font-size: 18px; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
-        .q-image { max-width: 100%; height: auto; margin-bottom: 20px; border: 1px solid #ddd; display: block; }
+        .question-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .q-header { font-size: 15px; font-weight: bold; color: #4e73df; margin-bottom: 12px; border-bottom: 2px solid #4e73df; padding-bottom: 5px; }
+        .q-text { font-size: 16px; line-height: 1.5; margin-bottom: 15px; white-space: pre-wrap; word-break: break-all; }
+        .q-image { max-width: 100%; height: auto; margin-bottom: 15px; border: 1px solid #ddd; display: block; margin-left: auto; margin-right: auto; }
         
-        /* 回答ボタン */
-        .options-container { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
-        .option-btn { flex: 1; min-width: 120px; padding: 15px; font-size: 18px; font-weight: bold; background: #f8f9fa; border: 2px solid #ced4da; border-radius: 6px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        /* 回答ボタン（横2列、スマホで押しやすいサイズ） */
+        .options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .option-btn { padding: 15px 10px; font-size: 16px; font-weight: bold; background: #f8f9fa; border: 2px solid #ced4da; border-radius: 6px; cursor: pointer; text-align: center; -webkit-appearance: none; }
         .option-btn:hover { background: #e2e6ea; }
         .option-btn.selected { background: #4e73df; color: white; border-color: #4e73df; }
 
-        /* 制御ボタン */
-        .ctrl-btns { display: flex; justify-content: space-between; margin-top: 20px; }
-        .action-btn { padding: 12px 25px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+        /* 下部制御ボタン（縦並びを防ぎ、綺麗に配置） */
+        .ctrl-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; }
+        .action-btn { flex: 1; padding: 12px 5px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-align: center; }
         .prev-btn { background: #6c757d; color: white; }
         .next-btn { background: #007bff; color: white; }
-        .submit-btn { background: #dc3545; color: white; margin-left: auto; }
+        .submit-btn { background: #dc3545; color: white; }
 
         /* 結果表示 */
-        .result-area { display: none; padding: 20px; background: #fff; border-radius: 8px; border: 1px solid #dee2e6; }
-        .result-score { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #28a745; }
+        .result-area { display: none; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #dee2e6; }
+        .result-score { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #28a745; line-height: 1.4; }
         .history-list { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
+
+        /* PCやタブレットなど広い画面向けの調整 */
+        @media (min-width: 600px) {
+            body { padding: 20px; }
+            .header h1 { font-size: 24px; }
+            .setup-area { flex-direction: row; align-items: center; justify-content: space-between; }
+            .setup-area select { width: auto; flex-grow: 1; }
+            .start-btn { width: auto; padding: 12px 30px; }
+            .option-btn { font-size: 18px; padding: 18px; }
+            .action-btn { flex: none; padding: 12px 25px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -68,25 +82,25 @@
 <div class="container">
     <div class="header">
         <h1>機械加工技能検定２級学科試験 練習システム</h1>
-        <p>普通旋盤作業・数値制御旋盤作業 対応</p>
+        <p>普通旋盤作業・数値制御旋盤作業 過去問完全版</p>
     </div>
 
     <div id="loginScreen" class="login-screen">
         <div class="login-box">
             <h2>生年月日を8桁の西暦で入力してください</h2>
-            <input type="text" id="birthdayInput" placeholder="例: 19790829" maxlength="8">
+            <input type="tel" id="birthdayInput" placeholder="例: 19790829" maxlength="8">
             <button onclick="login()">ログイン</button>
         </div>
     </div>
 
     <div id="mainScreen" class="quiz-layout" style="display:none;">
         <div class="user-info">
-            <span id="userDisplay">👤 ユーザー: </span>
+            <span id="userDisplay">👤 ユーザー</span>
             <span id="logoutBtn" style="color:#dc3545; cursor:pointer;" onclick="logout()">ログアウト</span>
         </div>
 
         <div id="setupArea" class="setup-area">
-            <label for="yearSelect">実施年度を選択: </label>
+            <label for="yearSelect">実施年度を選択</label>
             <select id="yearSelect"></select>
             <button class="start-btn" onclick="startExam()">試験開始</button>
         </div>
@@ -100,24 +114,22 @@
             <div id="navGrid" class="nav-grid"></div>
 
             <div class="question-card">
-                <div id="qHeader" class="q-header">A群：真偽法（第 1 問）</div>
-                <div id="qText" class="q-text">問題文がここに表示されます。</div>
+                <div id="qHeader" class="q-header">A群：真偽法</div>
+                <div id="qText" class="q-text">問題文</div>
                 <img id="qImage" class="q-image" src="" alt="問題画像" style="display:none;">
-                
                 <div id="optionsContainer" class="options-container"></div>
             </div>
 
             <div class="ctrl-btns">
                 <button class="action-btn prev-btn" onclick="prevQuestion()">前の問題</button>
                 <button id="nextBtn" class="action-btn next-btn" onclick="nextQuestion()">次の問題</button>
-                <button class="action-btn submit-btn" onclick="confirmSubmit()">解答を提出する</button>
+                <button class="action-btn submit-btn" onclick="confirmSubmit()">提出</button>
             </div>
         </div>
 
         <div id="resultArea" class="result-area">
             <div class="result-score" id="resultScore"></div>
-            <button class="start-btn" onclick="backToSetup()" style="background:#007bff;">トップに戻る</button>
-            
+            <button class="start-btn" onclick="backToSetup()" style="background:#007bff; margin-bottom:20px;">トップに戻る</button>
             <div class="history-list">
                 <h3>過去の挑戦履歴</h3>
                 <div id="historyLogs"></div>
@@ -127,251 +139,48 @@
 </div>
 
 <script src="questions.js"></script>
-
 <script>
-    let currentYear = "";
-    let currentQuestions = [];
-    let userAnswers = {};
-    let currentIndex = 0;
-    let timerInterval = null;
-    let timeLeft = 6000; // 1時間40分 = 100分 = 6000秒
-
-    window.onload = function() {
-        checkLogin();
-    };
-
+    let currentYear = ""; let currentQuestions = []; let userAnswers = {}; let currentIndex = 0; let timerInterval = null; let timeLeft = 6000;
+    window.onload = function() { checkLogin(); };
     function checkLogin() {
         const birthday = localStorage.getItem('senban_user_birthday');
         if (birthday && birthday.length === 8) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'flex';
-            
-            const y = birthday.substring(0, 4);
-            const m = birthday.substring(4, 6);
-            const d = birthday.substring(6, 8);
-            document.getElementById('userDisplay').textContent = `👤 ${y}年${m}月${d}日生まれ`;
-            
-            initYearSelect();
-            showHistory();
+            document.getElementById('userDisplay').textContent = `👤 ${birthday.substring(0,4)}年${birthday.substring(4,6)}月${birthday.substring(6,8)}日`;
+            initYearSelect(); showHistory();
         } else {
             document.getElementById('loginScreen').style.display = 'block';
             document.getElementById('mainScreen').style.display = 'none';
         }
     }
-
     function login() {
         const input = document.getElementById('birthdayInput').value.trim();
-        if (/^\d{8}$/.test(input)) {
-            localStorage.setItem('senban_user_birthday', input);
-            checkLogin();
-        } else {
-            alert('生年月日は8桁の半角数字（西暦）で入力してください。例: 19790829');
-        }
+        if (/^\d{8}$/.test(input)) { localStorage.setItem('senban_user_birthday', input); checkLogin(); }
+        else { alert('8桁の半角数字で入力してください。'); }
     }
-
-    function logout() {
-        if(confirm('ログアウトしますか？実績データはブラウザに保持されます。')) {
-            localStorage.removeItem('senban_user_birthday');
-            checkLogin();
-        }
-    }
-
+    function logout() { if(confirm('ログアウトしますか？')) { localStorage.removeItem('senban_user_birthday'); checkLogin(); } }
     function initYearSelect() {
-        const select = document.getElementById('yearSelect');
-        select.innerHTML = "";
+        const select = document.getElementById('yearSelect'); select.innerHTML = "";
         if (typeof examData !== 'undefined') {
             for (let year in examData) {
-                let opt = document.createElement('option');
-                opt.value = year;
-                opt.textContent = examData[year].title;
-                select.appendChild(opt);
+                let opt = document.createElement('option'); opt.value = year; opt.textContent = examData[year].title; select.appendChild(opt);
             }
         } else {
-            let opt = document.createElement('option');
-            opt.textContent = "データファイル (questions.js) が見つかりません";
-            select.appendChild(opt);
+            let opt = document.createElement('option'); opt.textContent = "questions.jsが見つかりません"; select.appendChild(opt);
         }
     }
-
     function startExam() {
-        const select = document.getElementById('yearSelect');
-        currentYear = select.value;
+        const select = document.getElementById('yearSelect'); currentYear = select.value;
         if (!currentYear || !examData[currentYear]) return;
-
-        // 配列の順番通りにセット（シャッフルなし）
-        currentQuestions = examData[currentYear].questions;
-        userAnswers = {};
-        currentIndex = 0;
-        timeLeft = 6000; // 1時間40分固定
-
+        currentQuestions = examData[currentYear].questions; userAnswers = {}; currentIndex = 0; timeLeft = 6000;
         document.getElementById('setupArea').style.display = 'none';
         document.getElementById('resultArea').style.display = 'none';
         document.getElementById('examArea').style.display = 'block';
-
-        buildNavGrid();
-        showQuestion(0);
-        startTimer();
+        buildNavGrid(); showQuestion(0); startTimer();
     }
-
     function startTimer() {
         clearInterval(timerInterval);
-        updateTimerDisplay();
         timerInterval = setInterval(() => {
             timeLeft--;
-            updateTimerDisplay();
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert('制限時間になりました。自動的に提出します。');
-                submitExam();
-            }
-        }, 1000);
-    }
-
-    function updateTimerDisplay() {
-        const h = Math.floor(timeLeft / 3600);
-        const m = Math.floor((timeLeft % 3600) / 60);
-        const s = timeLeft % 60;
-        document.getElementById('timer').textContent = `⏱ ${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-
-    function buildNavGrid() {
-        const grid = document.getElementById('navGrid');
-        grid.innerHTML = "";
-        currentQuestions.forEach((q, index) => {
-            let item = document.createElement('div');
-            item.className = 'nav-item';
-            item.id = `nav-${index}`;
-            item.textContent = q.id;
-            item.onclick = () => showQuestion(index);
-            grid.appendChild(item);
-        });
-    }
-
-    function showQuestion(index) {
-        currentIndex = index;
-        const q = currentQuestions[index];
-
-        // ナビゲーション表示の更新
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('current'));
-        document.getElementById(`nav-${index}`).classList.add('current');
-
-        document.getElementById('currentProgress').textContent = `問題 ${index + 1} / ${currentQuestions.length}`;
-        
-        // ヘッダー情報切替
-        if (q.group === "A") {
-            document.getElementById('qHeader').textContent = `A群：真偽法（第 ${q.id} 問）`;
-        } else {
-            document.getElementById('qHeader').textContent = `B群：多肢択一法（第 ${q.id} 問）`;
-        }
-
-        document.getElementById('qText').textContent = q.text;
-
-        // 画像表示（A案：パスがあれば表示、なければ非表示）
-        const imgEl = document.getElementById('qImage');
-        if (q.image) {
-            imgEl.src = q.image;
-            imgEl.style.display = 'block';
-        } else {
-            imgEl.style.display = 'none';
-        }
-
-        // 回答ボタン生成
-        const optContainer = document.getElementById('optionsContainer');
-        optContainer.innerHTML = "";
-
-        q.options.forEach(opt => {
-            let btn = document.createElement('button');
-            btn.className = 'option-btn';
-            if (userAnswers[q.id] === opt) btn.classList.add('selected');
-            btn.textContent = opt;
-            btn.onclick = () => selectAnswer(q.id, opt, index);
-            optContainer.appendChild(btn);
-        });
-
-        // ボタンの表示制御
-        document.getElementById('nextBtn').style.display = (index === currentQuestions.length - 1) ? 'none' : 'inline-block';
-    }
-
-    function selectAnswer(qId, val, index) {
-        userAnswers[qId] = val;
-        document.getElementById(`nav-${index}`).classList.add('answered');
-        showQuestion(index);
-    }
-
-    function prevQuestion() {
-        if (currentIndex > 0) showQuestion(currentIndex - 1);
-    }
-
-    function nextQuestion() {
-        if (currentIndex < currentQuestions.length - 1) showQuestion(currentIndex + 1);
-    }
-
-    function confirmSubmit() {
-        const unanswered = currentQuestions.filter(q => !userAnswers[q.id]).length;
-        let msg = '解答を提出して採点しますか？';
-        if (unanswered > 0) {
-            msg = `未解答の問題が ${unanswered} 問あります。提出してよろしいですか？`;
-        }
-        if (confirm(msg)) {
-            submitExam();
-        }
-    }
-
-    function submitExam() {
-        clearInterval(timerInterval);
-        let correctCount = 0;
-        
-        currentQuestions.forEach(q => {
-            if (userAnswers[q.id] === q.answer) {
-                correctCount++;
-            }
-        });
-
-        // 1問2点の100点満点計算
-        const score = Math.round((correctCount / currentQuestions.length) * 100);
-        
-        document.getElementById('examArea').style.display = 'none';
-        document.getElementById('resultArea').style.display = 'block';
-        document.getElementById('resultScore').innerHTML = `採点結果: ${correctCount} / ${currentQuestions.length} 問正解<br><span style="font-size:32px; color:#dc3545;">${score} 点 / 100点満点</span>`;
-
-        // 履歴保存
-        saveHistory(currentYear, score);
-        showHistory();
-        document.getElementById('setupArea').style.display = 'block';
-    }
-
-    function saveHistory(year, score) {
-        let logs = JSON.parse(localStorage.getItem('senban_history')) || [];
-        const now = new Date();
-        const timeStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-        logs.unshift({
-            date: timeStr,
-            title: examData[year].title,
-            score: score
-        });
-        localStorage.setItem('senban_history', JSON.stringify(logs));
-    }
-
-    function showHistory() {
-        const logs = JSON.parse(localStorage.getItem('senban_history')) || [];
-        const container = document.getElementById('historyLogs');
-        container.innerHTML = "";
-        if(logs.length === 0) {
-            container.textContent = "まだ挑戦履歴はありません。";
-            return;
-        }
-        logs.forEach(log => {
-            let item = document.createElement('div');
-            item.className = 'history-item';
-            item.innerHTML = `<span>${log.date} - ${log.title}</span><strong>${log.score}点</strong>`;
-            container.appendChild(item);
-        });
-    }
-
-    function backToSetup() {
-        document.getElementById('resultArea').style.display = 'none';
-        document.getElementById('setupArea').style.display = 'flex';
-    }
-</script>
-</body>
-</html>
+            const h = Math.floor(timeLeft / 3600); const m = Math.floor((timeLeft % 3600) / 60); const s = timeLeft % 60
