@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>入学者選抜情報 - 岩手県立黒沢尻工業高等学校 専攻科</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ==========================================================================
+           入学者選抜ページ（nyushi.html）専用の追加スタイル
+           ========================================================================== */
+
+        /* 下層ページ専用のミニ見出しエリア */
+        .page-header {
+            background: linear-gradient(135deg, #003366 0%, #002244 100%);
+            color: #ffffff;
+            padding: 30px 20px;
+            margin-bottom: 0;
+        }
+        .page-header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .page-header h2 {
+            font-size: 1.6rem;
+            color: #ffcc00;
+            border: none;
+            padding: 0;
+            margin: 0 0 5px 0;
+        }
+        .page-header p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #dddddd;
+        }
+
+        /* 導入テキスト */
+        .section-lead {
+            font-size: 0.95rem;
+            color: #555555;
+            margin-bottom: 25px;
+            border-bottom: 1px dashed #cccccc;
+            padding-bottom: 15px;
+        }
+
+        /* ダウンロードカードを2列（スマホは1列）に並べるグリッド仕様 */
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        /* カード1枚ずつのデザイン */
+        .download-card {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .download-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            background: #ffffff;
+        }
+
+        /* 重要な「学校推薦書（WORD）」を少し目立たせる指定 */
+        .highlight-card {
+            border-left: 4px solid #2b579a;
+            background: #f4f7fc;
+        }
+        .editable-tag {
+            font-size: 0.7rem;
+            background-color: #2b579a;
+            color: #ffffff;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* ファイルアイコン風の四角形 */
+        .file-icon {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #ffffff;
+            border-radius: 4px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .file-icon.pdf { background-color: #e04b46; }  /* PDFは赤 */
+        .file-icon.word { background-color: #2b579a; } /* Wordは青 */
+
+        /* カード内のテキストとボタンのレイアウト */
+        .file-info {
+            flex-grow: 1;
+        }
+        .file-info h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.05rem;
+            color: #333333;
+        }
+
+        /* ダウンロードボタンの共通設定 */
+        .btn-dl {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            color: #ffffff;
+            transition: opacity 0.2s;
+        }
+        .btn-dl:hover {
+            opacity: 0.8;
+        }
+        .pdf-color { background-color: #e04b46; }
+        .word-color { background-color: #2b579a; }
+
+        /* ==========================================================================
+           入試・合格発表特設セクション（nyushi.html）
+           ========================================================================== */
+        .pass-announcement-container {
+            background-color: #fffaf0; /* 柔らかな警告・告知背景色 */
+            padding: 30px 20px;
+            border-bottom: 4px solid #dd6b20; /* アクセントライン */
+        }
+
+        .pass-announcement-box {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            background: #ffffff;
+            border: 2px solid #feebc8;
+            border-radius: 10px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 「選抜速報」のバッジ */
+        .pass-badge {
+            display: inline-block;
+            background-color: #e53e3e; /* 鮮やかな赤 */
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 0.85rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .pass-announcement-box h2 {
+            font-size: 1.6rem;
+            color: #2d3748;
+            margin: 0 0 8px 0;
+            font-weight: bold;
+        }
+
+        .pass-notice {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 25px;
+        }
+
+        /* 3つのボタンを横並びにする設定 */
+        .pass-btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* 合格発表ボタンの基本スタイル */
+        .btn-pass {
+            flex: 1;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); /* 高級感のある赤グラデ */
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 18px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(197, 48, 48, 0.2);
+            transition: all 0.2s ease;
+            border: 1px solid #b7791f; /* 金色系の細い枠線 */
+        }
+
+        /* 年度などのサブテキスト */
+        .btn-pass .btn-sub {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 試験種別のメインテキスト */
+        .btn-pass .btn-main {
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* マウスを載せたときの動き */
+        .btn-pass:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(197, 48, 48, 0.4);
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        }
+
+        /* 📱 スマホで見るときは自動で縦並びに切り替え */
+        @media (max-width: 768px) {
+            .pass-btn-group {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            .btn-pass {
+                width: 100%;
+                max-width: 100%;
+                padding: 15px;
+            }
+            .pass-announcement-box h2 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* ==========================================================================
+           準備中（非活性）ボタンのスタイル
+           ========================================================================== */
+        .btn-disabled {
+            background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%) !important; /* グレーのグラデーション */
+            border-color: #718096 !important; /* 枠線もグレーに */
+            box-shadow: none !important; /* 影を消して立体感を無くす */
+            cursor: not-allowed; /* マウスを載せたときに禁止マークにする */
+            opacity: 0.65; /* 半透明にして視覚的に無効化 */
+            pointer-events: none; /* クリックやタップを完全に無効化（PC・スマホ両対応） */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="header-logo-area">
+                <h1>岩手県立黒沢尻工業高等学校 専攻科</h1>
+                <p class="subtitle">高度な技術・技能をさらに深める2年間</p>
+            </div>
+            <div class="header-info-area">
+                <p class="address">〒024-8518 岩手県北上市村崎野24地割19番地</p>
+                <a href="http://www2.iwate-ed.jp/kst-h/" target="_blank" class="btn-main-school">黒沢尻工業高校 本校HPへ</a>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">トップ</a></li>
+            <li><a href="policy.html">ポリシー</a></li>
+            <li><a href="learning.html">専攻科の学習</a></li>
+            <li><a href="yearsplan.html">行事予定</a></li>
+            <li><a href="campus.html">学生生活</a></li>
+            <li><a href="job.html">進路先</a></li>
+            <li><a href="nyushi.html">入学者選抜</a></li>
+        </ul>
+    </nav>
+
+    <div class="pass-announcement-container">
+        <div class="pass-announcement-box">
+           <!--<div class="pass-badge">選抜速報</div>--> 
+            
+            <h2>令和9年度 入学者選抜 合格発表</h2>
+            <p class="pass-notice">※PDF形式で開きます。アクセスが集中すると表示が遅れる場合があります。</p>
+            
+            <div class="pass-btn-group">
+                <a href="boshuuyoukou/suisen_goukaku.pdf" target="_blank" class="btn-pass">
+                    <span class="btn-sub">令和9年度</span>
+                    <span class="btn-main">推薦入学選抜試験</span>
+                </a>
+              
+                <a href="#" class="btn-pass btn-disabled"><span class="btn-sub">令和9年度</span>
+                    <span class="btn-main">一般選抜試験（準備中）</span></a>
+                
+                <a href="#" class="btn-pass btn-disabled">
+                    <span class="btn-sub">令和9年度</span>
+                    <span class="btn-main">再募集選抜試験（準備中）</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-header">
+        <div class="page-header-container">
+            <h2>入学者選抜情報</h2>
+            <p>令和9年4月入学予定者向けの募集要項・各種様式ダウンロード</p>
+        </div>
+    </div>
+
+    <main>
+        <div class="main-layout">
+            
+            <div class="content-area">
+                
+                <section class="download-section">
+                    <h2>入学者選抜に関する各種様式（令和9年度）</h2>
+                    <p class="section-lead">
+                        岩手県立黒沢尻工業高等学校 専攻科課程（工業技術科）の入学者選抜書類一式です。<br>
+                        必要なファイルを以下からダウンロードしてご活用ください。
+                    </p>
+
+                    <div class="download-grid">
+                        
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>入学者選抜実施要項</h3>
+                                <a href="boshuuyoukou/01_R9 youkou.pdf" target="_blank" class="btn-dl pdf-color">要項を確認する (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>入学願書</h3>
+                                <a href="boshuuyoukou/02_R9 gansho.pdf" target="_blank" class="btn-dl pdf-color">願書をダウンロード (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>受検票・写真票</h3>
+                                <a href="boshuuyoukou/03_R9 jukenhyou_shasinhyou.pdf" target="_blank" class="btn-dl pdf-color">書類をダウンロード (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>資格取得一覧表</h3>
+                                <a href="boshuuyoukou/04_R9 yousiki1_sikakuichiran.pdf" target="_blank" class="btn-dl pdf-color">様式第1号をダウンロード (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>自己推薦書</h3>
+                                <a href="boshuuyoukou/05_R9 yousiki2_jikosuisensho.pdf" target="_blank" class="btn-dl pdf-color">様式第2号をダウンロード (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card highlight-card">
+                            <div class="file-icon word">WORD</div>
+                            <div class="file-info">
+                                <h3>学校推薦書 <span class="editable-tag">PC入力用</span></h3>
+                                <a href="boshuuyoukou/06_R9 yousiki3_gakkousuisensho.docx" class="btn-dl word-color">様式第3号をダウンロード (WORD)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>志望理由書</h3>
+                                <a href="boshuuyoukou/07_R9 yousiki4_sibouriyuusho.pdf" target="_blank" class="btn-dl pdf-color">様式第4号をダウンロード (PDF)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon word">WORD</div>
+                            <div class="file-info">
+                                <h3>選抜検査欠席届</h3>
+                                <a href="boshuuyoukou/08_R9 yousiki5_kessekitodoke.docx" class="btn-dl word-color">様式第5号をダウンロード (WORD)</a>
+                            </div>
+                        </div>
+
+                        <div class="download-card">
+                            <div class="file-icon pdf">PDF</div>
+                            <div class="file-info">
+                                <h3>学力検査出題範囲</h3>
+                                <a href="boshuuyoukou/10_R9 shutudaihani.pdf" target="_blank" class="btn-dl pdf-color">出題範囲を確認する (PDF)</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <div class="sidebar-area">
+                <div class="widget">
+                    <h3>特設メニュー</h3>
+                    <ul class="side-menu-links">
+                        <li><a href="news/letter/newsletter.html">▶ 専攻科レター</a></li>
+                        <li><a href="chukouseimuke/chukouseimukeqandaindex.html">▶ 中高生向けＱ＆Ａ</a></li>
+                        <li><a href="nyushi.html" class="highlight-link">▶ 入学者選抜について</a></li>
+                        <li><a href="learning_industry.html">▶ 地域産業ネットワーク</a></li>
+                        <li><a href="shuken/syuken.html">▶ 修了研究紹介</a></li>
+                        <li><a href="news/pdf/gaibuhyouka.pdf" target="_blank">▶ 専攻科外部評価委員会</a></li>
+                    </ul>
+                </div>
+
+                <div class="widget info-widget">
+                    <h3>お問い合わせ・提出先</h3>
+                    <p class="school-name">岩手県立黒沢尻工業高等学校 専攻科</p>
+                    <p class="contact-text">
+                        〒024-8518<br>
+                        岩手県北上市村崎野24地割19番地<br>
+                        TEL: 0197-66-4115<br>
+                        FAX: 0197-66-4117
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Copyright &copy; 2018-2026 黒沢尻工業高校 専攻科 All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
