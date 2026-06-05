@@ -172,4 +172,298 @@
         }
 
         .btn:active {
-            transform:
+            transform: scale(0.98);
+        }
+
+        .btn-reset {
+            background-color: #6c757d;
+            margin-left: 15px;
+        }
+
+        .btn-reset:hover {
+            background-color: #5a6268;
+        }
+
+        /* 結果表示エリア */
+        #result-container {
+            display: none;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        .judgment-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+
+        .correct-badge {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .incorrect-badge {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .explanation-box {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #e2e3e5;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: left;
+            border-left: 4px solid #6c757d;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .header-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .options-true-false {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                margin-left: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <h1>技能検定2級 機械加工 学科試験 総合演習</h1>
+            <div class="user-badge">受検者ID: 19790829</div>
+        </div>
+    </header>
+
+    <main>
+        <div class="instructions">
+            <h3>【受検要領】</h3>
+            <ul>
+                <li>本演習は、技能検定2級（普通旋盤作業・数値制御旋盤作業共通基盤等）の出題傾向に準拠しています。</li>
+                <li><strong>A群（真偽法）</strong>：記述が正しい場合は「○」、誤っている場合は「×」を選択してください。</li>
+                <li><strong>B群（多肢択一法）</strong>：4つの選択肢から最も適切なものを1つ選択してください。</li>
+            </ul>
+        </div>
+
+        <div id="result-container">
+            <h2>演習結果</h2>
+            <div class="score-display" id="score-text">0 / 0 問正解 (0%)</div>
+            <p id="result-commentary"></p>
+        </div>
+
+        <form id="quiz-form">
+            <div class="section-title">A群（真偽法）</div>
+            
+            <div class="question-card" data-qno="1">
+                <div class="question-header">
+                    <span class="question-number">問 1</span>
+                    <div>労働者災害補償保険の保険料は、その全額を事業主が負担する。</div>
+                </div>
+                <div class="options-container options-true-false">
+                    <label class="option-label"><input type="radio" name="q1" value="1"> ○</label>
+                    <label class="option-label"><input type="radio" name="q1" value="2"> ×</label>
+                </div>
+                <div class="explanation-box" id="exp-1"></div>
+            </div>
+
+            <div class="question-card" data-qno="2">
+                <div class="question-header">
+                    <span class="question-number">問 2</span>
+                    <div>炭素鋼の焼戻し（テンパリング）処理を行うと、一般に材料の硬度はさらに上昇する。</div>
+                </div>
+                <div class="options-container options-true-false">
+                    <label class="option-label"><input type="radio" name="q2" value="1"> ○</label>
+                    <label class="option-label"><input type="radio" name="q2" value="2"> ×</label>
+                </div>
+                <div class="explanation-box" id="exp-2"></div>
+            </div>
+
+            <div class="section-title">B群（多肢択一法）</div>
+
+            <div class="question-card" data-qno="3">
+                <div class="question-header">
+                    <span class="question-number">問 3</span>
+                    <div>日本産業規格（JIS）によれば、高速度工具鋼鋼材を表す材料記号はどれか。</div>
+                </div>
+                <div class="options-container">
+                    <label class="option-label"><input type="radio" name="q3" value="1"> イ. SK</label>
+                    <label class="option-label"><input type="radio" name="q3" value="2"> ロ. SKD</label>
+                    <label class="option-label"><input type="radio" name="q3" value="3"> ハ. SKH</label>
+                    <label class="option-label"><input type="radio" name="q3" value="4"> ニ. SKS</label>
+                </div>
+                <div class="explanation-box" id="exp-3"></div>
+            </div>
+
+            <div class="question-card" data-qno="4">
+                <div class="question-header">
+                    <span class="question-number">問 4</span>
+                    <div>鋼の性質に及ぼす元素の影響において、赤熱もろさ（赤熱脆性）の直接的な原因となる元素はどれか。</div>
+                </div>
+                <div class="options-container">
+                    <label class="option-label"><input type="radio" name="q4" value="1"> イ. マンガン</label>
+                    <label class="option-label"><input type="radio" name="q4" value="2"> ロ. りん</label>
+                    <label class="option-label"><input type="radio" name="q4" value="3"> ハ. けい素</label>
+                    <label class="option-label"><input type="radio" name="q4" value="4"> ニ. 硫黄</label>
+                </div>
+                <div class="explanation-box" id="exp-4"></div>
+            </div>
+
+            <div class="question-card" data-qno="5">
+                <div class="question-header">
+                    <span class="question-number">問 5</span>
+                    <div>材料の硬さ試験において、対面角136度の正四角すいダイヤモンド圧子を用いて計測する、ビッカース硬さを表す記号はどれか。</div>
+                </div>
+                <div class="options-container">
+                    <label class="option-label"><input type="radio" name="q5" value="1"> イ. HBW</label>
+                    <label class="option-label"><input type="radio" name="q5" value="2"> ロ. HV</label>
+                    <label class="option-label"><input type="radio" name="q5" value="3"> ハ. HRC</label>
+                    <label class="option-label"><input type="radio" name="q5" value="4"> ニ. HS</label>
+                </div>
+                <div class="explanation-box" id="exp-5"></div>
+            </div>
+
+            <div class="question-card" data-qno="6">
+                <div class="question-header">
+                    <span class="question-number">問 6</span>
+                    <div>単相交流100Vの電源で消費電力が500Wの電気器具を使用する場合、この器具の電気抵抗値として正しいものはどれか。</div>
+                </div>
+                <div class="options-container">
+                    <label class="option-label"><input type="radio" name="q6" value="1"> イ. 0.05 Ω</label>
+                    <label class="option-label"><input type="radio" name="q6" value="2"> ロ. 20 Ω</label>
+                    <label class="option-label"><input type="radio" name="q6" value="3"> ハ. 100 Ω</label>
+                    <label class="option-label"><input type="radio" name="q6" value="4"> ニ. 500 Ω</label>
+                </div>
+                <div class="explanation-box" id="exp-6"></div>
+            </div>
+
+            <div class="question-card" data-qno="7">
+                <div class="question-header">
+                    <span class="question-number">問 7</span>
+                    <div>日本産業規格（JIS）において、材料記号「FCD」で表されるものはどれか。</div>
+                </div>
+                <div class="options-container">
+                    <label class="option-label"><input type="radio" name="q7" value="1"> イ. 球状黒鉛鋳鉄品</label>
+                    <label class="option-label"><input type="radio" name="q7" value="2"> ロ. ねずみ鋳鉄品</label>
+                    <label class="option-label"><input type="radio" name="q7" value="3"> ハ. 黒心可鍛鋳鉄品</label>
+                    <label class="option-label"><input type="radio" name="q7" value="4"> ニ. 炭素鋼鋳鋼品</label>
+                </div>
+                <div class="explanation-box" id="exp-7"></div>
+            </div>
+
+            <div class="control-panel">
+                <button type="button" class="btn" onclick="gradeQuiz()">解答を採点する</button>
+                <button type="button" class="btn btn-reset" onclick="resetQuiz()">リセット</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // 正解データおよび解説定義
+        const quizData = {
+            1: { ans: "1", exp: "【正解: ○】労災保険の保険料は、全額を事業主が負担します（労働者が負担する必要はありません）。" },
+            2: { ans: "2", exp: "【正解: ×】焼入れ（クエンチング）で硬化した鋼組織に靭性を与え、内部応力を除去するために行うのが「焼戻し」です。通常、硬度はやや低下します。" },
+            3: { ans: "3", exp: "【正解: ハ. SKH】高速度工具鋼はSteel（S）、Kougu（K）、High-speed（H）から「SKH」と標記されます。ちなみにSKは炭素工具鋼、SKDは合金工具鋼（ダイス鋼）、SKSは合金工具鋼（サス鋼等）です。" },
+            4: { ans: "4", exp: "【正解: ニ. 硫黄】鋼中に含まれる硫黄（S）は、低融点の化合物を形成し、赤熱状態（高温下）での脆性（赤熱脆性）を招く原因となります。これを防ぐためにマンガン（Mn）を添加します。" },
+            5: { ans: "2", exp: "【正解: ロ. HV】ビッカース硬さは「HV」で表されます。HBWはブリネル硬さ、HRCはロックウェル硬さ（Cスケール）、HSはショア硬さです。" },
+            6: { ans: "2", exp: "【正解: ロ. 20 Ω】電力 P = V² / R の関係式より、抵抗 R = V² / P = (100 × 100) / 500 = 10000 / 500 = 20[Ω] と計算されます。" },
+            7: { ans: "1", exp: "【正解: イ. 球状黒鉛鋳鉄品】FCD（Iron Casting Ductile）はダクタイル鋳鉄とも呼ばれる「球状黒鉛鋳鉄品」を指します。ねずみ鋳鉄品は FC、炭素鋼鋳鋼品は SC です。" }
+        };
+
+        function gradeQuiz() {
+            let totalQuestions = Object.keys(quizData).length;
+            let correctCount = 0;
+
+            // 既存の判定バッジを削除
+            const oldBadges = document.querySelectorAll('.judgment-badge');
+            oldBadges.forEach(badge => badge.remove());
+
+            for (let i = 1; i <= totalQuestions; i++) {
+                const radios = document.getElementsByName('q' + i);
+                let selectedValue = "";
+                for (const radio of radios) {
+                    if (radio.checked) {
+                        selectedValue = radio.value;
+                        break;
+                    }
+                }
+
+                const questionCard = document.querySelector(`.question-card[data-qno="${i}"]`);
+                const headerDiv = questionCard.querySelector('.question-header');
+                const expBox = document.getElementById('exp-' + i);
+
+                // 解説をセットして表示
+                expBox.innerText = quizData[i].exp;
+                expBox.style.display = "block";
+
+                // 正誤判定用のバッジを作成
+                const badge = document.createElement('span');
+                badge.className = 'judgment-badge ';
+
+                if (selectedValue === quizData[i].ans) {
+                    correctCount++;
+                    badge.className += 'correct-badge';
+                    badge.innerText = ' 正解 ';
+                } else {
+                    badge.className += 'incorrect-badge';
+                    badge.innerText = selectedValue === "" ? ' 未解答 ' : ' 不正解 ';
+                }
+                headerDiv.appendChild(badge);
+            }
+
+            // 結果を画面上部に表示
+            const percentage = Math.round((correctCount / totalQuestions) * 100);
+            const scoreText = document.getElementById('score-text');
+            scoreText.innerText = `${correctCount} / ${totalQuestions} 問正解 (${percentage}%)`;
+
+            const commentary = document.getElementById('result-commentary');
+            if (percentage === 100) {
+                commentary.innerText = "素晴らしい！全問正解です。この調子で本試験の合格を目指しましょう。";
+                commentary.style.color = "var(--accent-color)";
+            } else if (percentage >= 60) {
+                commentary.innerText = "合格基準（一般に6割以上）をクリアしています。間違えた問題を復習して確実にしておきましょう。";
+                commentary.style.color = "var(--text-color)";
+            } else {
+                commentary.innerText = "苦手な分野をもう一度教科書や過去問PDF等で見直して、理解を深めましょう。";
+                commentary.style.color = "var(--danger-color)";
+            }
+
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-form').reset();
+            document.getElementById('result-container').style.display = "none";
+            
+            const oldBadges = document.querySelectorAll('.judgment-badge');
+            oldBadges.forEach(badge => badge.remove());
+
+            const expBoxes = document.querySelectorAll('.explanation-box');
+            expBoxes.forEach(box => box.style.display = "none");
+        }
+    </script>
+</body>
+</html>
