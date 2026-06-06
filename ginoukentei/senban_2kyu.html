@@ -2,246 +2,317 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>機械加工技能検定２級学科試験 練習システム</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #333; padding: 10px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px 15px; text-align: center; }
-        .header h1 { font-size: 20px; margin-bottom: 5px; }
-        .header p { font-size: 13px; opacity: 0.9; }
-        
-        /* ログイン画面 */
-        .login-screen { padding: 30px 15px; text-align: center; }
-        .login-box { max-width: 400px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #ddd; }
-        .login-box h2 { margin-bottom: 15px; font-size: 16px; color: #1e3c72; line-height: 1.4; }
-        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; text-align: center; -webkit-appearance: none; }
-        .login-box button { width: 100%; padding: 12px; background: #2a5298; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
-
-        /* メイン画面・ユーザー情報 */
-        .user-info { display: flex; justify-content: space-between; background: #e9ecef; padding: 10px 15px; font-size: 13px; font-weight: bold; border-bottom: 1px solid #dee2e6; }
-        .quiz-layout { display: flex; flex-direction: column; padding: 15px; }
-        
-        /* 【重要】設定エリアのスマホ最適化（横幅が狭いと縦並びに自動変化） */
-        .setup-area { margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e3e6f0; display: flex; flex-direction: column; gap: 12px; }
-        .setup-area label { font-size: 15px; font-weight: bold; color: #4e73df; }
-        .setup-area select { width: 100%; padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; background-color: #fff; }
-        .start-btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-        /* 試験エリア */
-        .exam-area { display: none; }
-        .statusbar { display: flex; justify-content: space-between; align-items: center; background: #fff3cd; color: #856404; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
-        .timer { font-size: 16px; color: #dc3545; font-weight: bold; }
-        
-        /* 問題ナビゲーション（スマホでもはみ出さないように折り返し） */
-        .nav-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; justify-content: flex-start; }
-        .nav-item { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .nav-item.answered { background: #6c757d; color: white; border-color: #6c757d; }
-        .nav-item.current { border: 2px solid #007bff; color: #007bff; background: #e7f1ff; }
-
-        /* 問題カード */
-        .question-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-        .q-header { font-size: 15px; font-weight: bold; color: #4e73df; margin-bottom: 12px; border-bottom: 2px solid #4e73df; padding-bottom: 5px; }
-        .q-text { font-size: 16px; line-height: 1.5; margin-bottom: 15px; white-space: pre-wrap; word-break: break-all; }
-        .q-image { max-width: 100%; height: auto; margin-bottom: 15px; border: 1px solid #ddd; display: block; margin-left: auto; margin-right: auto; }
-        
-        /* 回答ボタン（横2列、スマホで押しやすいサイズ） */
-        .options-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
-        .option-btn { padding: 15px 10px; font-size: 16px; font-weight: bold; background: #f8f9fa; border: 2px solid #ced4da; border-radius: 6px; cursor: pointer; text-align: center; -webkit-appearance: none; }
-        .option-btn:hover { background: #e2e6ea; }
-        .option-btn.selected { background: #4e73df; color: white; border-color: #4e73df; }
-
-        /* 下部制御ボタン（縦並びを防ぎ、綺麗に配置） */
-        .ctrl-btns { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; }
-        .action-btn { flex: 1; padding: 12px 5px; font-size: 14px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; text-align: center; }
-        .prev-btn { background: #6c757d; color: white; }
-        .next-btn { background: #007bff; color: white; }
-        .submit-btn { background: #dc3545; color: white; }
-
-        /* 結果表示 */
-        .result-area { display: none; padding: 15px; background: #fff; border-radius: 8px; border: 1px solid #dee2e6; }
-        .result-score { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 15px; color: #28a745; line-height: 1.4; }
-        .history-list { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
-
-        /* PCやタブレットなど広い画面向けの調整 */
-        @media (min-width: 600px) {
-            body { padding: 20px; }
-            .header h1 { font-size: 24px; }
-            .setup-area { flex-direction: row; align-items: center; justify-content: space-between; }
-            .setup-area select { width: auto; flex-grow: 1; }
-            .start-btn { width: auto; padding: 12px 30px; }
-            .option-btn { font-size: 18px; padding: 18px; }
-            .action-btn { flex: none; padding: 12px 25px; font-size: 16px; }
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .q-text { font-size: 1.1em; margin: 20px 0; font-weight: bold; }
+        .option-btn { 
+            display: block; width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid #ddd; border-radius: 8px; background: #fff;
+            cursor: pointer; font-size: 16px; transition: 0.2s;
         }
+        .option-btn.selected { background-color: #3498db; color: white; border-color: #2980b9; }
+        .hidden { display: none; }
+        button.submit { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-size: 1.1em; margin-top: 20px; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>機械加工技能検定２級学科試験 練習システム</h1>
-        <p>普通旋盤作業・数値制御旋盤作業 過去問完全版</p>
+    <div id="loginScreen" class="card">
+        <h2>ログイン</h2>
+        <input type="text" id="birthdayInput" placeholder="生年月日8桁">
+        <button onclick="login()">ログイン</button>
     </div>
 
-    <div id="loginScreen" class="login-screen">
-        <div class="login-box">
-            <h2>生年月日を8桁の西暦で入力してください</h2>
-            <input type="tel" id="birthdayInput" placeholder="例: 19790829" maxlength="8">
-            <button onclick="login()">ログイン</button>
-        </div>
+    <div id="mainScreen" class="card hidden">
+        <h2>試験選択</h2>
+        <button onclick="startExam('H31')">平成31年度を開始</button>
+        <button onclick="startExam('R2')">令和2年度を開始</button>
+        <button onclick="startExam('R3')">令和3年度を開始</button>
+        <button onclick="startExam('R4')">令和4年度を開始</button>
     </div>
 
-    <div id="mainScreen" class="quiz-layout" style="display:none;">
-        <div class="user-info">
-            <span id="userDisplay">👤 ユーザー</span>
-            <span id="logoutBtn" style="color:#dc3545; cursor:pointer;" onclick="logout()">ログアウト</span>
-        </div>
-
-        <div id="setupArea" class="setup-area">
-            <label for="yearSelect">実施年度を選択</label>
-            <select id="yearSelect"></select>
-            <button class="start-btn" onclick="startExam()">試験開始</button>
-        </div>
-
-        <div id="examArea" class="exam-area">
-            <div class="statusbar">
-                <span id="currentProgress">問題 1 / 50</span>
-                <span id="timer" class="timer">⏱ 1:40:00</span>
-            </div>
-
-            <div id="navGrid" class="nav-grid"></div>
-
-            <div class="question-card">
-                <div id="qHeader" class="q-header">A群：真偽法</div>
-                <div id="qText" class="q-text">問題文</div>
-                <img id="qImage" class="q-image" src="" alt="問題画像" style="display:none;">
-                <div id="optionsContainer" class="options-container"></div>
-            </div>
-
-            <div class="ctrl-btns">
-                <button class="action-btn prev-btn" onclick="prevQuestion()">前の問題</button>
-                <button id="nextBtn" class="action-btn next-btn" onclick="nextQuestion()">次の問題</button>
-                <button class="action-btn submit-btn" onclick="confirmSubmit()">提出</button>
-            </div>
-        </div>
-
-        <div id="resultArea" class="result-area">
-            <div class="result-score" id="resultScore"></div>
-            <button class="start-btn" onclick="backToSetup()" style="background:#007bff; margin-bottom:20px;">トップに戻る</button>
-            <div class="history-list">
-                <h3>過去の挑戦履歴</h3>
-                <div id="historyLogs"></div>
-            </div>
-        </div>
+    <div id="quizArea" class="card hidden">
+        <h2 id="qTitle"></h2>
+        <div id="qContent"></div>
     </div>
-</div>
 
-const examData = {
-    "H31": {
-    "title": "平成31年度 技能検定 2級学科試験",
-    "questions": [
-    { "id": 1, "group": "A", "options": ["○", "×"], "text": "炭素鋼の焼入れにおいて、冷却速度が速いほどマルテンサイト組織が得られやすい。", "answer": "○" },
-    { "id": 2, "group": "A", "options": ["○", "×"], "text": "普通旋盤において、主軸の回転速度を速くすると、切削速度は遅くなる。", "answer": "×" },
-    { "id": 3, "group": "A", "options": ["○", "×"], "text": "金属の結晶粒が細かいほど、一般に強さや硬さは低下する。", "answer": "×" },
-    { "id": 4, "group": "A", "options": ["○", "×"], "text": "ミーリングチャックは、エンドミル等の工具を保持するために用いられる。", "answer": "○" },
-    { "id": 5, "group": "A", "options": ["○", "×"], "text": "外側マイクロメータの測定力は、ラチェットストップを使用しても人によって変化する。", "answer": "×" },
-    { "id": 6, "group": "A", "options": ["○", "×"], "text": "構成刃先は、一般に切削速度を非常に速くすると発生しやすくなる。", "answer": "×" },
-    { "id": 7, "group": "A", "options": ["○", "×"], "text": "数値制御旋盤において、G02は円弧補間（時計回り）を指令するコードである。", "answer": "○" },
-    { "id": 8, "group": "A", "options": ["○", "×"], "text": "切削油剤には、潤滑作用のほかに冷却作用や洗浄作用がある。", "answer": "○" },
-    { "id": 9, "group": "A", "options": ["○", "×"], "text": "旋盤で両センター作業を行う場合、工作物の熱膨張を考慮して心押し台側のセンターに微少な遊びを持たせることがある。", "answer": "○" },
-    { "id": 10, "group": "A", "options": ["○", "×"], "text": "鋳鉄は、炭素鋼に比べて振動を減衰させる能力（制振性）が優れている。", "answer": "○" },
-    { "id": 11, "group": "A", "options": ["○", "×"], "text": "両振り荷重とは、大きさ及び方向が時間的に変化しない荷重のことである。", "answer": "×" },
-    { "id": 12, "group": "A", "options": ["○", "×"], "text": "JISの機械製図において、中心線には細い一点鎖線を用いる。", "answer": "○" },
-    { "id": 13, "group": "A", "options": ["○", "×"], "text": "圧延加工は、再結晶温度以上の温度で行うのが冷間圧延である。", "answer": "×" },
-    { "id": 14, "group": "A", "options": ["○", "×"], "text": "鋼の焼戻しは、焼入れ後の脆さを取り除き、靭性を与えるために行う。", "answer": "○" },
-    { "id": 15, "group": "A", "options": ["○", "×"], "text": "アーク溶接において、アークの熱で母材を溶かして接合することを融接という。", "answer": "○" },
-    { "id": 16, "group": "A", "options": ["○", "×"], "text": "ロックウェル硬さ試験において、Cスケールはダイヤモンド円錐圧子を用いる。", "answer": "○" },
-    { "id": 17, "group": "A", "options": ["○", "×"], "text": "安全衛生教育は、雇い入れ時のみ実施すればよい。", "answer": "×" },
-    { "id": 18, "group": "A", "options": ["○", "×"], "text": "油圧回路におけるリリーフ弁は、回路の圧力が設定値を超えたときに作動する。", "answer": "○" },
-    { "id": 19, "group": "A", "options": ["○", "×"], "text": "旋盤の主軸軸受にガタがあると、工作物の真円度が悪くなる原因となる。", "answer": "○" },
-    { "id": 20, "group": "A", "options": ["○", "×"], "text": "三針法による有効径測定は、主にねじの有効径を精度よく測定するために用いられる。", "answer": "○" },
-    { "id": 21, "group": "A", "options": ["○", "×"], "text": "機械部品の嵌めあいにおいて、H7/g6は「しまりばめ」である。", "answer": "×" },
-    { "id": 22, "group": "A", "options": ["○", "×"], "text": "品質管理におけるヒストグラムは、データのバラツキの状態を視覚的に把握するのに適している。", "answer": "○" },
-    { "id": 23, "group": "A", "options": ["○", "×"], "text": "電気抵抗の単位はボルト(V)である。", "answer": "×" },
-    { "id": 24, "group": "A", "options": ["○", "×"], "text": "オームの法則によれば、電流は電圧に反比例し、抵抗に比例する。", "answer": "×" },
-    { "id": 25, "group": "A", "options": ["○", "×"], "text": "三相誘導電動機の回転速度は、電源周波数を高くすると速くなる。", "answer": "○" }
-    
-    { "id": 26, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "炭素鋼に合金元素を添加する目的として、誤っているものはどれか。", "answer": "ハ" },
-    { "id": 27, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "JISの機械製図において、表面粗さを図示する記号として正しいものはどれか。", "answer": "イ" },
-    { "id": 28, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "旋盤作業において、工作物の外径を荒削りする際に最も適した工具材種はどれか。", "answer": "ニ" },
-    { "id": 29, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "JISによる寸法線の記入方法で、誤っているものはどれか。", "answer": "ロ" },
-    { "id": 30, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "100V用500Wの電気器具の電気抵抗値として、正しいものはどれか。", "answer": "ハ" },
-    { "id": 31, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "導体に流れる電流と電圧、抵抗に関する法則を何というか。", "answer": "ハ" },      
-    { "id": 32, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "切削油剤の機能として、誤っているものはどれか。", "answer": "ロ" },
-    { "id": 33, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "数値制御旋盤において、工具径補正機能の説明として正しいものはどれか。", "answer": "ロ" },
-    { "id": 34, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "研削加工の特性として、正しいものはどれか。", "answer": "イ" },
-    { "id": 35, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "鋳造品に発生する欠陥として、引け巣の説明として正しいものはどれか。", "answer": "イ" },
-    { "id": 36, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "労働安全衛生法に基づく安全教育で、特別教育が必要な作業はどれか。", "answer": "ハ" },
-    { "id": 37, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "旋盤における切削抵抗の分力のうち、送り方向に働く力はどれか。", "answer": "ハ" },
-    { "id": 38, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "測定工具の最小読取値が0.01mmであるものはどれか。", "answer": "イ" },
-    { "id": 39, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "熱処理における焼戻しの目的として、適切なものはどれか。", "answer": "ニ" },
-    { "id": 40, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "幾何公差のうち、位置度を表す記号として正しいものはどれか。", "answer": "イ" },
-    { "id": 41, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "切削条件のうち、切削速度を大きくしたときの影響として正しいものはどれか。", "answer": "ロ" },
-    { "id": 42, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "ねじの呼び「M20×2.5」の数値のうち、2.5は何を表すか。", "answer": "ハ" },
-    { "id": 43, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "品質管理の7つ道具に含まれるものはどれか。", "answer": "イ" },
-    { "id": 44, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "三相誘導電動機の特性として、正しいものはどれか。", "answer": "ハ" },
-    { "id": 45, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "圧接の説明として正しいものはどれか。", "answer": "イ" },
-    { "id": 46, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "旋盤の心押し台の偏心修正を行う理由として正しいものはどれか。", "answer": "ロ" },
-    { "id": 47, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "金属の腐食を防ぐための方法として適切でないものはどれか。", "answer": "ハ" },
-    { "id": 48, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "NCプログラムの準備機能コードで、主軸回転数の指令に関係するのはどれか。", "answer": "イ" },
-    { "id": 49, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "硬さ試験のうち、圧子の押し込み深さから硬さを求めるものはどれか。", "answer": "ハ" },
-    { "id": 50, "group": "B", "options": ["イ", "ロ", "ハ", "ニ"], "text": "工作機械の定期点検の項目として、最も不適切なものはどれか。", "answer": "ロ" } 
-
-    ]         
-
-
-
-
-
-<script>
-    let currentYear = ""; let currentQuestions = []; let userAnswers = {}; let currentIndex = 0; let timerInterval = null; let timeLeft = 6000;
-    window.onload = function() { checkLogin(); };
-    function checkLogin() {
-        const birthday = localStorage.getItem('senban_user_birthday');
-        if (birthday && birthday.length === 8) {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('mainScreen').style.display = 'flex';
-            document.getElementById('userDisplay').textContent = `👤 ${birthday.substring(0,4)}年${birthday.substring(4,6)}月${birthday.substring(6,8)}日`;
-            initYearSelect(); showHistory();
-        } else {
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('mainScreen').style.display = 'none';
-        }
-    }
-    function login() {
-        const input = document.getElementById('birthdayInput').value.trim();
-        if (/^\d{8}$/.test(input)) { localStorage.setItem('senban_user_birthday', input); checkLogin(); }
-        else { alert('8桁の半角数字で入力してください。'); }
-    }
-    function logout() { if(confirm('ログアウトしますか？')) { localStorage.removeItem('senban_user_birthday'); checkLogin(); } }
-    function initYearSelect() {
-        const select = document.getElementById('yearSelect'); select.innerHTML = "";
-        if (typeof examData !== 'undefined') {
-            for (let year in examData) {
-                let opt = document.createElement('option'); opt.value = year; opt.textContent = examData[year].title; select.appendChild(opt);
+    <script>
+        const examData = {
+            "H31": {
+                "title": "平成31年度 技能検定 2級学科試験",
+                "questions": [
+                    { "id": 1, "text": "炭素鋼の焼入れにおいて、冷却速度が速いほどマルテンサイト組織が得られやすい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 2, "text": "普通旋盤において、主軸の回転速度を速くすると、切削速度は遅くなる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 3, "text": "金属の結晶粒が細かいほど、一般に強さや硬さは低下する。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 4, "text": "ミーリングチャックは、エンドミル等の工具を保持するために用いられる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 5, "text": "外側マイクロメータの測定力は、ラチェットストップを使用しても人によって変化する。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 6, "text": "構成刃先は、一般に切削速度を非常に速くすると発生しやすくなる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 7, "text": "数値制御旋盤において、G02は円弧補間（時計回り）を指令するコードである。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 8, "text": "切削油剤には、潤滑作用のほかに冷却作用や洗浄作用がある。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 9, "text": "旋盤で両センター作業を行う場合、工作物の熱膨張を考慮して心押し台側のセンターに微少な遊びを持たせることがある。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 10, "text": "鋳鉄は、炭素鋼に比べて振動を減衰させる能力（制振性）が優れている。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 11, "text": "両振り荷重とは、大きさ及び方向が時間的に変化しない荷重のことである。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 12, "text": "JISの機械製図において、中心線には細い一点鎖線を用いる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 13, "text": "圧延加工は、再結晶温度以上の温度で行うのが冷間圧延である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 14, "text": "鋼の焼戻しは、焼入れ後の脆さを取り除き、靭性を与えるために行う。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 15, "text": "アーク溶接において、アークの熱で母材を溶かして接合することを融接という。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 16, "text": "ロックウェル硬さ試験において、Cスケールはダイヤモンド円錐圧子を用いる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 17, "text": "安全衛生教育は、雇い入れ時のみ実施すればよい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 18, "text": "油圧回路におけるリリーフ弁は、回路の圧力が設定値を超えたときに作動する。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 19, "text": "旋盤の主軸軸受にガタがあると、工作物の真円度が悪くなる原因となる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 20, "text": "三針法による有効径測定は、主にねじの有効径を精度よく測定するために用いられる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 21, "text": "機械部品の嵌めあいにおいて、H7/g6は「しまりばめ」である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 22, "text": "品質管理におけるヒストグラムは、データのバラツキの状態を視覚的に把握するのに適している。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 23, "text": "電気抵抗の単位はボルト(V)である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 24, "text": "オームの法則によれば、電流は電圧に反比例し、抵抗に比例する。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 25, "text": "三相誘導電動機の回転速度は、電源周波数を高くすると速くなる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 26, "text": "炭素鋼に合金元素を添加する目的として、誤っているものはどれか。", "options": ["イ：焼入れ性を高める", "ロ：結晶粒を微細化する", "ハ：硬さを著しく低下させる", "ニ：耐食性を向上させる"], "answer": "ハ" },
+                    { "id": 27, "text": "JISの機械製図において、表面粗さを図示する記号として正しいものはどれか。", "options": ["イ：算術平均粗さ(Ra)", "ロ：最大高さ(Rz)", "ハ：十点平均粗さ(RzJIS)", "ニ：全周を示す丸記号"], "answer": "イ" },
+                    { "id": 28, "text": "旋盤作業において、工作物の外径を荒削りする際に最も適した工具材種はどれか。", "options": ["イ：P10", "ロ：P20", "ハ：P30", "ニ：P40"], "answer": "ニ" },
+                    { "id": 29, "text": "材料の引張試験において、降伏点の説明として最も適切なものはどれか。", "options": ["イ：荷重の増加なしに伸びが増す点", "ロ：最大荷重を示す点", "ハ：破断した点", "ニ：弾性限界の点"], "answer": "イ" },
+                    { "id": 30, "text": "送り機構のバックラッシ除去のために用いられるねじはどれか。", "options": ["イ：台形ねじ", "ロ：三角ねじ", "ハ：角ねじ", "ニ：ボールねじ"], "answer": "ニ" },
+                    { "id": 31, "text": "JISによる寸法許容差の記入方法において、正しいものはどれか。", "options": ["イ：上下一括記入", "ロ：基本寸法に並記", "ハ：省略記入", "ニ：記号のみ記入"], "answer": "ロ" },
+                    { "id": 32, "text": "切削油剤の機能として、誤っているものはどれか。", "options": ["イ：冷却作用", "ロ：切削抵抗の増大", "ハ：潤滑作用", "ニ：洗浄作用"], "answer": "ロ" },
+                    { "id": 33, "text": "数値制御旋盤において、工具径補正機能の説明として正しいものはどれか。", "options": ["イ：回転数を補正する", "ロ：工具のノーズRを補正する", "ハ：送りを補正する", "ニ：主軸の振れを補正する"], "answer": "ロ" },
+                    { "id": 34, "text": "研削加工の特性として、正しいものはどれか。", "options": ["イ：加工精度が高い", "ロ：加工時間が非常に短い", "ハ：硬い材料は削れない", "ニ：大きな切込みが適している"], "answer": "イ" },
+                    { "id": 35, "text": "鋳造品に発生する欠陥として、引け巣の説明として正しいものはどれか。", "options": ["イ：凝固収縮による空洞", "ロ：砂の巻き込み", "ハ：ガスによる気泡", "ニ：金属の割れ"], "answer": "イ" },
+                    { "id": 36, "text": "労働安全衛生法に基づく安全教育で、特別教育が必要な作業はどれか。", "options": ["イ：旋盤操作", "ロ：ボール盤操作", "ハ：アーク溶接作業", "ニ：測定作業"], "answer": "ハ" },
+                    { "id": 37, "text": "旋盤における切削抵抗の分力のうち、送り方向に働く力はどれか。", "options": ["イ：主分力", "ロ：背分力", "ハ：送り分力", "ニ：向心力"], "answer": "ハ" },
+                    { "id": 38, "text": "測定工具の最小読取値が0.01mmであるものはどれか。", "options": ["イ：マイクロメータ", "ロ：パス", "ハ：直尺", "ニ：カリパス(一部)"], "answer": "イ" },
+                    { "id": 39, "text": "熱処理における焼戻しの目的として、適切なものはどれか。", "options": ["イ：硬化させる", "ロ：脆さを取り除く", "ハ：急冷する", "ニ：軟化させる"], "answer": "ニ" },
+                    { "id": 40, "text": "幾何公差のうち、位置度を表す記号として正しいものはどれか。", "options": ["イ：◎のマーク", "ロ：∥のマーク", "ハ：⊥のマーク", "ニ：○のマーク"], "answer": "イ" },
+                    { "id": 41, "text": "切削条件のうち、切削速度を大きくしたときの影響として正しいものはどれか。", "options": ["イ：工具寿命が延びる", "ロ：工具寿命が短くなる", "ハ：構成刃先が増える", "ニ：抵抗が減る"], "answer": "ロ" },
+                    { "id": 42, "text": "ねじの呼び「M20×2.5」の数値のうち、2.5は何を表すか。", "options": ["イ：外径", "ロ：内径", "ハ：ピッチ", "ニ：条数"], "answer": "ハ" },
+                    { "id": 43, "text": "品質管理の7つ道具に含まれるものはどれか。", "options": ["イ：パレート図", "ロ：工程図", "ハ：作業手順書", "ニ：チェックリスト"], "answer": "イ" },
+                    { "id": 44, "text": "三相誘導電動機の特性として、正しいものはどれか。", "options": ["イ：直流で動く", "ロ：単相で動く", "ハ：電源周波数で回転数が決まる", "ニ：構造が複雑"], "answer": "ハ" },
+                    { "id": 45, "text": "圧接の説明として正しいものはどれか。", "options": ["イ：加圧して接合する", "ロ：溶融させる", "ハ：ねじで固定する", "ニ：接着剤で貼る"], "answer": "イ" },
+                    { "id": 46, "text": "旋盤の心押し台の偏心修正を行う理由として正しいものはどれか。", "options": ["イ：外径を大きくするため", "ロ：テーパ削りを行うため", "ハ：回転数を上げるため", "ニ：芯をずらさないため"], "answer": "ロ" },
+                    { "id": 47, "text": "金属の腐食を防ぐための方法として適切でないものはどれか。", "options": ["イ：塗装", "ロ：メッキ", "ハ：水に浸し続ける", "ニ：油を塗る"], "answer": "ハ" },
+                    { "id": 48, "text": "NCプログラムの準備機能コードで、主軸回転数の指令に関係するのはどれか。", "options": ["イ：G機能", "ロ：M機能", "ハ：S機能", "ニ：T機能"], "answer": "イ" },
+                    { "id": 49, "text": "硬さ試験のうち、圧子の押し込み深さから硬さを求めるものはどれか。", "options": ["イ：ブリネル", "ロ：ビッカース", "ハ：ロックウェル", "ニ：ショア"], "answer": "ハ" },
+                    { "id": 50, "text": "工作機械の定期点検の項目として、最も不適切なものはどれか。", "options": ["イ：給油状態", "ロ：毎日部品を交換する", "ハ：ガタの確認", "ニ：清掃"], "answer": "ロ" }
+                ]
+            },
+            "R2": {
+                "title": "令和2年度 技能検定 2級学科試験",
+                "questions": [
+                    { "id": 1, "text": "普通旋盤は、静的精度検査に合格していれば、工作精度検査を行う必要がない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 2, "text": "切削用超硬質工具材料の材種のP種は、鋼の切削に適している。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 3, "text": "ターニングセンタとは、回転工具及び割出し可能な工作主軸を備え、かつ、タレット又は工具マガジンを備え、加工プログラムに従って工具を自動交換できる数値制御工作機械のことである。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 4, "text": "日本産業規格(JIS)では、旋盤の負荷運転試験における切削方法は、乾式切削と決められている。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 5, "text": "旋盤のベッド上の振りは、直径表示で表す。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 6, "text": "普通旋盤の主軸台と心押し台との両心の高さは、心押し台側が低くなければならない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 7, "text": "切削用超硬質工具材料の使用分類記号・P20は、P10よりもじん性が高い。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 8, "text": "日本産業規格(JIS)によれば、刃先交換チップの形状は、正三角形、正方形及び正六角形の3種類である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 9, "text": "旋削加工で流れ形の切りくずを切断するには、バイトのすくい面にチッププレーカを付けることも一つの方法である。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 10, "text": "セラミック工具は、アルミニウム材の切削に適している。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 11, "text": "ドリルのバックテーパは、切りくずの排出をよくするために付けてある。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 12, "text": "旋盤作業において、軟らかくてじん性の高い材料を削る場合には、一般に、バイトのすくい角を小さくする方が削りやすい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 13, "text": "高硬度材を穴あけ加工するときには、一般に、ドリルの先端角を標準角(118°)よりも大きめにするとよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 14, "text": "日本産業規格(JIS)に規定されている機械加工に用いるセンタ穴の角度の種類は、45度、60度の2種類である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 15, "text": "旋削において、切削断面積を大きくするには、切込み量、又は送り量を大きくするとよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 16, "text": "バイト送り量一定の下で、バイトのノーズRを大きくすると、一般に、仕上げ面粗さは悪くなる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 17, "text": "丸棒の旋削で、主軸回転速度100min-1、長さ1000mmを送り量0.5mm/revで加工すると、切削時間は30分になる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 18, "text": "構成刃先は、切削速度を速くするほど発生しやすい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 19, "text": "一般に、バイトの寿命は、切削速度を速くするほど短くなる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 20, "text": "切削加工によって仕上げ面表層部に残った応力を、残留応力という。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 21, "text": "切削油剤を使って潤滑及び冷却を行うことは、工具寿命を延ばす効果的な方法である。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 22, "text": "クレータ摩耗とは、すくい面摩耗のうち、くぼみが生じる摩耗のことである。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 23, "text": "外径バイトにおいて、刃先高さがセンタ(主軸の中心)にないと、切削後の工作物の外径が大きくなる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 24, "text": "切削抵抗の背分力は、同一条件の下では、バイトのアプローチ角(横切れ刃角)が大きくなるほど小さくなる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 25, "text": "切削用超硬質工具材料P30種のバイト刃先にチッピングが発生した場合、P10種のバイトへ変更したほうがよい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 26, "text": "一般に、といしを使用して加工を行うものはどれか。", "options": ["イ：マシニングセンタ", "ロ：普通旋盤", "ハ：円筒研削盤", "ニ：ボール盤"], "answer": "ハ" },
+                    { "id": 27, "text": "JISによるバイト用語の定義として、誤っているものはどれか。", "options": ["イ：すくい面", "ロ：逃げ面", "ハ：切れ刃", "ニ：心押し台"], "answer": "ニ" },
+                    { "id": 28, "text": "水溶性切削油剤は、一般に、不水溶性切削油剤よりも冷却性が優れている。", "options": ["イ：冷却性", "ロ：潤滑性", "ハ：防錆性", "ニ：浸透性"], "answer": "イ" },
+                    { "id": 29, "text": "負荷の大きな軸受部分に使用する潤滑油に含まれるものはどれか。", "options": ["イ：極圧添加剤", "ロ：酸化防止剤", "ハ：消泡剤", "ニ：粘度指数向上剤"], "answer": "イ" },
+                    { "id": 30, "text": "油圧回路に用いられる弁のうち、圧力制御弁でないものはどれか。", "options": ["イ：リリーフ弁", "ロ：チェック弁", "ハ：減圧弁", "ニ：アンロード弁"], "answer": "ロ" },
+                    { "id": 31, "text": "チャックに関する記述として、誤っているものはどれか。", "options": ["イ：三爪スクロールチャックは自動求心機能がある", "ロ：四爪単動チャックは偏心工作物に使える", "ハ：コレットチャックは高精度の棒材に適する", "ニ：チャックは必ず強固に締めなければならない"], "answer": "ニ" },
+                    { "id": 32, "text": "次の測定器のうち、比較測定器はどれか。", "options": ["イ：ノギス", "ロ：マイクロメータ", "ハ：直尺", "ニ：ダイヤルゲージ"], "answer": "ニ" },
+                    { "id": 33, "text": "パレート図に関する記述として、適切なものはどれか。", "options": ["イ：項目を降順に並べる", "ロ：データの平均値を見る", "ハ：時系列の変化を見る", "ニ：相関関係を見る"], "answer": "イ" },
+                    { "id": 34, "text": "JISによれば、一般用メートルねじにおけるねじ山の角度は何度か。", "options": ["イ：30度", "ロ：45度", "ハ：60度", "ニ：90度"], "answer": "ハ" },
+                    { "id": 35, "text": "ねじの条数をn、リードをL、ピッチをPとすると、正しい関係はどれか。", "options": ["イ：L = n × P", "ロ：L = P / n", "ハ：L = n + P", "ニ：L = n^2 × P"], "answer": "イ" },
+                    { "id": 36, "text": "両軸心が正しく一直線にある場合のみに使用できる軸継手を何というか。", "options": ["イ：フレキシブル継手", "ロ：固定継手", "ハ：自在継手", "ニ：流体継手"], "answer": "ロ" },
+                    { "id": 37, "text": "けがき作業用工具に関する記述として、誤っているものはどれか。", "options": ["イ：けがき針は先端を鋭くする", "ロ：トースカンは平行線に使う", "ハ：コンパスは円を描く", "ニ：マイクロメータでけがく"], "answer": "ニ" },
+                    { "id": 38, "text": "やすり仕上げに関する記述として、誤っているものはどれか。", "options": ["イ：押し付けながら削る", "ロ：戻すときは浮かせる", "ハ：目詰まりにはブラシを使う", "ニ：やすりは引くときに削る"], "answer": "ニ" },
+                    { "id": 39, "text": "電極にタングステンを使用し、不活性ガスを用いるアーク溶接法はどれか。", "options": ["イ：被覆アーク溶接", "ロ：炭酸ガス溶接", "ハ：スポット溶接", "ニ：TIG溶接"], "answer": "ニ" },
+                    { "id": 40, "text": "黄銅は、銅と何を主成分とした合金か。", "options": ["イ：ニッケル", "ロ：亜鉛", "ハ：スズ", "ニ：アルミニウム"], "answer": "ロ" },
+                    { "id": 41, "text": "炭素鋼の焼戻しの効果に関する記述として、誤っているものはどれか。", "options": ["イ：硬さが低下する", "ロ：靭性が向上する", "ハ：脆さが取り除かれる", "ニ：硬度が著しく上昇する"], "answer": "ニ" },
+                    { "id": 42, "text": "対面角136°の四角すいダイヤモンド圧子を用いる硬さ試験法はどれか。", "options": ["イ：ブリネル", "ロ：ロックウェル", "ハ：ビッカース", "ニ：ショア"], "answer": "ハ" },
+                    { "id": 43, "text": "方向や大きさが繰り返し変動する荷重を何荷重というか。", "options": ["イ：静的荷重", "ロ：衝撃荷重", "ハ：繰返し荷重", "ニ：引張荷重"], "answer": "ハ" },
+                    { "id": 44, "text": "JISによれば、高速度工具鋼鋼材を表す材料記号はどれか。", "options": ["イ：SKS", "ロ：SKD", "ハ：SKH", "ニ：SK"], "answer": "ハ" },
+                    { "id": 45, "text": "第三角法による投影図の見取り図として正しいものはどれか。", "options": ["イ：前面図・平面図・側面図", "ロ：正面図・底面図", "ハ：立体図", "ニ：展開図"], "answer": "ハ" },
+                    { "id": 46, "text": "JISによれば、記号FCDで表されるものはどれか。", "options": ["イ：球状黒鉛鋳鉄", "ロ：ねずみ鋳鉄", "ハ：炭素鋼", "ニ：アルミニウム合金"], "answer": "イ" },
+                    { "id": 47, "text": "導体に流れる電流と電圧、抵抗に関する法則を何というか。", "options": ["イ：フレミングの法則", "ロ：パスカルの法則", "ハ：オームの法則", "ニ：フックの法則"], "answer": "ハ" },
+                    { "id": 48, "text": "次の合成抵抗に関する記述のうち、正しいものはどれか。", "options": ["イ：直列では和の逆数", "ロ：並列では単純な和", "ハ：直列で小さくなる", "ニ：直列では単純な和"], "answer": "ニ" },
+                    { "id": 49, "text": "電流計と電圧計の結線として、正しいものはどれか。", "options": ["イ：電流計は並列", "ロ：電圧計は直列", "ハ：電流計は直列、電圧計は並列", "ニ：両方とも直列"], "answer": "ハ" },
+                    { "id": 50, "text": "研削といしの試運転に関する規定で正しいものはどれか。", "options": ["イ：作業開始前は1分間、交換後は3分間", "ロ：両方とも1分間", "ハ：作業開始前は3分間、交換後は1分間", "ニ：試運転は不要"], "answer": "イ" }
+                 ]
+            },
+            "R3": {
+                "title": "令和3年度 技能検定 2級学科試験",
+                "questions": [
+                    { "id": 1, "text": "NC旋盤のZ軸は、工作物の回転軸に平行となっている。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 2, "text": "一般に、心棒(マンドレル)の両端はセンタ穴になっていて、精密な芯出し作業に適している。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 3, "text": "NC工作機械において、全てのG機能は、指令されたブロックのみで有効である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 4, "text": "NC工作機械におけるメモリ運転とは、NC工作機械を実際に手動で動かし、その各点を制御装置のメモリに記憶させ、その後自動で動作させることである。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 5, "text": "NC工作機械におけるワーク座標系の原点は、機械座標系の原点と必ず一致させなければならない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 6, "text": "NC工作機械においてドライランとは、マシンプログラムのチェック等を行うときに使う機能である。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 7, "text": "チェーザには、内径ねじ加工に使用できるものはない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 8, "text": "クランプバイトに用いる超硬チップには、取付け穴のあるものとないものとがある。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 9, "text": "溝が軸線に対して右にねじれている右スパイラルタップでは、右ねじの場合、切りくずが進行方向に排出される。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 10, "text": "超硬バイトで切削中、チッピングが生じやすい場合には、硬い材質のチップのものに交換するとよい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 11, "text": "ローレット加工とは、円筒面に平目、あや目などの模様を施す加工のことである。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 12, "text": "食込みとびびりを避けるためには、ヘールバイトを使用するとよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 13, "text": "セラミック工具は、超硬工具に比較して硬度が高い。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 14, "text": "ねじ切り丸ダイスの食付き部の長さは、表面も裏面も同じである。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 15, "text": "バイトの刃先の剛性は、すくい角を大きくするほど増大する。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 16, "text": "ぴぴり振動を抑えるためには、ノーズRの小さいバイトを使用すると効果がある。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 17, "text": "荒削りでは、一般に、送り量や切込みの深さを大きくし、工具寿命を維持するために切削速度を遅くして加工するのがよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 18, "text": "切削速度、切込み及び送りを同一条件で切削したとき、ステンレス鋼SUS304の切削温度は、炭素鋼S55Cよりも高くなる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 19, "text": "切削油剤を使用する目的には、潤滑性、冷却性などがあり、切削油剤を使用することにより、工具寿命を延ばすことができる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 20, "text": "構成刃先は、銅及びアルミニウムの切削では発生しにくい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 21, "text": "切削加工によって仕上げ面の表層部に残った応力を降伏応力という。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 22, "text": "一般に、切削抵抗の3分力のうち主分力が最も大きい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 23, "text": "不水溶性切削油剤の潤滑効果は、一般に、低速切削速度において効果が小さく、高速切削速度では効果が大きい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 24, "text": "丸棒の旋削で、主軸回転速度200 min-1、長さ1000mmを送り量0.5 mm/revで加工すると、切削時間は15分になる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 25, "text": "日本産業規格(JIS)によれば、切りくず形態は、流れ形、せん断形、むしれ形及び亀裂形の4形態に分類される。", "options": ["○", "×"], "answer": "○" },
+                　  { "id": 26, "text": "次の工作機械と加工内容の組合せとして、適切でないものはどれか。", "options": ["イ：マシニングセンタ－ミーリング", "ロ：普通旋盤－外径旋削", "ハ：円筒研削盤－平面削り", "ニ：ボール盤－穴あけ"], "answer": "ハ" },
+                    { "id": 27, "text": "切削又は研削工具に関する記述として、正しいものはどれか。", "options": ["イ：バイトのすくい角は必ず正である", "ロ：といしの結合剤は気孔率に関係しない", "ハ：超硬工具は高速切削に適している", "ニ：ドリルは穴を広げるための工具である"], "answer": "ハ" },
+                    { "id": 28, "text": "切削油剤に関する記述のうち、正しいものはどれか。", "options": ["イ：冷却作用のみを持つ", "ロ：工具寿命を延ばす効果がある", "ハ：常に不水溶性を用いる", "ニ：洗浄作用は必要ない"], "answer": "ロ" },
+                    { "id": 29, "text": "グリースと潤滑油を比較した場合、一般に、グリースのほうが冷却効果が低い。", "options": ["イ：正しい", "ロ：誤っている"], "answer": "イ" },
+                    { "id": 30, "text": "日本産業規格(JIS)によれば、流量調整弁は、圧力補償機能をもつ弁である。", "options": ["イ：正しい", "ロ：誤っている"], "answer": "ハ" },
+                    { "id": 31, "text": "加工用ジグに関する記述のうち、誤っているものはどれか。", "options": ["イ：加工の効率化を目的とする", "ロ：製品の互換性を確保する", "ハ：ジグがなくても加工は可能である", "ニ：加工精度は低下する"], "answer": "ハ" },
+                    { "id": 32, "text": "比較測定器でないものはどれか。", "options": ["イ：ダイヤルゲージ", "ロ：ノギス", "ハ：シリンダーゲージ", "ニ：空気マイクロメータ"], "answer": "ロ" },
+                    { "id": 33, "text": "ヒストグラムに関する記述として、適切なものはどれか。", "options": ["イ：データの分布を視覚化する", "ロ：工程の順序を表す", "ハ：原因と結果の関係を表す", "ニ：目標達成率を表す"], "answer": "イ" },
+                    { "id": 34, "text": "一般に、摩擦係数が最も小さいねじはどれか。", "options": ["イ：三角ねじ", "ロ：ボールねじ", "ハ：角ねじ", "ニ：台形ねじ"], "answer": "ロ" },
+                    { "id": 35, "text": "半月キーに関する記述として、正しいものはどれか。", "options": ["イ：軸のキー溝が半円形である", "ロ：軸方向の移動を完全に拘束する", "ハ：重荷重に適している", "ニ：キーの強度が非常に高い"], "answer": "イ" },
+                    { "id": 36, "text": "次のねじのうち、メートル細目ねじはどれか。", "options": ["イ：M8×1", "ロ：M8×1.25", "ハ：M10×1.5", "ニ：M12×1.75"], "answer": "イ" },
+                    { "id": 37, "text": "けがき作業における基準の取り方として、誤っているものはどれか。", "options": ["イ：基準面から測定する", "ロ：一箇所を基準にする", "ハ：けがき後に加工する", "ニ：けがいた線に合わせて削る"], "answer": "ロ" },
+                    { "id": 38, "text": "仕上げ作業に関する記述として、誤っているものはどれか。", "options": ["イ：リーマはねじれ刃が一般的である", "ロ：手仕上げにはやすりを使う", "ハ：きさげは面を平滑にする", "ニ：仕上げは加工の最終段階である"], "answer": "イ" },
+                    { "id": 39, "text": "日本産業規格(JIS)の溶接用語で、規定外のものはどれか。", "options": ["イ：アーク溶接", "ロ：溶射", "ハ：スポット溶接", "ニ：TIG溶接"], "answer": "ロ" },
+                    { "id": 40, "text": "機械構造用炭素鋼鋼材S45Cは、炭素の含有量が約0.45%である。", "options": ["イ：正しい", "ロ：誤っている"], "answer": "ハ" },
+                    { "id": 41, "text": "鋼の熱処理における調質（焼戻し）に関する記述。", "options": ["イ：靭性を高める", "ロ：硬さを最大にする", "ハ：耐食性を高める", "ニ：加工性を低下させる"], "answer": "イ" },
+                    { "id": 42, "text": "材料の硬さ試験で、ビッカース硬さを表す記号はどれか。", "options": ["イ：HRC", "ロ：HV", "ハ：HB", "ニ：HS"], "answer": "ロ" },
+                    { "id": 43, "text": "軟鋼の「応カーひずみ線図」に関する記述として、誤っているもの。", "options": ["イ：弾性変形領域がある", "ロ：降伏点が存在する", "ハ：破断までは伸びる", "ニ：線図は直線のみである"], "answer": "ニ" },
+                    { "id": 44, "text": "直径50mmの球の半径表示として、正しいものはどれか。", "options": ["イ：S25", "ロ：R25", "ハ：C25", "ニ：SR25"], "answer": "ニ" },
+                    { "id": 45, "text": "幾何公差で、位置度を表す記号はどれか。", "options": ["イ：◎", "ロ：∥", "ハ：⊥", "ニ：○"], "answer": "イ" },
+                    { "id": 46, "text": "日本産業規格(JIS)の機械製図に関する記述として、正しいものはどれか。", "options": ["イ：中心線は細い一点鎖線", "ロ：特殊加工は太い一点鎖線", "ハ：破れ境界は太い実線", "ニ：見える形状は細い二点鎖線"], "answer": "イ" },
+                    { "id": 47, "text": "100V用電気器具の抵抗が50Ωの場合、消費電力は200W。", "options": ["イ：正しい", "ロ：誤っている"], "answer": "ロ" },
+                    { "id": 48, "text": "常温において、最も電気抵抗率が小さいものはどれか。", "options": ["イ：銅", "ロ：アルミニウム", "ハ：銀", "ニ：ニクロム"], "answer": "ハ" },
+                    { "id": 49, "text": "50Hzで1500 min-1の三相誘導電動機を60Hzで使用した場合の回転速度。", "options": ["イ：1800 min-1", "ロ：1500 min-1", "ハ：1200 min-1", "ニ：2000 min-1"], "answer": "イ" },
+                    { "id": 50, "text": "一般的な安全衛生に関する記述として、誤っているもの。", "options": ["イ：作業開始前の点検は重要", "ロ：安全教育は一度受ければよい", "ハ：保護具を着用する", "ニ：機械には防護装置をつける"], "answer": "イ" }
+                ]
+            },
+            "R4": {
+                "title": "令和3年度 技能検定 2級学科試験",
+                "questions": [
+                    { "id": 1, "text": "NC旋盤のZ軸は、工作物の回転軸に平行となっている。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 2, "text": "一般に、心棒(マンドレル)の両端はセンタ穴になっていて、精密な芯出し作業に適している。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 3, "text": "NC工作機械において、全てのG機能は、指令されたブロックのみで有効である。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 4, "text": "NC工作機械におけるメモリ運転とは、NC工作機械を実際に手動で動かし、その各点を制御装置のメモリに記憶させ、その後自動で動作させることである。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 5, "text": "NC工作機械におけるワーク座標系の原点は、機械座標系の原点と必ず一致させなければならない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 6, "text": "NC工作機械においてドライランとは、マシンプログラムのチェック等を行うときに使う機能である。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 7, "text": "チェーザには、内径ねじ加工に使用できるものはない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 8, "text": "クランプバイトに用いる超硬チップには、取付け穴のあるものとないものとがある。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 9, "text": "溝が軸線に対して右にねじれている右スパイラルタップでは、右ねじの場合、切りくずが進行方向に排出される。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 10, "text": "超硬バイトで切削中、チッピングが生じやすい場合には、硬い材質のチップのものに交換するとよい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 11, "text": "ローレット加工とは、円筒面に平目、あや目などの模様を施す加工のことである。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 12, "text": "食込みとびびりを避けるためには、ヘールバイトを使用するとよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 13, "text": "セラミック工具は、超硬工具に比較して硬度が高い。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 14, "text": "ねじ切り丸ダイスの食付き部の長さは、表面も裏面も同じである。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 15, "text": "バイトの刃先の剛性は、すくい角を大きくするほど増大する。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 16, "text": "ぴぴり振動を抑えるためには、ノーズRの小さいバイトを使用すると効果がある。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 17, "text": "荒削りでは、一般に、送り量や切込みの深さを大きくし、工具寿命を維持するために切削速度を遅くして加工するのがよい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 18, "text": "切削速度、切込み及び送りを同一条件で切削したとき、ステンレス鋼SUS304の切削温度は、炭素鋼S55Cよりも高くなる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 19, "text": "切削油剤を使用する目的には、潤滑性、冷却性などがあり、切削油剤を使用することにより、工具寿命を延ばすことができる。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 20, "text": "構成刃先は、銅及びアルミニウムの切削では発生しにくい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 21, "text": "切削加工によって仕上げ面の表層部に残った応力を降伏応力という。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 22, "text": "一般に、切削抵抗の3分力のうち主分力が最も大きい。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 23, "text": "不水溶性切削油剤の潤滑効果は、一般に、低速切削速度において効果が小さく、高速切削速度では効果が大きい。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 24, "text": "丸棒の旋削で、主軸回転速度200 min-1、長さ1000mmを送り量0.5 mm/revで加工すると、切削時間は15分になる。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 25, "text": "日本産業規格(JIS)によれば、切りくず形態は、流れ形、せん断形、むしれ形及び亀裂形の4形態に分類される。", "options": ["○", "×"], "answer": "○" },
+                    { "id": 26, "text": "次の工作機械と加工内容の組合せとして、適切でないものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 27, "text": "切削又は研削工具に関する記述として、正しいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 28, "text": "切削油剤に関する記述のうち、正しいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 29, "text": "グリースと潤滑油を比較した場合、一般に、グリースのほうが冷却効果が低い。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 30, "text": "日本産業規格(JIS)によれば、流量調整弁は、圧力補償機能をもつ弁である。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 31, "text": "加工用ジグに関する記述のうち、誤っているものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 32, "text": "比較測定器でないものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 33, "text": "ヒストグラムに関する記述として、適切なものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 34, "text": "摩擦係数が最も小さいねじはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 35, "text": "半月キーに関する記述として、正しいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 36, "text": "次のねじのうち、メートル細目ねじはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 37, "text": "けがき作業における基準の取り方として、誤っているものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 38, "text": "仕上げ作業に関する記述として、誤っているものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 39, "text": "日本産業規格(JIS)の溶接用語で、規定外のものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 40, "text": "機械構造用炭素鋼鋼材S45Cは、炭素の含有量が約0.45%である。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 41, "text": "鋼の熱処理における調質（焼戻し）に関する記述。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 42, "text": "材料の硬さ試験で、ビッカース硬さを表す記号はどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 43, "text": "軟鋼の「応カーひずみ線図」に関する記述として、誤っているものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ニ" },
+                    { "id": 44, "text": "直径50mmの球の半径表示として、正しいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ニ" },
+                    { "id": 45, "text": "幾何公差の図示方法で、位置度を表す記号はどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 46, "text": "日本産業規格(JIS)の機械製図に関する記述として、正しいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 47, "text": "100V用電気器具の抵抗が50Ωの場合、消費電力は200W。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ロ" },
+                    { "id": 48, "text": "常温において、最も電気抵抗率が小さいものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "ハ" },
+                    { "id": 49, "text": "50Hzで1500 min-1の三相誘導電動機を60Hzで使用した場合の回転速度。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" },
+                    { "id": 50, "text": "一般的な安全衛生に関する記述として、誤っているものはどれか。", "options": ["イ", "ロ", "ハ", "ニ"], "answer": "イ" }
+                ]
+            },
+            "R5": {
+                "title": "令和5年度 技能検定 2級学科試験",
+                "questions": [
+                    { "id": 1, "text": "普通旋盤は、静的精度検査に合格していれば、工作精度検査を行う必要がない。", "options": ["○", "×"], "answer": "×" },
+                    { "id": 2, "text": "切削用超硬質工具材料の材種のP種は、鋼の切削に適している。", "options": ["○", "×"], "answer": "○" }
+                ]
             }
-        } else {
-            let opt = document.createElement('option'); opt.textContent = "questions.jsが見つかりません"; select.appendChild(opt);
+        };
+
+        let currentYear = "";
+        let currentAnswers = {};
+
+        function login() {
+            if (document.getElementById('birthdayInput').value.length === 8) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainScreen').classList.remove('hidden');
+            } else {
+                alert("8桁で入力してください");
+            }
         }
-    }
-    function startExam() {
-        const select = document.getElementById('yearSelect'); currentYear = select.value;
-        if (!currentYear || !examData[currentYear]) return;
-        currentQuestions = examData[currentYear].questions; userAnswers = {}; currentIndex = 0; timeLeft = 6000;
-        document.getElementById('setupArea').style.display = 'none';
-        document.getElementById('resultArea').style.display = 'none';
-        document.getElementById('examArea').style.display = 'block';
-        buildNavGrid(); showQuestion(0); startTimer();
-    }
-    function startTimer() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            const h = Math.floor(timeLeft / 3600); const m = Math.floor((timeLeft % 3600) / 60); const s = timeLeft % 60
+
+        function startExam(year) {
+            currentYear = year;
+            document.getElementById('mainScreen').classList.add('hidden');
+            document.getElementById('quizArea').classList.remove('hidden');
+            renderQuestions(year);
+        }
+
+        function renderQuestions(year) {
+            const data = examData[year];
+            document.getElementById('qTitle').innerText = data.title;
+            let html = "";
+            data.questions.forEach((q, idx) => {
+                html += `<div class="q-text">問${q.id}: ${q.text}</div>`;
+                q.options.forEach(opt => {
+                    html += `<button id="btn-${idx}-${opt}" class="option-btn" onclick="selectOption(${idx}, '${opt}')">${opt}</button>`;
+                });
+            });
+            html += `<button class="submit" onclick="submitExam()">提出して採点</button>`;
+            document.getElementById('qContent').innerHTML = html;
+        }
+
+        function selectOption(qIdx, option) {
+            currentAnswers[qIdx] = option;
+            examData[currentYear].questions[qIdx].options.forEach(opt => {
+                const btn = document.getElementById(`btn-${qIdx}-${opt}`);
+                btn.classList.toggle('selected', opt === option);
+            });
+        }
+
+        function submitExam() {
+            alert("採点機能は現在開発中です！");
+        }
+    </script>
+</body>
+</html>
