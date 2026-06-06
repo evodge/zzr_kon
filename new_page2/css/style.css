@@ -1,0 +1,729 @@
+/* ==========================================================================
+   共通スタイルシート - 爽やかなブルー & 柔らかいゴシック
+   ========================================================================== */
+
+/* Google Fontsの読み込み（柔らかいゴシック体：Noto Sans JP） */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+    --primary-blue: #0068b7;    /* メインのブルー */
+    --bright-blue: #00a0e9;     /* アクセントの明るいブルー */
+    --soft-blue: #f0f8ff;       /* 背景用の非常に薄いブルー */
+    --text-dark: #2c3e50;       /* 文字色 */
+    --text-light: #ffffff;      /* 白抜き文字 */
+    --border-color: #e1e8ed;    /* 境界線 */
+    --shadow: 0 4px 12px rgba(0, 104, 183, 0.1);
+}
+
+/* 基本設定 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans JP', "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    color: var(--text-dark);
+    background-color: #ffffff;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+a:hover {
+    color: var(--bright-blue);
+}
+
+/* ヘッダー */
+header {
+    background: #fff;
+    padding: 25px 0;
+    border-bottom: 4px solid var(--primary-blue);
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.header-logo-area h1 {
+    font-size: 1.6rem;
+    color: var(--primary-blue);
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #666;
+    letter-spacing: 0.05em;
+}
+
+.btn-main-school {
+    background: var(--primary-blue);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ナビゲーション */
+nav {
+    background: var(--primary-blue);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav ul {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    list-style: none;
+}
+
+nav ul li {
+    flex: 1;
+}
+
+nav ul li a {
+    display: block;
+    padding: 15px 10px;
+    color: #fff;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+nav ul li a:hover,
+nav ul li a.current {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 -4px 0 var(--bright-blue);
+}
+
+/* ヒーローエリア（トップページ専用） */
+.hero-view {
+    background: var(--soft-blue);
+    overflow: hidden;
+}
+
+.hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    min-height: 450px;
+}
+
+.hero-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 100px 70px;
+    position: relative;
+    /* 深いネイビーに、右下から差し込むゴールドの残光を表現したグラデーション */
+    background: linear-gradient(135deg, #001428 0%, #002d5a 60%, #4a432a 100%);
+    overflow: hidden;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.4);
+}
+
+/* スタイリッシュな垂直バー（フェードイン） */
+.hero-left::before {
+    content: "";
+    position: absolute;
+    top: 15%;
+    left: 0;
+    bottom: 15%;
+    width: 8px;
+    background: linear-gradient(to bottom, var(--bright-blue), var(--primary-blue));
+    opacity: 0;
+    animation: fadeInBar 1s ease-out 1.8s forwards;
+    box-shadow: 0 0 15px rgba(0, 160, 233, 0.4);
+    z-index: 2;
+}
+
+.catchphrase {
+    font-size: 4.2rem;
+    color: #ffffff;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    opacity: 0;
+    text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    /* 1. 日本語が左から滑らかにスライド */
+    animation: slideFromLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0s forwards;
+    margin-top: 10px;
+}
+
+.catchphrase .highlight {
+    color: #ffeb3b;
+    position: relative;
+    text-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+    padding: 0 5px;
+}
+
+.english-sub {
+    color: var(--bright-blue);
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    display: block;
+    font-size: 1rem;
+    opacity: 0;
+    text-transform: uppercase;
+    /* 2. 英語が少し遅れて上から降ってくる */
+    animation: dropFromTop 1s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards;
+}
+
+.hero-right {
+    flex: 1.2;
+    position: relative;
+    background-color: transparent;
+}
+
+.slideshow-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: contain; /* 全体が表示されるように調整 */
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.slide.active {
+    opacity: 1;
+}
+
+/* 下層ページの見出しエリア */
+.page-header {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--bright-blue) 100%);
+    color: #ffffff;
+    padding: 55px 20px;
+    text-align: center;
+    box-shadow: inset 0 -5px 15px rgba(0,0,0,0.1);
+}
+
+.page-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header h2 {
+    font-size: 2.2rem;
+    color: #ffffff; /* 背景と同化しないよう白に固定 */
+    margin-bottom: 8px;
+    padding-left: 0;
+    border-left: none; /* 全体のh2に付いている青い線を消す */
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.page-header p {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+/* メインレイアウト */
+.main-layout {
+    max-width: 1200px;
+    margin: 40px auto;
+    display: flex;
+    gap: 40px;
+    padding: 0 20px;
+}
+
+.content-area {
+    flex: 3;
+}
+
+.sidebar-area {
+    flex: 1;
+}
+
+/* セクション共通 */
+section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--soft-blue);
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    padding-left: 15px;
+    border-left: 5px solid var(--primary-blue);
+}
+
+/* ハイライトボックス */
+.highlight-box {
+    background: var(--soft-blue);
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 5px solid var(--bright-blue);
+    margin-top: 20px;
+}
+
+.btn-pdf {
+    display: inline-block;
+    margin-top: 15px;
+    background: var(--bright-blue);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+/* 新着情報リスト */
+.news-list {
+    list-style: none;
+}
+
+.news-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.date {
+    font-family: 'Arial', sans-serif;
+    color: #888;
+    font-size: 0.9rem;
+    min-width: 100px;
+}
+
+.label-new {
+    background: #ff5e5e;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+/* サイドバーウィジェット */
+.widget {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.widget h3 {
+    font-size: 1.1rem;
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    border-bottom: 2px solid var(--soft-blue);
+    padding-bottom: 8px;
+}
+
+.side-menu-links {
+    list-style: none;
+}
+
+.side-menu-links li {
+    margin-bottom: 10px;
+}
+
+.side-menu-links a {
+    font-size: 0.95rem;
+    display: block;
+    padding: 5px 0;
+}
+
+.btn-note, .btn-location {
+    display: block;
+    text-align: center;
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.btn-note { background: #41c15d; } /* note用グリーン */
+
+/* フッター */
+footer {
+    background: var(--primary-blue);
+    color: #fff;
+    text-align: center;
+    padding: 30px 0;
+    margin-top: 60px;
+}
+
+footer p {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   進路先ページ (job.html) 用の追加スタイル
+   ========================================================================== */
+.job-flex-container {
+    display: flex;
+    gap: 25px; /* 表と表の間の余白 */
+    align-items: flex-start;
+    margin-top: 20px;
+}
+
+.job-column-box {
+    flex: 1; /* 左右等幅に広がる設定 */
+    min-width: 0;
+}
+
+.job-column-box h3 {
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    padding: 12px 15px;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+}
+
+.job-single-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+}
+
+.job-single-table th, .job-single-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.job-single-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+    color: #555;
+}
+
+.col-num { width: 40px; text-align: center !important; color: #999; }
+
+.count-badge {
+    color: var(--bright-blue);
+    font-weight: 700;
+    margin-left: 4px;
+}
+
+.table-notice {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+/* ==========================================================================
+   学習紹介・グリッドレイアウト (learning.html等)
+   ========================================================================== */
+.learning-grid, .mc-grid, .el-grid, .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+/* 各項目の「枠組み」デザイン */
+.learning-card, .mc-card, .el-card, .industry-feature-box, .benefit-card {
+    background: #ffffff;
+    border: 2px solid var(--border-color); /* 表のようなしっかりした枠線 */
+    border-radius: 15px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.learning-card:hover, .mc-card:hover, .el-card:hover, .benefit-card:hover {
+    border-color: var(--primary-blue);
+    box-shadow: 0 10px 20px rgba(0, 104, 183, 0.1);
+    transform: translateY(-5px);
+}
+
+/* アイコンとタイトルの装飾 */
+.card-icon, .mc-card-icon, .el-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.learning-card h3, .mc-card h4, .el-card h4, .benefit-card h5 {
+    color: var(--primary-blue);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+/* 説明文のスタイル */
+.card-desc, .mc-card p, .el-card p, .benefit-card p {
+    font-size: 0.95rem;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* 「詳しく見る」ボタンの強調 */
+.card-more {
+    margin-top: auto; /* ボタンを常に下部に配置 */
+    background: var(--primary-blue);
+    color: #ffffff !important;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background 0.3s;
+    display: block;
+    box-shadow: 0 4px 0 #004a82; /* 立体感のあるボタン */
+}
+
+.learning-card:hover .card-more {
+    background: var(--bright-blue);
+    box-shadow: 0 4px 0 #0081bc;
+}
+
+/* コース詳細ページのタグ等 */
+.subject-tag {
+    display: inline-block;
+    font-size: 0.8rem;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+}
+
+/* 各コースのテーマカラーアクセント */
+.theme-blue   { border-top: 6px solid #3182ce; }
+.theme-orange { border-top: 6px solid #ed8936; }
+.theme-green  { border-top: 6px solid #38a169; }
+.theme-yellow { border-top: 6px solid #ecc94b; }
+.theme-purple { border-top: 6px solid #9f7aea; }
+.theme-red    { border-top: 6px solid #e53e3e; }
+
+/* 地域連携セクションの調整 */
+.industry-feature-box {
+    border: 2px solid var(--border-color);
+    margin-top: 20px;
+}
+
+.badge-tag {
+    background: #ff5e5e;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+/* ==========================================================================
+   タイムスケジュール (campus.html) & 共通テーブルスタイル
+   ========================================================================== */
+.timeline-table {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 25px;
+    box-shadow: var(--shadow);
+}
+
+.timeline-row {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    background: #fff;
+    align-items: stretch;
+}
+
+.timeline-row:last-child {
+    border-bottom: none;
+}
+
+.time-col {
+    flex: 0 0 110px;
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 10px;
+    border-right: 1px solid var(--border-color);
+    font-size: 0.95rem;
+}
+
+.icon-col {
+    flex: 0 0 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-right: 1px dotted var(--border-color);
+}
+
+.schedule-icon {
+    width: 45px;
+    height: auto;
+}
+
+.desc-col {
+    flex: 1;
+    padding: 20px;
+}
+
+.desc-col h4 {
+    color: var(--primary-blue);
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge-lecture {
+    font-size: 0.75rem;
+    background: var(--bright-blue);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: normal;
+}
+
+.illustration-col {
+    flex: 0 0 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: #fafafa;
+}
+
+.right-illustration {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* 行ごとのアクセント（ campus.html のクラスに対応 ） */
+.row-neutral { border-left: 6px solid #cbd5e0; }
+.row-class   { border-left: 6px solid var(--primary-blue); }
+.row-lunch   { border-left: 6px solid #f6ad55; background-color: #fffaf0; }
+.row-after   { border-left: 6px solid #48bb78; background-color: #f0fff4; }
+
+/* 学習ページ用の汎用テーブル (learning_machine/electrical.html) */
+.modern-table-wrapper {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.company-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border-color);
+}
+
+.company-table th {
+    background: var(--soft-blue);
+    color: var(--primary-blue);
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--primary-blue);
+}
+
+.company-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.company-table tr:nth-child(even) { background: #fcfdfe; }
+
+/* レスポンシブ */
+@media (max-width: 900px) {
+    .hero-container, .main-layout {
+        flex-direction: column;
+    }
+    .catchphrase { font-size: 2rem; }
+    .hero-right { height: 300px; }
+    nav ul { flex-wrap: wrap; }
+    nav ul li { flex: 1 1 33.33%; }
+}
+
+/* 就職先テーブルのモバイル対応：幅が狭いときは縦に並べる */
+@media (max-width: 850px) {
+    .job-flex-container {
+        flex-direction: column;
+    }
+}
+
+/* タイムスケジュールのモバイル対応 */
+@media (max-width: 768px) {
+    .timeline-row {
+        flex-direction: column;
+    }
+    .time-col {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 10px;
+    }
+    .icon-col, .illustration-col { display: none; }
+}
+
+/* ==========================================================================
+   アニメーション設定（キャッチフレーズ専用）
+   ========================================================================== */
+@keyframes slideFromLeft {
+    from { opacity: 0; transform: translateX(-60px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dropFromTop {
+    from { opacity: 0; transform: translateY(-40px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInBar {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
