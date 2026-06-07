@@ -1043,23 +1043,27 @@ footer {
 }
 
 /* ==========================================================================
-   修了生の進路（job.html）
+   修了生の進路（job.html）最終修正版
    ========================================================================== */
-/* 基本設定：まずはスマホ（画面が狭いとき）を基準に「縦並び」で作る */
+
+/* 1. パソコン表示（1200pxなど）を基準：横並びに固定する */
 .job-flex-container {
-    display: flex;
-    flex-direction: column; /* 縦並び */
-    gap: 20px;              /* ボックス同士の上下のすき間 */
+    display: flex !important;    /* 強制的にFlexboxを適用 */
+    flex-direction: row !important; /* パソコンでは横並び */
+    justify-content: space-between;
+    gap: 4%;                     /* 左右のボックスの間のすき間 */
     margin-top: 30px;
+    width: 100%;
 }
 
 .job-column-box {
-    width: 100%;            /* スマホでは横幅いっぱい */
+    width: 48% !important;       /* 2列が綺麗に収まる横幅（半分ずつ） */
     background: var(--white);
     border: 1px solid var(--gray-light);
     border-radius: var(--border-radius);
     padding: 30px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    box-sizing: border-box;
 }
 
 .mech-box { border-top: 5px solid var(--primary-color); }
@@ -1073,16 +1077,15 @@ footer {
     padding-bottom: 10px;
 }
 
-/* パソコン表示（画面幅が769px以上）のときだけ「横並び」に上書きする */
-@media screen and (min-width: 769px) {
+/* 2. スマホ表示（画面幅768px以下）のときだけ「縦並び」に強制上書き */
+@media screen and (max-width: 768px) {
     .job-flex-container {
-        flex-direction: row;            /* 横並び */
-        justify-content: space-between; /* 左右に綺麗に割り振り */
-        gap: 0;                         /* width側で隙間を開けるため0にする */
+        flex-direction: column !important; /* スマホでは縦並び */
+        gap: 20px !important;              /* ボックス同士の上下のすき間 */
     }
 
     .job-column-box {
-        width: 48%;                     /* 2列が綺麗に収まる横幅 */
+        width: 100% !important;            /* スマホでは横幅いっぱい */
     }
 }
 /* ==========================================================================
@@ -1337,5 +1340,5 @@ footer {
 .info-widget .contact-text {
     font-size: 0.85rem;
     line-height: 1.8;
-    white-space: nowrap; /* サイドバーの住所を1行で保持 */
+    white-space: normal; /* スマホで住所がはみ出さないように自動改行を許可 */
 }
