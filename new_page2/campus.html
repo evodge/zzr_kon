@@ -60,17 +60,17 @@
                     </p>
                 </section>
 
-               <!-- タイムスケジュール表 -->
-                <section class="schedule-section">
+               <section class="schedule-section">
                     <h3>📅 タイムスケジュール</h3>
                     
                     <div class="timeline-table">
                         
-                        <!-- 登校 -->
                         <div class="timeline-row row-neutral">
-                            <div class="time-col">08:25</div>
+                            <div class="time-col">
+                                <span>08:25</span>
+                            </div>
                             <div class="icon-col">
-                                <img src="images/campus/icon_morning.png" alt="登校アイコン" class="schedule-icon">
+                                <img src="images/campus/icon_morning.png" alt="登校アイコン" class="schedule-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' width=\'32\' height=\'32\'><path fill=\'%23555\' d=\'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1-1.5 1zm11 0c-.83 0-1.5-.67-1.5-1s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1-1.5 1zM5 11l1.5-4.5h11L19 11H5z\'/></svg>';">
                             </div>
                             <div class="desc-col">
                                 <h4>出校・朝のSHR</h4>
@@ -81,11 +81,14 @@
                             </div>
                         </div>
 
-                        <!-- 1・2限 -->
                         <div class="timeline-row row-class">
-                            <div class="time-col">09:00<br>〜<br>12:10</div>
+                            <div class="time-col">
+                                <span>09:00</span>
+                                <span class="wave">〜</span>
+                                <span>12:10</span>
+                            </div>
                             <div class="icon-col">
-                                <img src="images/campus/icon_study.png" alt="午前授業アイコン" class="schedule-icon">
+                                <img src="images/campus/icon_study.png" alt="午前授業アイコン" class="schedule-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' width=\'32\' height=\'32\'><path fill=\'%23555\' d=\'M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z\'/></svg>';">
                             </div>
                             <div class="desc-col">
                                 <h4>午前授業（1限・2限）<span class="badge-lecture">各90分 / 休憩10分</span></h4>
@@ -96,11 +99,14 @@
                             </div>
                         </div>
 
-                        <!-- 昼休み -->
                         <div class="timeline-row row-lunch">
-                            <div class="time-col">12:10<br>〜<br>13:00</div>
+                            <div class="time-col">
+                                <span>12:10</span>
+                                <span class="wave">〜</span>
+                                <span>13:00</span>
+                            </div>
                             <div class="icon-col">
-                                <img src="images/campus/icon_lunch.png" alt="昼休みアイコン" class="schedule-icon">
+                                <img src="images/campus/icon_lunch.png" alt="昼休みアイコン" class="schedule-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' width=\'32\' height=\'32\'><path fill=\'%23555\' d=\'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8h2.5V2c-2.76 0-5 2.24-5 4z\'/></svg>';">
                             </div>
                             <div class="desc-col">
                                 <h4>お昼休憩（50分間）</h4>
@@ -111,11 +117,14 @@
                             </div>
                         </div>
 
-                        <!-- 3・4限 -->
                         <div class="timeline-row row-class">
-                            <div class="time-col">13:00<br>〜<br>16:10</div>
+                            <div class="time-col">
+                                <span>13:00</span>
+                                <span class="wave">〜</span>
+                                <span>16:10</span>
+                            </div>
                             <div class="icon-col">
-                                <img src="images/campus/icon_jisshu.png" alt="午後授業アイコン" class="schedule-icon">
+                                <img src="images/campus/icon_jisshu.png" alt="午後授業アイコン" class="schedule-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' width=\'32\' height=\'32\'><path fill=\'%23555\' d=\'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L7.9 5 5 7.9 1.7 4.6C.6 7-.2 10 1.8 12c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l3.5-3.5c.4-.4.4-1.1 0-1.6z\'/></svg>';">
                             </div>
                             <div class="desc-col">
                                 <h4>午後授業（3限・4限）<span class="badge-lecture">各90分 / 休憩10分</span></h4>
@@ -126,11 +135,13 @@
                             </div>
                         </div>
 
-                        <!-- 放課後 -->
                         <div class="timeline-row row-after">
-                            <div class="time-col">16:10<br>〜</div>
+                            <div class="time-col">
+                                <span>16:10</span>
+                                <span class="wave">〜</span>
+                            </div>
                             <div class="icon-col">
-                                <img src="images/campus/icon_after.png" alt="放課後アイコン" class="schedule-icon">
+                                <img src="images/campus/icon_after.png" alt="放課後アイコン" class="schedule-icon" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' width=\'32\' height=\'32\'><path fill=\'%23555\' d=\'M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z\'/></svg>';">
                             </div>
                             <div class="desc-col">
                                 <h4>放課後（自主学習・技能競技会・資格取得）</h4>
@@ -143,8 +154,6 @@
 
                     </div>
                 </section>
-
-            </div>
 
             <!-- 右側：サイドバー（全ページ共通スタイル） -->
             <div class="sidebar-area">
@@ -162,7 +171,7 @@
 
                 <div class="widget info-widget">
                     <h3>お問い合わせ</h3>
-                    <p class="school-name">岩手県立黒沢尻工業高等学校 専攻科</p>
+                    <p class="school-name">岩手県立黒沢尻工業高等学校<br>専攻科</p>
                     <p class="contact-text">
                         〒024-8518<br>
                         岩手県北上市村崎野24地割19番地<br>
