@@ -671,6 +671,11 @@ footer {
         align-items: center;
     }
 
+    .job-flex-container {
+        flex-direction: column; /* スマホでは縦並び */
+        gap: 30px;
+    }
+
     .btn-pass {
         width: 100%;
     }
@@ -711,6 +716,12 @@ footer {
     .icon-col, .illustration-col {
         display: none;
     }
+}
+
+/* 会社一覧テーブルの幅調整（PCで広がりすぎないように中央に寄せる） */
+.modern-table-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 /* ==========================================================================
@@ -1041,12 +1052,15 @@ footer {
    ========================================================================== */
 .job-flex-container {
     display: flex;
-    flex-direction: column;
-    gap: 40px; /* コース間のすき間を十分に確保 */
+    flex-direction: row; /* パソコンでは横並び */
+    gap: 20px;
     margin-top: 30px;
+    align-items: flex-start;
 }
 
 .job-column-box {
+    flex: 1; /* 横並び時に均等な幅にする */
+    min-width: 0;
     background: var(--white);
     border: 1px solid var(--gray-light);
     border-radius: var(--border-radius);
