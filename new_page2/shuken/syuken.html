@@ -3,211 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>修了研究・研究テーマ一覧</title>
-    <style>
-        /* 全体の基本デザイン */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            background-color: #f3f4f6;
-            color: #1f2937;
-            line-height: 1.7;
-            margin: 0;
-            padding: 30px 20px;
-        }
-
-        .research-container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        /* ヘッダー部分 */
-        .page-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
-        }
-
-        .page-header h1 {
-            color: #1a365d;
-            font-size: 32px;
-            font-weight: 700;
-            margin: 0 0 12px 0;
-            letter-spacing: 0.5px;
-        }
-
-        .subtitle {
-            color: #4b5563;
-            font-size: 15px;
-            margin: 0;
-        }
-
-        /* テーブル全体のコンテナ */
-        .research-table-container {
-            display: flex;
-            flex-direction: column;
-            gap: 35px;
-        }
-
-        /* 各年度セクション（カードデザイン） */
-        .table-card {
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
-
-        /* テーブルタイトル（年度の見出し） */
-        .table-title {
-            background-color: #1a365d;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 17px;
-            padding: 16px 20px;
-            margin: 0;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-        }
-
-        /* レスポンシブ用ラッパー */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        /* テーブル共通スタイル */
-        .research-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            min-width: 700px; /* スマホでの極端な潰れを防止 */
-        }
-
-        /* 各列のヘッダー */
-        .research-table th {
-            background-color: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-            font-size: 14px;
-            padding: 14px 20px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .header-course {
-            width: 12%;
-            text-align: center;
-        }
-
-        .header-name {
-            width: 25%;
-        }
-
-        .header-theme {
-            /* 残りの幅すべて */
-        }
-
-        /* データ行の基本スタイル */
-        .research-table td {
-            padding: 14px 20px;
-            font-size: 14px;
-            border-bottom: 1px solid #edf2f7;
-            vertical-align: middle;
-        }
-
-        /* コースセルの色分け（バッジスタイル） */
-        .cell-course {
-            text-align: center;
-        }
-        
-        .course-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .course-mech {
-            background-color: #e0f2fe; /* 機械コース：マテリアルライトブルー */
-            color: #0369a1;
-        }
-
-        .course-elec {
-            background-color: #fef3c7; /* 電気コース：マテリアルライトアンバー */
-            color: #b45309;
-        }
-
-        /* 名前・出身校セル */
-        .cell-name {
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        .highschool-text {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 2px;
-            font-weight: normal;
-        }
-
-        /* 研究テーマセル */
-        .cell-theme {
-            color: #1f2937;
-        }
-
-        .theme-text {
-            font-weight: 500;
-        }
-
-        /* リンクのボタン装飾 */
-        .panel-link {
-            display: inline-block;
-            margin-left: 12px;
-        }
-
-        .panel-link a {
-            display: inline-flex;
-            align-items: center;
-            background-color: #3b82f6;
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 6px;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        .panel-link a:hover {
-            background-color: #2563eb;
-            transform: translateY(-1px);
-        }
-        
-        .panel-link a:active {
-            transform: translateY(0);
-        }
-
-        /* 行のホバー効果と縞模様 */
-        .research-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .research-table tbody tr:hover {
-            background-color: #f8fafc;
-        }
-    </style>
+    <title>修了研究一覧 - 岩手県立黒沢尻工業高等学校 専攻科</title>
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-    <div class="research-container">
-        <header class="page-header">
-            <h1>修了研究・研究テーマ一覧</h1>
-            <p class="subtitle">これまでの機械コース・電気コースにおける研究成果と実績</p>
-        </header>
-
-        <div class="research-table-container">
-
+    <header>
+        <div class="header-container">
+            <div class="header-logo-area">
+                <h1>岩手県立黒沢尻工業高等学校 専攻科</h1>
+                <p class="subtitle">高度な技術・技能をさらに深める2年間</p>
+            </div>
+            <div class="header-info-area">
+                <p class="address">〒024-8518 岩手県北上市村崎野24地割19番地</p>
+                <a href="http://www2.iwate-ed.jp/kst-h/" target="_blank" class="btn-main-school">黒沢尻工業高校 本校HPへ</a>
+            </div>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="../index.html">トップ</a></li>
+            <li><a href="../policy.html">ポリシー</a></li>
+            <li><a href="../learning.html">専攻科の学習</a></li>
+            <li><a href="../yearsplan.html">行事予定</a></li>
+            <li><a href="../campus.html">学生生活</a></li>
+            <li><a href="../job.html">進路先</a></li>
+            <li><a href="../nyushi.html">入学者選抜</a></li>
+        </ul>
+    </nav>
+    <div class="page-header">
+        <div class="page-header-container">
+            <h2>修了研究紹介</h2>
+            <p>これまでの機械コース・電気コースにおける研究成果と実績</p>
+        </div>
+    </div>
+    <main>
+        <div class="main-layout">
+            <div class="content-area">
+                <div class="research-table-container">
             <!-- 令和7年度 -->
             <div class="table-card">
                 <div class="table-title">令和7年度（R8.3卒） 修了研究</div>
@@ -226,7 +58,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【シール貼付け装置の製作】</span>
-                                    <span class="panel-link"><a href="R07_panel/01.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/01.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -234,7 +66,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【数値制御工作機械（ＮＣ旋盤）技能向上】</span>
-                                    <span class="panel-link"><a href="R07_panel/02.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/02.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -242,7 +74,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【視認性向上を目的としたカメラの解像度の研究】</span>
-                                    <span class="panel-link"><a href="R07_panel/03.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/03.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -250,7 +82,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【自動搬送装置ＡＧＶの製作】</span>
-                                    <span class="panel-link"><a href="R07_panel/04.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/04.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -258,7 +90,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電気科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【はんだ溶着巻取り装置の製作】</span>
-                                    <span class="panel-link"><a href="R07_panel/05.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/05.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -266,7 +98,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【バッチ式成膜装置におけるウエハ搬送工程の製作】</span>
-                                    <span class="panel-link"><a href="R07_panel/06.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/06.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -274,7 +106,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【液体充填装置の製作】</span>
-                                    <span class="panel-link"><a href="R07_panel/07.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/07.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -282,7 +114,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電気科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【バッチ式成膜装置における熱処理工程の再現】</span>
-                                    <span class="panel-link"><a href="R07_panel/08.pdf" target="_blank">パネルPDF</a></span>
+                                    <span class="panel-link"><a href="R07_panel/08.pdf" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -308,7 +140,7 @@
                                 <td class="cell-name">福岡工業<div class="highschool-text">機械システム科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【自動クルミ加工処理器の製作】</span>
-                                    <span class="panel-link"><a href="R06_panel/01.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/01.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -316,7 +148,7 @@
                                 <td class="cell-name">盛岡工業<div class="highschool-text">機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【ねじ部品の自動計数及び搬出装置】</span>
-                                    <span class="panel-link"><a href="R06_panel/02.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/02.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -324,7 +156,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【スカラ型アームロボットによるウエハ搬送装置】</span>
-                                    <span class="panel-link"><a href="R06_panel/03.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/03.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -332,7 +164,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">材料技術科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【ライントレースによるAGVの製作】</span>
-                                    <span class="panel-link"><a href="R06_panel/04.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/04.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -340,7 +172,7 @@
                                 <td class="cell-name">盛岡工業<div class="highschool-text">電子機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【QRコードを用いたワークの自動搬送装置の製作】</span>
-                                    <span class="panel-link"><a href="R06_panel/05.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/05.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -348,7 +180,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電子機械科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【指定個数による部品の自動供給装置】</span>
-                                    <span class="panel-link"><a href="R06_panel/06.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/06.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                             <tr>
@@ -356,7 +188,7 @@
                                 <td class="cell-name">黒沢尻工業<div class="highschool-text">電気科卒</div></td>
                                 <td class="cell-theme">
                                     <span class="theme-text">【テスラタービンを用いた発電機の研究】</span>
-                                    <span class="panel-link"><a href="R06_panel/07.jpg" target="_blank">パネル画像</a></span>
+                                    <span class="panel-link"><a href="R06_panel/07.jpg" target="_blank">パネル</a></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -492,7 +324,7 @@
 
             <!-- 令和3年度 -->
             <div class="table-card">
-                <div class="table-title">令和2年度（R4.3卒） 修了研究</div>
+                <div class="table-title">令和3年度（R4.3卒） 修了研究</div>
                 <div class="table-responsive">
                     <table class="research-table">
                         <thead>
@@ -780,8 +612,33 @@
                 </div>
             </div>
 
+                </div>
+            </div>
+            <div class="sidebar-area">
+                <div class="widget">
+                    <h3>特設メニュー</h3>
+                    <ul class="side-menu-links">
+                        <li><a href="../news/letter/newsletter.html">▶ 専攻科レター</a></li>
+                        <li><a href="../chukouseimuke/chukouseimukeqandaindex.html">▶ 中高生向けＱ＆Ａ</a></li>
+                        <li><a href="../nyushi.html" class="highlight-link">▶ 入学者選抜について</a></li>
+                        <li><a href="../learning_industry.html">▶ 地域産業ネットワーク</a></li>
+                        <li><a href="syuken.html" class="current">▶ 修了研究紹介</a></li>
+                        <li><a href="../news/pdf/gaibuhyouka.pdf" target="_blank">▶ 専攻科外部評価委員会</a></li>
+                    </ul>
+                </div>
+                <div class="widget info-widget">
+                    <h3>お問い合わせ</h3>
+                    <p class="school-name">岩手県立黒沢尻工業高等学校<br>専攻科</p>
+                    <p class="contact-text">
+                        TEL: 0197-66-4115<br>
+                        FAX: 0197-66-4117
+                    </p>
+                </div>
+            </div>
         </div>
-    </div>
-
+    </main>
+    <footer>
+        <p>Copyright &copy; 2018-2026 黒沢尻工業高校 専攻科 All Rights Reserved.</p>
+    </footer>
 </body>
 </html>
