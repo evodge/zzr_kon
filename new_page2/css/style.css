@@ -671,11 +671,6 @@ footer {
         align-items: center;
     }
 
-    .job-flex-container {
-        flex-direction: column; /* スマホでは縦並び */
-        gap: 30px;
-    }
-
     .btn-pass {
         width: 100%;
     }
@@ -1050,17 +1045,16 @@ footer {
 /* ==========================================================================
    修了生の進路（job.html）
    ========================================================================== */
+/* 基本設定：まずはスマホ（画面が狭いとき）を基準に「縦並び」で作る */
 .job-flex-container {
     display: flex;
-    flex-direction: row; /* パソコンでは横並び */
-    gap: 20px;
+    flex-direction: column; /* 縦並び */
+    gap: 20px;              /* ボックス同士の上下のすき間 */
     margin-top: 30px;
-    align-items: flex-start;
 }
 
 .job-column-box {
-    flex: 1; /* 横並び時に均等な幅にする */
-    min-width: 0;
+    width: 100%;            /* スマホでは横幅いっぱい */
     background: var(--white);
     border: 1px solid var(--gray-light);
     border-radius: var(--border-radius);
@@ -1079,6 +1073,18 @@ footer {
     padding-bottom: 10px;
 }
 
+/* パソコン表示（画面幅が769px以上）のときだけ「横並び」に上書きする */
+@media screen and (min-width: 769px) {
+    .job-flex-container {
+        flex-direction: row;            /* 横並び */
+        justify-content: space-between; /* 左右に綺麗に割り振り */
+        gap: 0;                         /* width側で隙間を開けるため0にする */
+    }
+
+    .job-column-box {
+        width: 48%;                     /* 2列が綺麗に収まる横幅 */
+    }
+}
 /* ==========================================================================
    専攻科レター（newsletter.html）専用
    ========================================================================== */
