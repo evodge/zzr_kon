@@ -5,6 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>修了生の進路 - 岩手県立黒沢尻工業高等学校 専攻科</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* スマホ用ハンバーガーメニューのスタイル */
+        .nav-toggle { display: none; }
+        .nav-toggle-label { display: none; }
+        @media screen and (max-width: 768px) {
+            .nav-toggle-label {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 12px 20px; background: #003366; color: #fff; cursor: pointer;
+            }
+            .nav-toggle-label .hamburger {
+                position: relative; width: 24px; height: 2px; background: #fff; display: block;
+            }
+            .nav-toggle-label .hamburger::before, .nav-toggle-label .hamburger::after {
+                content: ''; position: absolute; width: 24px; height: 2px; background: #fff; left: 0;
+            }
+            .nav-toggle-label .hamburger::before { top: -8px; }
+            .nav-toggle-label .hamburger::after { bottom: -8px; }
+            nav ul {
+                display: none; flex-direction: column; width: 100%; background: #004488; padding: 0;
+            }
+            nav ul li {
+                width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            nav ul li a {
+                display: block; padding: 15px; text-align: center; border-bottom: none;
+            }
+            .nav-toggle:checked ~ ul { display: flex; }
+        }
+    </style>
 </head>
 <body>
 
@@ -22,6 +51,11 @@
     </header>
 
     <nav>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle">
+        <label for="nav-toggle" class="nav-toggle-label">
+            <span>MENU</span>
+            <span class="hamburger"></span>
+        </label>
         <ul>
             <li><a href="index.html">トップ</a></li>
             <li><a href="policy.html">ポリシー</a></li>
