@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>完全オリジナル！ひっかけ国旗クイズ</title>
+    <title>究極の国旗クイズ 150問マスター</title>
     <style>
         body {
             margin: 0; padding: 10px; background: #1c1c1e;
@@ -13,76 +13,53 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .game-container {
-            width: 100%; max-width: 400px;
-            background: #2c2c2e; padding: 25px; border-radius: 14px;
+            width: 100%; max-width: 420px;
+            background: #2c2c2e; padding: 20px; border-radius: 14px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
             box-sizing: border-box;
         }
-        h1 { font-size: 20px; margin: 0 0 5px 0; color: #00ffcc; }
-        .score-board { font-size: 15px; color: #ffd60a; margin-bottom: 15px; font-weight: bold; }
+        h1 { font-size: 18px; margin: 0 0 5px 0; color: #00ffcc; }
+        .score-board { font-size: 14px; color: #ffd60a; margin-bottom: 15px; font-weight: bold; }
         
-        /* ==================== 国旗描画エリア（CSS） ==================== */
+        /* 国旗表示エリア */
         .flag-stage {
-            width: 240px; height: 160px; margin: 0 auto 25px auto;
+            width: 240px; height: 160px; margin: 0 auto 20px auto;
             background: #3a3a3c; border: 4px solid #555;
             box-shadow: 0 6px 12px rgba(0,0,0,0.5);
             position: relative; overflow: hidden;
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* 1. バングラデシュ（緑地に赤丸） */
+        /* 国旗の文字配信用スタイル */
+        .flag-emoji { font-size: 100px; line-height: 160px; text-align: center; user-select: none; }
+        .text-quiz-box { font-size: 15px; color: #ffd60a; font-weight: bold; padding: 10px; text-align: center; line-height: 1.6; }
+
+        /* 固定5問用のCSSスタイル（以前のものを完全維持） */
         .flag-bangladesh { background: #006a4e; position: relative; width: 100%; height: 100%; }
-        .flag-bangladesh::after {
-            content: ''; position: absolute; top: 50%; left: 45%;
-            width: 96px; height: 96px; background: #f42a41;
-            border-radius: 50%; transform: translate(-50%, -50%);
-        }
-
-        /* 2. ベトナム（赤地に中央に黄色の星） */
+        .flag-bangladesh::after { content: ''; position: absolute; top: 50%; left: 45%; width: 96px; height: 96px; background: #f42a41; border-radius: 50%; transform: translate(-50%, -50%); }
         .flag-vietnam { background: #da251d; position: relative; width: 100%; height: 100%; }
-        .flag-vietnam::after {
-            content: '★'; position: absolute; top: 52%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ffff00; font-size: 90px; line-height: 1;
-        }
-
-        /* 3. メキシコ（縦三色＋中央に鷲のマーク風絵文字） */
+        .flag-vietnam::after { content: '★'; position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); color: #ffff00; font-size: 90px; line-height: 1; }
         .flag-mexico { display: flex; width: 100%; height: 100%; position: relative; }
         .flag-mexico .g { flex: 1; background: #006847; }
         .flag-mexico .w { flex: 1; background: #ffffff; }
         .flag-mexico .r { flex: 1; background: #ce1126; }
-        .flag-mexico::after {
-            content: '🦅'; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); font-size: 32px;
-        }
-
-        /* ★5. アイスランド（青地に白枠＋赤の十字） */
+        .flag-mexico::after { content: '🦅'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; }
         .flag-iceland { background: #002395; width: 100%; height: 100%; position: relative; }
-        .flag-iceland::before { /* 白い十字（太め） */
-            content: ''; position: absolute; background: #ffffff; top: 60px; left: 0; width: 100%; height: 40px;
-        }
-        .flag-iceland::after { /* 縦の白い十字 */
-            content: ''; position: absolute; background: #ffffff; top: 0; left: 60px; width: 40px; height: 100%;
-        }
-        /* 赤い十字のレイヤー */
+        .flag-iceland::before { content: ''; position: absolute; background: #ffffff; top: 60px; left: 0; width: 100%; height: 40px; }
+        .flag-iceland::after { content: ''; position: absolute; background: #ffffff; top: 0; left: 60px; width: 40px; height: 100%; }
         .iceland-red-v { position: absolute; background: #dc143c; top: 0; left: 70px; width: 20px; height: 100%; z-index: 2; }
         .iceland-red-h { position: absolute; background: #dc143c; top: 70px; left: 0; width: 100%; height: 20px; z-index: 2; }
 
-        /* テキスト問題用のスタイル */
-        .text-quiz-box { font-size: 14px; color: #ffd60a; font-weight: bold; padding: 15px; text-align: center; line-height: 1.6; }
-        /* ======================================================================== */
-
-        .msg-box { font-size: 16px; font-weight: bold; min-height: 24px; margin-bottom: 15px; color: #fff; }
+        .msg-box { font-size: 15px; font-weight: bold; min-height: 50px; margin-bottom: 15px; color: #fff; display: flex; justify-content: center; align-items: center; padding: 0 10px; }
 
         /* 3択レイアウト */
         .choice-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
         .choice-btn {
-            padding: 14px 10px; font-size: 16px; font-weight: bold; border: none;
+            padding: 14px 10px; font-size: 15px; font-weight: bold; border: none;
             border-radius: 10px; cursor: pointer; background: #3a3a3c; color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.2s, transform 0.1s;
         }
         .choice-btn:active { transform: scale(0.98); }
-        .choice-btn:hover { background: #48484a; }
 
         .btn-action { background: #bf5af2; color: white; padding: 12px; font-size: 15px; border-radius: 8px; width: 100%; margin-top: 15px; border: none; font-weight: bold; cursor: pointer;}
         .back-menu { background: #48484a; color: white; margin-top: 15px; display: inline-block; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px;}
@@ -91,15 +68,12 @@
 <body>
 
 <div class="game-container">
-    <h1>🌍 自作ひっかけ国旗クイズ（5問）</h1>
+    <h1>🌍 究極の国旗クイズ（全10問）</h1>
     <div class="score-board" id="score-text">第 1 問 / スコア: 0</div>
     
-    <!-- 国旗表示エリア -->
     <div class="flag-stage" id="flag-container"></div>
+    <div class="msg-box" id="msg-text">問題を読み込み中...</div>
 
-    <div class="msg-box" id="msg-text">問題をよく読んで答えよう！</div>
-
-    <!-- 3択ボタン -->
     <div class="choice-list">
         <button class="choice-btn" id="choice-0" onclick="selectAnswer(0)">選択肢1</button>
         <button class="choice-btn" id="choice-1" onclick="selectAnswer(1)">選択肢2</button>
@@ -112,38 +86,173 @@
 <a href="index.html" class="back-menu">◀ ゲームの部屋に戻る</a>
 
 <script>
-    const myQuizQuestions = [
-        { 
-            html: '<div class="flag-bangladesh"></div>', 
-            questionText: "【問題1】<br>日本のまわりの色を変えると、どこの国旗になる？",
-            answer: "バングラデシュ", 
-            choices: ["バングラデシュ", "ベトナム", "パラオ"] 
-        },
-        { 
-            html: '<div class="flag-vietnam"></div>', 
-            questionText: "【問題2】<br>中国に、とてもよく似ている国旗はどれ？",
-            answer: "ベトナム", 
-            choices: ["ベトナム", "ソマリア", "モロッコ"] 
-        },
-        { 
-            html: '<div class="flag-mexico"></div>', 
-            questionText: "【問題3】<br>イタリアと、メキシコの国旗は、何が違う？",
-            answer: "マーク", 
-            choices: ["マーク", "色", "どちらも"] 
-        },
-        { 
-            html: '<div class="text-quiz-box">赤と白だけで作られている国旗は、世界に15個以上ある。うそ？本当？</div>', 
-            questionText: "【問題4】<br>国旗の雑学トリビア問題！",
-            answer: "本当", 
-            choices: ["本当", "うそ", "そんな国はない"] 
-        },
-        { 
-            /* ★アイスランド国旗のグラフィックに修正 */
-            html: '<div class="flag-iceland"><div class="iceland-red-v"></div><div class="iceland-red-h"></div></div>', 
-            questionText: "【問題5】<br>アイスランドと、ノルウェーの国旗は、何が違う？",
-            answer: "いろ", 
-            choices: ["いろ", "形", "ない"] 
-        }
+    // 最初に必ず出る固定の5問（あなたのオリジナル問題）
+    const fixedQuestions = [
+        { html: '<div class="flag-bangladesh"></div>', questionText: "【固定問題1】<br>日本のまわりの色を変えると、どこの国旗になる？", answer: "バングラデシュ", choices: ["バングラデシュ", "ベトナム", "パラオ"] },
+        { html: '<div class="flag-vietnam"></div>', questionText: "【固定問題2】<br>中国に、とてもよく似ている国旗はどれ？", answer: "ベトナム", choices: ["ベトナム", "ソマリア", "モロッコ"] },
+        { html: '<div class="flag-mexico"></div>', questionText: "【固定問題3】<br>イタリアと、メキシコの国旗は、何が違う？", answer: "マーク", choices: ["マーク", "色", "どちらも"] },
+        { html: '<div class="text-quiz-box">赤と白だけで作られている国旗は、世界に15個以上ある。うそ？本当？</div>', questionText: "【固定問題4】<br>国旗の雑学トリビア問題！", answer: "本当", choices: ["本当", "うそ", "そんな国はない"] },
+        { html: '<div class="flag-iceland"><div class="iceland-red-v"></div><div class="iceland-red-h"></div></div>', questionText: "【固定問題5】<br>アイスランドと、ノルウェーの国旗は、何が違う？", answer: "いろ", choices: ["いろ", "形", "ない"] }
+    ];
+
+    // 後半用の150カ国・地域データプール（絵文字を使って軽量＆確実に描画）
+    const randomCountryPool = [
+        { flag: "🇺🇸", name: "アメリカ", type: "normal", d1: "マレーシア", d2: "リベリア" },
+        { flag: "🇬🇧", name: "イギリス", type: "normal", d1: "オーストラリア", d2: "ニュージーランド" },
+        { flag: "🇨🇦", name: "カナダ", type: "normal", d1: "ペルー", d2: "レバノン" },
+        { flag: "🇦🇺", name: "オーストラリア", type: "feint", fake: "ニュージーランド", d1: "ツバル", d2: "イギリス" },
+        { flag: "🇳🇿", name: "ニュージーランド", type: "feint", fake: "オーストラリア", d1: "フィジー", d2: "クック諸島" },
+        { flag: "🇰🇷", name: "韓国", type: "normal", d1: "北朝鮮", d2: "モンゴル" },
+        { flag: "👁️‍🗨️", name: "台湾", type: "normal", d1: "サモア", d2: "ミャンマー", flagOverride: "🇹🇼" },
+        { flag: "🇭🇰", name: "香港", type: "normal", d1: "マカオ", d2: "アルバニア" },
+        { flag: "🇮🇳", name: "インド", type: "color", match: "ニジェール", d1: "アイルランド", d2: "タジキスタン" },
+        { flag: "🇮🇩", name: "インドネシア", type: "feint", fake: "モナコ", d1: "ポーランド", d2: "シンガポール" },
+        { flag: "🇲🇨", name: "モナコ", type: "feint", fake: "インドネシア", d1: "ポーランド", d2: "マルタ" },
+        { flag: "🇵🇱", name: "ポーランド", type: "feint", fake: "インドネシア", d1: "モナコ", d2: "オーストリア" },
+        { flag: "🇸🇬", name: "シンガポール", type: "normal", d1: "チュニジア", d2: "マレーシア" },
+        { flag: "🇲🇾", name: "マレーシア", type: "normal", d1: "アメリカ", d2: "リベリア" },
+        { flag: "🇵🇭", name: "フィリピン", type: "normal", d1: "チェコ", d2: "キューバ" },
+        { flag: "🇹🇭", name: "タイ", type: "color", match: "コスタリカ", d1: "北朝鮮", d2: "カンボジア" },
+        { flag: "🇨🇷", name: "コスタリカ", type: "color", match: "タイ", d1: "プエルトリコ", d2: "ドミニカ共和国" },
+        { flag: "🇲🇲", name: "ミャンマー", type: "normal", d1: "リトアニア", d2: "ボリビア" },
+        { flag: "🇰Ｈ", name: "カンボジア", type: "normal", d1: "ラオス", d2: "タイ", flagOverride: "🇰🇭" },
+        { flag: "🇱🇦", name: "ラオス", type: "normal", d1: "レバノン", d2: "パラグアイ" },
+        { flag: "🇪🇸", name: "スペイン", type: "normal", d1: "ポルトガル", d2: "アンドラ" },
+        { flag: "🇷🇺", name: "ロシア", type: "color", match: "スロバキア", d1: "セルビア", d2: "スロベニア" },
+        { flag: "🇳🇱", name: "オランダ", type: "feint", fake: "ルクセンブルク", d1: "フランス", d2: "ロシア" },
+        { flag: "🇱🇺", name: "ルクセンブルク", type: "feint", fake: "オランダ", d1: "パラグアイ", d2: "クロアチア" },
+        { flag: "🇧🇪", name: "ベルギー", type: "feint", fake: "ドイツ", d1: "ルーマニア", d2: "チャド" },
+        { flag: "🇷🇴", name: "ルーマニア", type: "feint", fake: "チャド", d1: "アンドラ", d2: "モルドバ" },
+        { flag: "🇹🇩", name: "チャド", type: "feint", fake: "ルーマニア", d1: "マリ", d2: "ギニア" },
+        { flag: "🇮🇪", name: "アイルランド", type: "feint", fake: "コートジボワール", d1: "イタリア", d2: "インド" },
+        { flag: "🇨🇮", name: "コートジボワール", type: "feint", fake: "アイルランド", d1: "ニジェール", d2: "ギニア" },
+        { flag: "🇨Ｈ", name: "スイス", type: "normal", d1: "トンガ", d2: "デンマーク", flagOverride: "🇨🇭" },
+        { flag: "🇦🇹", name: "オーストリア", type: "normal", d1: "レバノン", d2: "ペルー" },
+        { flag: "🇬🇷", name: "ギリシャ", type: "normal", d1: "ウルグアイ", d2: "キプロス" },
+        { flag: "🇹🇷", name: "トルコ", type: "normal", d1: "チュニジア", d2: "パキスタン" },
+        { flag: "🇵🇹", name: "ポルトガル", type: "normal", d1: "スペイン", d2: "モロッコ" },
+        { flag: "🇧🇷", name: "ブラジル", type: "normal", d1: "ジャマイカ", d2: "サウジアラビア" },
+        { flag: "🇦🇷", name: "アルゼンチン", type: "color", match: "ウルグアイ", d1: "ホンジュラス", d2: "エルサルバドル" },
+        { flag: "🇺🇾", name: "ウルグアイ", type: "normal", d1: "アルゼンチン", d2: "ギリシャ" },
+        { flag: "🇨🇱", name: "チリ", type: "feint", fake: "テキサス(米)", d1: "キューバ", d2: "リベリア" },
+        { flag: "🇨🇴", name: "コロンビア", type: "color", match: "エクアドル", d1: "ベネズエラ", d2: "ルーマニア" },
+        { flag: "🇪🇨", name: "エクアドル", type: "color", match: "コロンビア", d1: "ベネズエラ", d2: "ボリビア" },
+        { flag: "🇻🇪", name: "ベネズエラ", type: "color", match: "コロンビア", d1: "エクアドル", d2: "アンドラ" },
+        { flag: "🇵🇪", name: "ペルー", type: "normal", d1: "カナダ", d2: "オーストリア" },
+        { flag: "🇲🇽", name: "メキシコ", type: "normal", d1: "イタリア", d2: "アイルランド" },
+        { flag: "🇨🇺", name: "キューバ", type: "feint", fake: "プエルトリコ", d1: "チリ", d2: "フィリピン" },
+        { flag: "🇳🇿", name: "クック諸島", type: "normal", d1: "ニュージーランド", d2: "ツバル" },
+        { flag: "🇿🇦", name: "南アフリカ", type: "normal", d1: "ジャマイカ", d2: "バヌアツ" },
+        { flag: "🇪🇬", name: "エジプト", type: "color", match: "シリア", d1: "イラク", d2: "イエメン" },
+        { flag: "🇮🇶", name: "イラク", type: "color", match: "シリア", d1: "エジプト", d2: "ヨルダン" },
+        { flag: "🇸🇾", name: "シリア", type: "color", match: "イラク", d1: "エジプト", d2: "スダン" },
+        { flag: "🇾🇪", name: "イエメン", type: "normal", d1: "エジプト", d2: "シリア" },
+        { flag: "🇸🇦", name: "サウジアラビア", type: "normal", d1: "パキスタン", d2: "ブラジル" },
+        { flag: "🇮🇱", name: "イスラエル", type: "normal", d1: "ギリシャ", d2: "フィンランド" },
+        { flag: "🇦🇪", name: "アラブ首長国連邦", type: "normal", d1: "クウェート", d2: "ヨルダン" },
+        { flag: "🇳🇬", name: "ナイジェリア", type: "normal", d1: "ローデシア", d2: "パキスタン" },
+        { flag: "🇰🇪", name: "ケニア", type: "normal", d1: "南スーダン", d2: "マラウイ" },
+        { flag: "🇲🇦", name: "モロッコ", type: "normal", d1: "チュニジア", d2: "トルコ" },
+        { flag: "🇩🇿", name: "アルジェリア", type: "normal", d1: "パキスタン", d2: "リビア" },
+        { flag: "🇳🇿", name: "ツバル", type: "normal", d1: "フィジー", d2: "オーストラリア" },
+        { flag: "🇫🇮", name: "フィンランド", type: "feint", fake: "スウェーデン", d1: "アイスランド", d2: "デンマーク" },
+        { flag: "🇩🇰", name: "デンマーク", type: "normal", d1: "スイス", d2: "ノルウェー" },
+        { flag: "🇳🇴", name: "ノルウェー", type: "normal", d1: "アイスランド", d2: "フィンランド" },
+        { flag: "🇺🇦", name: "ウクライナ", type: "normal", d1: "スウェーデン", d2: "ポーランド" },
+        { flag: "🇵🇱", name: "カザフスタン", type: "normal", d1: "ウズベキスタン", d2: "キルギス", flagOverride: "🇰🇿" },
+        { flag: "🇺🇿", name: "ウズベキスタン", type: "normal", d1: "カザフスタン", d2: "アゼルバイジャン" },
+        { flag: "🇲🇳", name: "モンゴル", type: "normal", d1: "中国", d2: "韓国" },
+        { flag: "🇳🇵", name: "ネパール", type: "normal", d1: "チベット", d2: "ブータン" },
+        { flag: "🇧🇹", name: "ブータン", type: "normal", d1: "ネパール", d2: "スリランカ" },
+        { flag: "🇱🇰", name: "スリランカ", type: "normal", d1: "インド", d2: "モルディブ" },
+        { flag: "🇵🇰", name: "パキスタン", type: "normal", d1: "トルコ", d2: "アルジェリア" },
+        { flag: "🇧🇩", name: "バングラデシュ", type: "normal", d1: "日本", d2: "パラオ" },
+        { flag: "🇮🇷", name: "イラン", type: "color", match: "タジキスタン", d1: "ハンガリー", d2: "イタリア" },
+        { flag: "🇦🇫", name: "アフガニスタン", type: "normal", d1: "イラン", d2: "パキスタン" },
+        { flag: "🇳🇿", name: "フィジー", type: "normal", d1: "ツバル", d2: "オーストラリア" },
+        { flag: "🇵🇬", name: "パプアニューギニア", type: "normal", d1: "ソロモン諸島", d2: "バヌアツ" },
+        { flag: "🇵🇪", name: "ボリビア", type: "color", match: "ガーナ", d1: "リトアニア", d2: "セネガル", flagOverride: "🇧🇴" },
+        { flag: "🇵🇾", name: "パラグアイ", type: "normal", d1: "オランダ", d2: "ルクセンブルク" },
+        { flag: "🇺🇾", name: "パナマ", type: "normal", d1: "キューバ", d2: "コスタリカ", flagOverride: "🇵🇦" },
+        { flag: "🇯🇲", name: "ジャマイカ", type: "normal", d1: "南アフリカ", d2: "タンザニア" },
+        { flag: "🇭🇹", name: "ハイチ", type: "feint", fake: "リヒテンシュタイン", d1: "ドニエプル", d2: "キューバ" },
+        { flag: "🇱🇮", name: "リヒテンシュタイン", type: "feint", fake: "ハイチ", d1: "ルクセンブルク", d2: "オーストリア" },
+        { flag: "🇳🇿", name: "サモア", type: "normal", d1: "台湾", d2: "トンガ", flagOverride: "🇼🇸" },
+        { flag: "🇨🇿", name: "チェコ", type: "normal", d1: "フィリピン", d2: "スロバキア" },
+        { flag: "🇸洛", name: "スロバキア", type: "feint", fake: "スロベニア", d1: "ロシア", d2: "クロアチア", flagOverride: "🇸🇰" },
+        { flag: "🇸路", name: "スロベニア", type: "feint", fake: "スロバキア", d1: "ロシア", d2: "セルビア", flagOverride: "🇸🇮" },
+        { flag: "🇭🇷", name: "クロアチア", type: "normal", d1: "セルビア", d2: "スロバキア" },
+        { flag: "🇷🇸", name: "セルビア", type: "normal", d1: "ロシア", d2: "クロアチア" },
+        { flag: "🇭🇺", name: "ハンガリー", type: "color", match: "タジキスタン", d1: "イラン", d2: "イタリア" },
+        { flag: "🇧🇬", name: "ブルガリア", type: "normal", d1: "ハンガリー", d2: "ロシア" },
+        { flag: "🇷🇺", name: "ベラルーシ", type: "normal", d1: "マダガスカル", d2: "オマーン", flagOverride: "🇧🇾" },
+        { flag: "🇱🇹", name: "リトアニア", type: "normal", d1: "ミャンマー", d2: "ボリビア" },
+        { flag: "🇱🇻", name: "ラトビア", type: "normal", d1: "オーストリア", d2: "カタール" },
+        { flag: "🇪🇪", name: "エストニア", type: "normal", d1: "ボツワナ", d2: "レソト" },
+        { flag: "🇮🇸", name: "アイスランド", type: "normal", d1: "ノルウェー", d2: "ファロー諸島" },
+        { flag: "🇮🇪", name: "北マケドニア", type: "normal", d1: "アルバニア", d2: "モンテネグロ", flagOverride: "🇲🇰" },
+        { flag: "🇦🇱", name: "アルバニア", type: "normal", d1: "モンテネグロ", d2: "モロッコ" },
+        { flag: "🇲🇩", name: "モルドバ", type: "normal", d1: "ルーマニア", d2: "アンドラ" },
+        { flag: "🇦🇩", name: "アンドラ", type: "normal", d1: "ルーマニア", d2: "モルドバ" },
+        { flag: "🇬🇪", name: "ジョージア", type: "normal", d1: "イングランド", d2: "キプロス" },
+        { flag: "🇦🇲", name: "アルメニア", type: "normal", d1: "コロンビア", d2: "ベネズエラ" },
+        { flag: "🇦🇿", name: "アゼルバイジャン", type: "normal", d1: "トルコ", d2: "ウズベキスタン" },
+        { flag: "🇨🇾", name: "キプロス", type: "normal", d1: "ギリシャ", d2: "コソボ" },
+        { flag: "🇲🇱", name: "マリ", type: "feint", fake: "ギニア", d1: "セネガル", d2: "カメルーン" },
+        { flag: "🇬🇳", name: "ギニア", type: "feint", fake: "マリ", d1: "ボリビア", d2: "ガーナ" },
+        { flag: "🇸🇳", name: "セネガル", type: "normal", d1: "マリ", d2: "カメルーン" },
+        { flag: "🇨🇲", name: "カメルーン", type: "normal", d1: "セネガル", d2: "ガーナ" },
+        { flag: "🇬🇭", name: "ガーナ", type: "normal", d1: "ボリビア", d2: "ベナン" },
+        { flag: "🇨🇬", name: "コンゴ共和国", type: "normal", d1: "コンゴ民主共和国", d2: "ガボン" },
+        { flag: "🇨🇩", name: "コンゴ民主共和国", type: "normal", d1: "コンゴ共和国", d2: "タンザニア" },
+        { flag: "🇦🇴", name: "アンゴラ", type: "normal", d1: "モザンビーク", d2: "東ティモール" },
+        { flag: "🇪🇹", name: "エチオピア", type: "normal", d1: "ボリビア", d2: "セネガル" },
+        { flag: "🇸🇩", name: "スーダン", type: "color", match: "ヨルダン", d1: "パレスチナ", d2: "クウェート" },
+        { flag: "🇪🇷", name: "エリトリア", type: "normal", d1: "ジブチ", d2: "エチオピア" },
+        { flag: "🇸🇴", name: "ソマリア", type: "normal", d1: "ベトナム", d2: "ミクロネシア" },
+        { flag: "🇹anzania", name: "タンザニア", type: "normal", d1: "ジャマイカ", d2: "ケニア", flagOverride: "🇹🇿" },
+        { flag: "🇺🇬", name: "ウガンダ", type: "normal", d1: "ドイツ", d2: "アンゴラ" },
+        { flag: "🇷🇼", name: "ルワンダ", type: "normal", d1: "ガボン", d2: "シエラレオネ" },
+        { flag: "🇧🇮", name: "ブルンジ", type: "normal", d1: "ルワンダ", d2: "マダガスカル" },
+        { flag: "🇲🇬", name: "マダガスカル", type: "normal", d1: "ベラルーシ", d2: "ベナン" },
+        { flag: "🇲🇼", name: "マラウイ", type: "normal", d1: "ケニア", d2: "リビア" },
+        { flag: "🇿🇲", name: "ザンビア", type: "normal", d1: "ジンバブエ", d2: "ナミビア" },
+        { flag: "🇿🇼", name: "ジンバブエ", type: "normal", d1: "ザンビア", d2: "モザンビーク" },
+        { flag: "🇧🇼", name: "ボツワナ", type: "normal", d1: "エストニア", d2: "レソト" },
+        { flag: "🇳🇦", name: "ナミビア", type: "normal", d1: "コンゴ民主共和国", d2: "ソロモン諸島" },
+        { flag: "🇱🇸", name: "レソト", type: "normal", d1: "ボツワナ", d2: "シエラレオネ" },
+        { flag: "🇸🇿", name: "エスワティニ", type: "normal", d1: "南アフリカ", d2: "レソト" },
+        { flag: "🇱🇾", name: "リビア", type: "normal", d1: "チュニジア", d2: "アルジェリア" },
+        { flag: "🇹🇳", name: "チュニジア", type: "normal", d1: "トルコ", d2: "モロッコ" },
+        { flag: "🇲🇷", name: "モーリタニア", type: "normal", d1: "パキスタン", d2: "モルディブ" },
+        { flag: "🇳🇪", name: "ニジェール", type: "normal", d1: "インド", d2: "アイルランド" },
+        { flag: "🇧🇫", name: "ブルキナファソ", type: "normal", d1: "カメルーン", d2: "ギニア" },
+        { flag: "🇸Ｌ", name: "シエラレオネ", type: "normal", d1: "レソト", d2: "ガボン", flagOverride: "🇸🇱" },
+        { flag: "🇱🇷", name: "リベリア", type: "normal", d1: "アメリカ", d2: "マレーシア" },
+        { flag: "🇨🇻", name: "カーボベルデ", type: "normal", d1: "ギニアビサウ", d2: "ナウル" },
+        { flag: "🇬🇲", name: "ガンビア", type: "normal", d1: "セネガル", d2: "ガボン" },
+        { flag: "🇬🇶", name: "赤道ギニア", type: "normal", d1: "ジブチ", d2: "パナマ" },
+        { flag: "🇬🇦", name: "ガボン", type: "normal", d1: "シエラレオネ", d2: "レソト" },
+        { flag: "🇲🇺", name: "モーリシャス", type: "normal", d1: "セーシェル", d2: "コモロ" },
+        { flag: "🇸🇨", name: "セーシェル", type: "normal", d1: "モーリシャス", d2: "ルーマニア" },
+        { flag: "🇰🇲", name: "コモロ", type: "normal", d1: "モーリシャス", d2: "バヌアツ" },
+        { flag: "🇲🇻", name: "モルディブ", type: "normal", d1: "パキスタン", d2: "モーリタニア" },
+        { flag: "🇬🇾", name: "ガイアナ", type: "normal", d1: "サリナム", d2: "バヌアツ" },
+        { flag: "🇸🇷", name: "スリナム", type: "normal", d1: "ガイアナ", d2: "北朝鮮" },
+        { flag: "🇧🇸", name: "バハマ", type: "normal", d1: "キューバ", d2: "ジャマイカ" },
+        { flag: "🇧🇧", name: "バルバドス", type: "normal", d1: "ウクライナ", d2: "パナマ" },
+        { flag: "🇬🇩", name: "グレナダ", type: "normal", d1: "カメルーン", d2: "バヌアツ" },
+        { flag: "🇱🇨", name: "セントルシア", type: "normal", d1: "パラオ", d2: "カザフスタン" },
+        { flag: "🇩🇲", name: "ドミニカ国", type: "normal", d1: "ニカラグア", d2: "ジャマイカ" },
+        { flag: "🇰🇳", name: "セントクリストファー・ネイビス", type: "normal", d1: "コンゴ民主共和国", d2: "タンザニア" },
+        { flag: "🇻🇨", name: "セントビンセント・グレナディーン", type: "normal", d1: "ルワンダ", d2: "ガボン" },
+        { flag: "🇦g", name: "アンティグア・バーブーダ", type: "normal", d1: "パプアニューギニア", d2: "キリバス", flagOverride: "🇦🇬" },
+        { flag: "🇹🇹", name: "トリニダード・トバゴ", type: "normal", d1: "コンゴ共和国", d2: "アンゴラ" },
+        { flag: "🇧🇿", name: "ベリーズ", type: "normal", d1: "グアテマラ", d2: "ホンジュラス" },
+        { flag: "🇬🇹", name: "グアテマラ", type: "normal", d1: "ホンジュラス", d2: "エルサルバドル" },
+        { flag: "🇭🇳", name: "ホンジュラス", type: "normal", d1: "エルサルバドル", d2: "グアテマラ" },
+        { flag: "🇸🇻", name: "エルサルバドル", type: "normal", d1: "ニカラグア", d2: "ホンジュラス" },
+        { flag: "🇳🇮", name: "ニカラグア", type: "normal", d1: "エルサルバドル", d2: "グアテマラ" }
     ];
 
     let currentStageQuestions = []; 
@@ -151,14 +260,53 @@
     let score = 0;
     let hasAnswered = false;
     let shuffledChoices = [];
-    const TOTAL_QUESTIONS = 5; 
+    
+    const FIXED_COUNT = 5;       // 前半の固定問数
+    const RANDOM_COUNT = 5;      // 後半のランダム問数
+    const TOTAL_QUESTIONS = 10;   // 合計10問
 
     function initQuiz() {
         currentQuestionIndex = 0;
         score = 0;
         
-        myQuizQuestions.sort(() => Math.random() - 0.5);
-        currentStageQuestions = [...myQuizQuestions];
+        // 1. まず固定の5問を用意
+        currentStageQuestions = [...fixedQuestions];
+        
+        // 2. 150問のプールからランダムに重複なしで5問選んでドッキング
+        const shuffledPool = [...randomCountryPool].sort(() => Math.random() - 0.5);
+        const selectedRandoms = shuffledPool.slice(0, RANDOM_COUNT);
+        
+        // 3. ランダムプールから選んだデータを、バリエーション豊かな問題形式に自動変換して追加
+        selectedRandoms.forEach((item, index) => {
+            const numStr = FIXED_COUNT + index + 1;
+            const flagMarkup = `<div class="flag-emoji">${item.flagOverride ? item.flagOverride : item.flag}</div>`;
+            
+            if (item.type === "feint") {
+                // 引っかけ形式：この国旗に似ているもので「間違っている」国は？
+                currentStageQuestions.push({
+                    html: flagMarkup,
+                    questionText: `【問題${numStr}：間違い探し】<br>画面の国旗は「${item.name}」です。これとデザインがそっくりな仲間として【間違っている国】はどこ？`,
+                    answer: item.fake,
+                    choices: [item.fake, item.d1, item.d2]
+                });
+            } else if (item.type === "color") {
+                // 色違い形式：この国旗の色違い・デザイン違いの国は？
+                currentStageQuestions.push({
+                    html: flagMarkup,
+                    questionText: `【問題${numStr}：色違い探し】<br>画面の国旗は「${item.name}」です。これと「配置や構成」が色違いでほぼ同じ国はどこ？`,
+                    answer: item.match,
+                    choices: [item.match, item.d1, item.d2]
+                });
+            } else {
+                // 通常形式：この国旗はどこ？
+                currentStageQuestions.push({
+                    html: flagMarkup,
+                    questionText: `【問題${numStr}】<br>この国旗の国名はどこでしょう？`,
+                    answer: item.name,
+                    choices: [item.name, item.d1, item.d2]
+                });
+            }
+        });
         
         showQuestion();
     }
@@ -174,6 +322,7 @@
         document.getElementById('msg-text').innerHTML = currentQuiz.questionText;
         document.getElementById('msg-text').style.color = "white";
 
+        // 3つの選択肢をシャッフル
         shuffledChoices = [...currentQuiz.choices].sort(() => Math.random() - 0.5);
 
         for (let i = 0; i < 3; i++) {
@@ -196,25 +345,25 @@
         for (let i = 0; i < 3; i++) {
             const btn = document.getElementById(`choice-${i}`);
             if (shuffledChoices[i] === currentQuiz.answer) {
-                btn.style.background = "#30d158"; 
+                btn.style.background = "#30d158"; // 正解：緑
                 btn.style.color = "#fff";
             } else if (i === selectedIndex) {
-                btn.style.background = "#ff453a"; 
+                btn.style.background = "#ff453a"; // 不正解：赤
                 btn.style.color = "#fff";
             }
         }
 
         if (selectedName === currentQuiz.answer) {
             score++;
-            msgText.innerHTML = "<span style='color:#30d158;'>⭕ 正解！お見事！</span>";
+            msgText.innerHTML = "<span style='color:#30d158; font-size: 16px;'>⭕ 正解！素晴らしい知識です！</span>";
         } else {
-            msgText.innerHTML = `<span style='color:#ff453a;'>❌ 残念！正解は「${currentQuiz.answer}」でした。</span>`;
+            msgText.innerHTML = `<span style='color:#ff453a; font-size: 16px;'>❌ 残念！正解は「${currentQuiz.answer}」でした。</span>`;
         }
 
         document.getElementById('score-text').innerText = `第 ${currentQuestionIndex + 1} 問 / スコア: ${score}`;
         
         const nextBtn = document.getElementById('next-btn');
-        nextBtn.innerText = (currentQuestionIndex === TOTAL_QUESTIONS - 1) ? "最終結果を見る" : "次の問題へ";
+        nextBtn.innerText = (currentQuestionIndex === TOTAL_QUESTIONS - 1) ? "最終リザルトを見る" : "次の問題へ";
         nextBtn.style.display = "block";
     }
 
@@ -224,8 +373,15 @@
         if (currentQuestionIndex < TOTAL_QUESTIONS) {
             showQuestion();
         } else {
-            document.getElementById('flag-container').innerHTML = "<div style='font-size:40px;'>👑</div>";
-            document.getElementById('msg-text').innerHTML = `全問終了！ あなたのスコアは<br><span style='color:#ffd60a; font-size:24px;'>${score} / ${TOTAL_QUESTIONS}</span> です！`;
+            // 10問全終了
+            document.getElementById('flag-container').innerHTML = "<div style='font-size:45px; padding-top:10px;'>🏆</div>";
+            
+            let evaluation = "国旗初級レベル！これから覚えていこう！";
+            if(score === 10) evaluation = "完璧！全問正解！君は天才国旗マスターだ！👑";
+            else if(score >= 8) evaluation = "超優秀！世界の地理博士レベル！大あっぱれ！🌟";
+            else if(score >= 5) evaluation = "合格点！ひっかけに負けずよく頑張った！👍";
+
+            document.getElementById('msg-text').innerHTML = `全10問終了！ スコア: <span style='color:#ffd60a; font-size:22px;'>${score} / ${TOTAL_QUESTIONS}</span><br><br><span style='font-size: 14px; color: #00ffcc;'>${evaluation}</span>`;
             document.getElementById('msg-text').style.color = "white";
             
             for (let i = 0; i < 3; i++) {
@@ -233,7 +389,7 @@
             }
             
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerText = "もう一度遊ぶ";
+            nextBtn.innerText = "もう一度（別の問題）で遊ぶ";
             nextBtn.style.background = "#bf5af2";
             currentQuestionIndex = -1; 
         }
