@@ -1,1 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>犯人当てミステリー：アイウェア編</title>
+    <style>
+        body {
+            margin: 0; padding: 20px; background: #1c1c1e;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: white; text-align: center;
+            box-sizing: border-box;
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .game-container {
+            width: 100%; max-width: 450px;
+            background: #2c2c2e; padding: 25px; border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        h1 { font-size: 22px; margin-bottom: 5px; color: #ff453a; letter-spacing: 1px; }
+        .stage-title { font-size: 14px; color: #aeae Learnb2; margin-bottom: 5px; }
+        .difficulty-indicator { font-size: 13px; color: #ffd60a; margin-bottom: 20px; font-weight: bold; }
+        
+        /* 証言・ヒントエリア */
+        .testimony-box {
+            background: #121212; border-left: 4px solid #bf5af2;
+            padding: 15px; margin-bottom: 25px; border-radius: 6px;
+            text-align: left; font-size: 14px; line-height: 1.6;
+        }
+        .testimony-title { color: #bf5af2; font-weight: bold; margin-bottom: 5px; }
+
+        /* 容疑者リスト */
+        .suspects-container {
+            display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;
+        }
+        .suspect-card {
+            background: #3a3a3c; border: 2px solid #48484a; padding: 15px;
+            border-radius: 10px; cursor: pointer; text-align: left;
+            transition: background 0.2s, transform 0.1s, border-color 0.2s;
+        }
+        .suspect-card:hover { border-color: #bf5af2; background: #444446; }
+        .suspect-card:active { transform: scale(0.98); }
+        .suspect-name { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 6px; }
+        .suspect-info { font-size: 13px; color: #d1d1d6; line-height: 1.6; }
+
+        /* メッセージ */
+        .message { height: 24px; font-weight: bold; margin-bottom: 20px; font-size: 15px; }
+        .success { color: #30d158; }
+        .error { color: #ff453a; }
+
+        /* ボタン */
+        .btn {
+            display: inline-block; padding: 12px 30px; font-size: 16px; font-weight: bold;
+            color: #111; background: #bf5af2; border: none; border-radius: 8px;
+            cursor: pointer; text-decoration: none; display: none;
+        }
+        .btn:hover { background: #af52de; }
+        .back-menu { background: #48484a; color: white; margin-top: 15px; display: inline-block; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 14px;}
+        .back-menu:hover { background: #636366; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🕵️‍♂️ 容疑者の影：アイウェア・ミステリー</h1>
+    <div class="stage-title" id="stage-num">Stage 1 / 3</div>
+    <div class="difficulty-indicator" id="difficulty-text">難易度：★☆☆</div>
+    
+    <div class="testimony-box">
+        <div class="testimony-title">【目撃証言】</div>
+        <div id="hint-text"></div>
+    </div>
+
+    <div class="suspects-container" id="suspects-list">
+        </div>
+
+    <div class="message" id="message-text"></div>
+    <button class="btn" id="next-btn" onclick="nextStage()">次の事件へ</button>
+</div>
+
+<a href="index.html" class="back-menu">◀ ゲームの部屋に戻る</a>
+
+<script>
+    const stages = [
+        {
+            difficulty: "難易度：★☆☆（メガネの有無・基本編）",
+            hint: "「犯人は『メガネ』をかけていたよ。サングラスのような色のついたレンズじゃなくて、普通の透明なメガネさ！」",
+            suspects: [
+                { name: "容疑者 A", info: "👓【目元】メガネを着用（透明レンズ）<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: true },
+                { name: "容疑者 B", info: "👓【目元】何もつけていない（素顔）<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: false },
+                { name: "容疑者 C", info: "👓【目元】黒いサングラスを着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: false }
+            ]
+        },
+        {
+            difficulty: "難易度：★★☆（少し似てきた・中級編）",
+            hint: "「犯人は『サングラス』を頭に乗せるんじゃなくて、ちゃんと目にかけていた！ あと、あごヒゲを生やしていた気がするな…」",
+            suspects: [
+                { name: "容疑者 X", info: "👓【目元】黒いサングラスを目に着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】口ヒゲのみ（あごはツルツル）", isGuilty: false },
+                { name: "容疑者 Y", info: "👓【目元】黒いサングラスを頭に乗せている<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】あごヒゲを生やしている", isGuilty: false },
+                { name: "容疑者 Z", info: "👓【目元】黒いサングラスを目に着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】あごヒゲを生やしている", isGuilty: true }
+            ]
+        },
+        {
+            difficulty: "難易度：★★★（ほぼ全員同じ・間違い探し編）",
+            hint: "「犯人は、胸元にサングラスを引っ掛けて、顔には『四角いフレームのメガネ』をかけていたんだ。そして黒い帽子を被っていたよ。もう全員怪しく見えてくるね…！」",
+            suspects: [
+                { name: "容疑者 1", info: "👓【目元】丸いフレームのメガネを着用<br>🕶️【胸元】サングラスを引っ掛けている<br>🧢【帽子】黒いキャップを被っている", isGuilty: false },
+                { name: "容疑者 2", info: "👓【目元】四角いフレームのメガネを着用<br>🕶️【胸元】サングラスを引っ掛けている<br>🧢【帽子】黒いハットを被っている", isGuilty: true },
+                { name: "容疑者 3", info: "👓【目元】四角いフレームのメガネを着用<br>🕶️【胸元】何もつけていない<br>🧢【帽子】黒いキャップを被っている", isGuilty: false }
+            ]
+        }
+    ];
+
+    let currentStage = 0;
+    let isCleared = false;
+
+    function loadStage() {
+        isCleared = false;
+        const stage = stages[currentStage];
+        
+        document.getElementById('stage-num').innerText = `Stage ${currentStage + 1} / ${stages.length}`;
+        document.getElementById('difficulty-text').innerText = stage.difficulty;
+        document.getElementById('hint-text').innerHTML = stage.hint;
+        document.getElementById('message-text').innerText = "";
+        document.getElementById('message-text').className = "message";
+        document.getElementById('next-btn').style.display = 'none';
+
+        const listContainer = document.getElementById('suspects-list');
+        listContainer.innerHTML = '';
+
+        stage.suspects.forEach((s) => {
+            const card = document.createElement('div');
+            card.className = 'suspect-card';
+            card.innerHTML = `
+                <div class="suspect-name">${s.name}</div>
+                <div class="suspect-info">${s.info}</div>
+            `;
+            card.onclick = () => selectSuspect(s.isGuilty, card);
+            listContainer.appendChild(card);
+        });
+    }
+
+    function selectSuspect(isGuilty, element) {
+        if (isCleared) return;
+        const msg = document.getElementById('message-text');
+
+        if (isGuilty) {
+            msg.innerText = "🎉 正解！「ちっ、アイウェアのセレクトを間違えたか…」";
+            msg.className = "message success";
+            isCleared = true;
+            
+            const nextBtn = document.getElementById('next-btn');
+            if (currentStage === stages.length - 1) {
+                nextBtn.innerText = "全事件クリア！最初に戻る";
+            } else {
+                nextBtn.innerText = "次の事件へ";
+            }
+            nextBtn.style.display = 'inline-block';
+        } else {
+            msg.innerText = "❌ 違う！その人のメガネのタイプをよーく見てみよう。";
+            msg.className = "message error";
+            
+            element.style.borderColor = "#ff453a";
+            setTimeout(() => element.style.borderColor = "#48484a", 500);
+        }
+    }
+
+    function nextStage() {
+        currentStage++;
+        if (currentStage >= stages.length) currentStage = 0;
+        loadStage();
+    }
+
+    window.onload = loadStage;
+</script>
+
+</body>
+</html>
 
