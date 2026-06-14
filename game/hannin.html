@@ -3,72 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>犯人当てミステリー：アイウェア編</title>
+    <title>犯人当てミステリー：イラスト全身編</title>
     <style>
         body {
-            margin: 0; padding: 20px; background: #1c1c1e;
+            margin: 0; padding: 10px; background: #1c1c1e;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             color: white; text-align: center;
-            box-sizing: border-box;
-            min-height: 100vh;
+            box-sizing: border-box; min-height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .game-container {
-            width: 100%; max-width: 450px;
-            background: #2c2c2e; padding: 25px; border-radius: 14px;
+            width: 100%; max-width: 480px;
+            background: #2c2c2e; padding: 20px; border-radius: 14px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-sizing: border-box;
         }
-        h1 { font-size: 22px; margin-bottom: 5px; color: #ff453a; letter-spacing: 1px; }
-        .stage-title { font-size: 14px; color: #aeae Learnb2; margin-bottom: 5px; }
-        .difficulty-indicator { font-size: 13px; color: #ffd60a; margin-bottom: 20px; font-weight: bold; }
+        h1 { font-size: 20px; margin: 0 0 5px 0; color: #ff453a; }
+        .stage-title { font-size: 13px; color: #aeaeb2; margin-bottom: 3px; }
+        .difficulty-indicator { font-size: 12px; color: #ffd60a; margin-bottom: 15px; font-weight: bold; }
         
-        /* 証言・ヒントエリア */
+        /* 証言エリア */
         .testimony-box {
             background: #121212; border-left: 4px solid #bf5af2;
-            padding: 15px; margin-bottom: 25px; border-radius: 6px;
-            text-align: left; font-size: 14px; line-height: 1.6;
+            padding: 12px; margin-bottom: 20px; border-radius: 6px;
+            text-align: left; font-size: 13px; line-height: 1.5;
         }
-        .testimony-title { color: #bf5af2; font-weight: bold; margin-bottom: 5px; }
+        .testimony-title { color: #bf5af2; font-weight: bold; margin-bottom: 3px; }
 
-        /* 容疑者リスト */
+        /* 容疑者並び（横並びで比較しやすく） */
         .suspects-container {
-            display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;
+            display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px;
         }
         .suspect-card {
-            background: #3a3a3c; border: 2px solid #48484a; padding: 15px;
-            border-radius: 10px; cursor: pointer; text-align: left;
+            flex: 1; background: #3a3a3c; border: 2px solid #48484a; padding: 10px 5px;
+            border-radius: 10px; cursor: pointer;
             transition: background 0.2s, transform 0.1s, border-color 0.2s;
+            display: flex; flex-direction: column; align-items: center;
         }
         .suspect-card:hover { border-color: #bf5af2; background: #444446; }
-        .suspect-card:active { transform: scale(0.98); }
-        .suspect-name { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 6px; }
-        .suspect-info { font-size: 13px; color: #d1d1d6; line-height: 1.6; }
+        .suspect-card:active { transform: scale(0.96); }
+        .suspect-name { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+
+        /* ==================== イラスト描画パーツ ==================== */
+        .character-art {
+            width: 80px; height: 160px; position: relative; margin-bottom: 10px;
+        }
+        /* 顔・頭 */
+        .part-head {
+            width: 34px; height: 34px; background: #ffdbac; border-radius: 50%;
+            position: absolute; top: 15px; left: 23px; z-index: 2;
+        }
+        /* アイウェア（メガネ/サングラス） */
+        .eyewear {
+            position: absolute; top: 12px; left: 4px; display: flex; gap: 3px; z-index: 4;
+        }
+        .glass-lens {
+            width: 10px; height: 8px; border: 2px solid #000;
+        }
+        .lens-round { border-radius: 50%; }
+        .lens-square { border-radius: 0%; }
+        .lens-clear { background: transparent; }
+        .lens-dark { background: #111; }
+        
+        /* 帽子 */
+        .part-hat {
+            width: 40px; height: 12px; background: #111; position: absolute;
+            top: 8px; left: 20px; border-radius: 4px 4px 0 0; z-index: 3;
+        }
+        .part-hat::after { /* 帽子のつば */
+            content: ''; width: 48px; height: 3px; background: #111;
+            position: absolute; bottom: 0; left: -4px; border-radius: 2px;
+        }
+
+        /* 服（上着） */
+        .part-body {
+            width: 40px; height: 50px; position: absolute; top: 52px; left: 20px;
+            border-radius: 6px 6px 0 0; z-index: 2;
+        }
+        /* Tシャツか長袖ジャケットかの表現（模様） */
+        .part-body-inner {
+            width: 16px; height: 20px; background: #fff; margin: 0 auto;
+        }
+
+        /* ズボン */
+        .part-legs {
+            width: 36px; height: 40px; position: absolute; top: 102px; left: 22px;
+            display: flex; justify-content: space-between; z-index: 1;
+        }
+        .leg { width: 15px; height: 100%; background: #222; border-radius: 0 0 2px 2px; }
+
+        /* 靴 */
+        .part-shoes {
+            width: 44px; height: 10px; position: absolute; top: 142px; left: 18px;
+            display: flex; justify-content: space-between; z-index: 2;
+        }
+        .shoe { width: 17px; height: 100%; background: #fff; border-radius: 4px 4px 0 0; }
+        /* ============================================================ */
 
         /* メッセージ */
-        .message { height: 24px; font-weight: bold; margin-bottom: 20px; font-size: 15px; }
+        .message { height: 24px; font-weight: bold; margin-bottom: 15px; font-size: 14px; }
         .success { color: #30d158; }
         .error { color: #ff453a; }
 
         /* ボタン */
         .btn {
-            display: inline-block; padding: 12px 30px; font-size: 16px; font-weight: bold;
+            display: inline-block; padding: 10px 25px; font-size: 15px; font-weight: bold;
             color: #111; background: #bf5af2; border: none; border-radius: 8px;
             cursor: pointer; text-decoration: none; display: none;
         }
         .btn:hover { background: #af52de; }
-        .back-menu { background: #48484a; color: white; margin-top: 15px; display: inline-block; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-size: 14px;}
+        .back-menu { background: #48484a; color: white; margin-top: 10px; display: inline-block; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px;}
         .back-menu:hover { background: #636366; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>🕵️‍♂️ 容疑者の影：アイウェア・ミステリー</h1>
+    <h1>🕵️‍♂️ 容疑者M：ビジュアル追跡</h1>
     <div class="stage-title" id="stage-num">Stage 1 / 3</div>
     <div class="difficulty-indicator" id="difficulty-text">難易度：★☆☆</div>
     
     <div class="testimony-box">
-        <div class="testimony-title">【目撃証言】</div>
+        <div class="testimony-title">【目撃証言（全身の特徴）】</div>
         <div id="hint-text"></div>
     </div>
 
@@ -82,32 +138,33 @@
 <a href="index.html" class="back-menu">◀ ゲームの部屋に戻る</a>
 
 <script>
+    // イラストを生成するためのデータ構造
     const stages = [
         {
-            difficulty: "難易度：★☆☆（メガネの有無・基本編）",
-            hint: "「犯人は『メガネ』をかけていたよ。サングラスのような色のついたレンズじゃなくて、普通の透明なメガネさ！」",
+            difficulty: "難易度：★☆☆（全然違う・基本編）",
+            hint: "「犯人は **透明なメガネ** をかけて、**赤い上着** に **青いズボン** を穿いていたよ！」",
             suspects: [
-                { name: "容疑者 A", info: "👓【目元】メガネを着用（透明レンズ）<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: true },
-                { name: "容疑者 B", info: "👓【目元】何もつけていない（素顔）<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: false },
-                { name: "容疑者 C", info: "👓【目元】黒いサングラスを着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】なし", isGuilty: false }
+                { name: "容疑者 A", isGuilty: false, style: { hat: false, eye: "round-clear", body: "#2b5c8f", inner: false, leg: "#333", shoe: "#fff" } },
+                { name: "容疑者 B", isGuilty: true,  style: { hat: false, eye: "round-clear", body: "#e1251b", inner: false, leg: "#2b5c8f", shoe: "#333" } },
+                { name: "容疑者 C", isGuilty: false, style: { hat: true,  eye: "round-dark",  body: "#222",    inner: false, leg: "#e1251b", shoe: "#fff" } }
             ]
         },
         {
             difficulty: "難易度：★★☆（少し似てきた・中級編）",
-            hint: "「犯人は『サングラス』を頭に乗せるんじゃなくて、ちゃんと目にかけていた！ あと、あごヒゲを生やしていた気がするな…」",
+            hint: "「犯人は **黒い帽子** を被り、顔には **黒いサングラス** をしていた。**黄色い上着（中は白）** で、**靴は赤色** だったはずだ！」",
             suspects: [
-                { name: "容疑者 X", info: "👓【目元】黒いサングラスを目に着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】口ヒゲのみ（あごはツルツル）", isGuilty: false },
-                { name: "容疑者 Y", info: "👓【目元】黒いサングラスを頭に乗せている<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】あごヒゲを生やしている", isGuilty: false },
-                { name: "容疑者 Z", info: "👓【目元】黒いサングラスを目に着用<br>🧢【帽子】なにも被っていない<br>🧔【ヒゲ】あごヒゲを生やしている", isGuilty: true }
+                { name: "容疑者 X", isGuilty: false, style: { hat: true,  eye: "round-dark",  body: "#fcd116", inner: true,  leg: "#333", shoe: "#333" } }, // 靴が黒
+                { name: "容疑者 Y", isGuilty: true,  style: { hat: true,  eye: "round-dark",  body: "#fcd116", inner: true,  leg: "#333", shoe: "#e1251b" } }, // 正解
+                { name: "容疑者 Z", isGuilty: false, style: { hat: false, eye: "round-dark",  body: "#fcd116", inner: true,  leg: "#333", shoe: "#e1251b" } }  // 帽子がない
             ]
         },
         {
-            difficulty: "難易度：★★★（ほぼ全員同じ・間違い探し編）",
-            hint: "「犯人は、胸元にサングラスを引っ掛けて、顔には『四角いフレームのメガネ』をかけていたんだ。そして黒い帽子を被っていたよ。もう全員怪しく見えてくるね…！」",
+            difficulty: "難易度：★★★（ほぼ同じ！？・激ムズ間違い探し）",
+            hint: "「犯人は **黒い帽子**、**黒い四角いサングラス**。上着は **緑で中は白**、ズボンは **黒**、靴は **白** だった。ただ…本当に全員そっくりで見分けがつかないんだ…！」",
             suspects: [
-                { name: "容疑者 1", info: "👓【目元】丸いフレームのメガネを着用<br>🕶️【胸元】サングラスを引っ掛けている<br>🧢【帽子】黒いキャップを被っている", isGuilty: false },
-                { name: "容疑者 2", info: "👓【目元】四角いフレームのメガネを着用<br>🕶️【胸元】サングラスを引っ掛けている<br>🧢【帽子】黒いハットを被っている", isGuilty: true },
-                { name: "容疑者 3", info: "👓【目元】四角いフレームのメガネを着用<br>🕶️【胸元】何もつけていない<br>🧢【帽子】黒いキャップを被っている", isGuilty: false }
+                { name: "容疑者 1", isGuilty: false, style: { hat: true, eye: "round-dark",  body: "#27ae60", inner: true, leg: "#222", shoe: "#fff" } }, // サングラスが丸い
+                { name: "容疑者 2", isGuilty: false, style: { hat: true, eye: "square-dark", body: "#27ae60", inner: false,leg: "#222", shoe: "#fff" } }, // 中の白Tシャツがない
+                { name: "容疑者 3", isGuilty: true,  style: { hat: true, eye: "square-dark", body: "#27ae60", inner: true, leg: "#222", shoe: "#fff" } }  // 全て網羅（正解）
             ]
         }
     ];
@@ -132,10 +189,40 @@
         stage.suspects.forEach((s) => {
             const card = document.createElement('div');
             card.className = 'suspect-card';
+            
+            // スタイルデータの分解
+            const st = s.style;
+            
+            // アイウェアのクラス決定
+            const eyeClasses = st.eye.split('-'); // ["round", "clear"] など
+            const lensShapeClass = `lens-${eyeClasses[0]}`;
+            const lensColorClass = `lens-${eyeClasses[1]}`;
+
+            // HTMLだけでドット絵風・イラスト風の全身モデルを組み立てる
             card.innerHTML = `
                 <div class="suspect-name">${s.name}</div>
-                <div class="suspect-info">${s.info}</div>
+                <div class="character-art">
+                    ${st.hat ? '<div class="part-hat"></div>' : ''}
+                    <div class="part-head">
+                        <div class="eyewear">
+                            <div class="glass-lens ${lensShapeClass} ${lensColorClass}"></div>
+                            <div class="glass-lens ${lensShapeClass} ${lensColorClass}"></div>
+                        </div>
+                    </div>
+                    <div class="part-body" style="background: ${st.body};">
+                        ${st.inner ? '<div class="part-body-inner"></div>' : ''}
+                    </div>
+                    <div class="part-legs">
+                        <div class="leg" style="background: ${st.leg};"></div>
+                        <div class="leg" style="background: ${st.leg};"></div>
+                    </div>
+                    <div class="part-shoes">
+                        <div class="shoe" style="background: ${st.shoe};"></div>
+                        <div class="shoe" style="background: ${st.shoe};"></div>
+                    </div>
+                </div>
             `;
+            
             card.onclick = () => selectSuspect(s.isGuilty, card);
             listContainer.appendChild(card);
         });
@@ -146,19 +233,19 @@
         const msg = document.getElementById('message-text');
 
         if (isGuilty) {
-            msg.innerText = "🎉 正解！「ちっ、アイウェアのセレクトを間違えたか…」";
+            msg.innerText = "🎉 見事逮捕！「なぜイラストの僅かな違いに気づいたんだ…！」";
             msg.className = "message success";
             isCleared = true;
             
             const nextBtn = document.getElementById('next-btn');
             if (currentStage === stages.length - 1) {
-                nextBtn.innerText = "全事件クリア！最初に戻る";
+                nextBtn.innerText = "完全勝利！最初に戻る";
             } else {
                 nextBtn.innerText = "次の事件へ";
             }
             nextBtn.style.display = 'inline-block';
         } else {
-            msg.innerText = "❌ 違う！その人のメガネのタイプをよーく見てみよう。";
+            msg.innerText = "❌ 違う！その人は無実だ。イラストをよーく見比べよう。";
             msg.className = "message error";
             
             element.style.borderColor = "#ff453a";
@@ -177,4 +264,3 @@
 
 </body>
 </html>
-
