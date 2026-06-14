@@ -19,8 +19,8 @@
         .ui-element {
             position: absolute; font-weight: bold; text-shadow: 2px 2px 0 #000;
         }
-        #score-ui { top: calc(40px + env(safe-area-inset-top, 0px)); left: 20px; font-size: 24px; color: #ffcc00; }
-        #timer-ui { top: calc(40px + env(safe-area-inset-top, 0px)); right: 20px; font-size: 24px; color: #ff5353; }
+        #score-ui { top: calc(80px + env(safe-area-inset-top, 0px)); left: 20px; font-size: 24px; color: #ffcc00; }
+        #timer-ui { top: calc(80px + env(safe-area-inset-top, 0px)); right: 20px; font-size: 24px; color: #ff5353; }
         
         /* 画面オーバーレイ */
         .overlay {
@@ -165,7 +165,7 @@ function startGame() {
     cameraY = 0;
     score = 0;
     timeLeft = 60;
-    platforms = [{ x: 0, y: V_HEIGHT - 50, w: V_WIDTH, h: 50 }]; // 地面
+    platforms = [{ x: 0, y: V_HEIGHT - 50, w: V_WIDTH, h: 50, isGround: true }]; // 地面
     platforms = platforms.concat(generatePlatforms(V_HEIGHT - 120, 20));
     
     gameState = "PLAY";
@@ -188,14 +188,16 @@ function gameLoop() {
 
     player.update();
 
-    // カメラの追従（プレイヤーが画面中央より上にいったらカメラを上げる）
-    // 常にプレイヤーの上昇に合わせてカメラ座標 cameraY を引き上げます。
-    // player.y は上昇する（高度が上がる）につれてどんどん小さい（負の）値になっていきます。
-    // カメラの cameraY はプレイヤーの上昇を追いかけるため、常に減少していきます。
-    // 単純にプレイヤーが画面の真ん中 (V_HEIGHT / 2) より上に行ったら、その差分だけ cameraY を上に移動（減少）させます。
-    // もしプレイヤーが落下しても、カメラは下がらない（一方向にしか進まない）ようにします。
-    if (player.y - cameraY < V_HEIGHT / 2) {
-        cameraY = player.y - V_HEIGHT / 2;
+    // カメラの追従（プレイヤーが画面中央付近から外れそうになったら上下両方にカメラを追従させる）
+    if (player.y - cameraY < V_HEIGHT * 0.4) {
+        cameraY = player.y - V_HEIGHT * 0.4;
+    } else if (player.y - cameraY > V_HEIGHT * 0.6) {
+        cameraY = player.y - V_HEIGHT * 0.6;
+    }
+
+    // カメラが初期位置（地面）より下に行かないように制限
+    if (cameraY > 0) {
+        cameraY = 0;
     }
 
     // スコア計算（最高高度）
@@ -209,7 +211,8 @@ function gameLoop() {
     if (platforms[platforms.length - 1].y > player.y - V_HEIGHT) {
         platforms = platforms.concat(generatePlatforms(platforms[platforms.length - 1].y - 60, 10));
     }
-    platforms = platforms.filter(p => p.y < cameraY + V_HEIGHT + 100);
+    // プレイヤーの現在位置から一定範囲内（および初期地面）の足場のみを残すことで、落下時に足場が消えてしまうのを防ぐ
+    platforms = platforms.filter(p => p.isGround || Math.abs(p.y - player.y) < V_HEIGHT * 2);
 
     // 衝突判定（下落中のみ足場に乗れる、自動バウンドはせず接地状態にする）
     if (player.vy >= 0) {
