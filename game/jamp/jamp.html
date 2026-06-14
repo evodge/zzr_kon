@@ -310,33 +310,47 @@ function restartGame() {
 
 // --- サーバー通信処理 ---
 async function sendScore() {
-    const name = document.getElementById("username").value;
+    const userName = document.getElementById("username").value;
     
     // スマホからの別ポート接続やfile://スキーム起動に対応するためのAPIベースURLのインテリジェント解決
     const apiBase = (window.location.protocol === "file:") 
         ? "http://localhost:5000" 
-        : (window.location.port !== "5000" ? `${window.location.protocol}//${window.location.hostname}:5000` : "");
+        : (window.location.port && window.location.port !== "5000" 
+            ? `${window.location.protocol}//${window.location.hostname}:5000` 
+            : "");
 
     try {
         // スコア送信
         await fetch(`${apiBase}/api/score`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ name: name, score: score })
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ name: userName, score: score })
         });
+
         // ランキング更新
         const response = await fetch(`${apiBase}/api/ranking`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         
         const list = document.getElementById("ranking-list");
         list.innerHTML = "";
-        data.forEach((item, index) => {
-            const li = document.createElement("li");
-            li.innerHTML = `<span>${index + 1}. ${item.name}</span><span>${item.score}m</span>`;
-            list.appendChild(li);
-        });
+        if (data.length === 0) {
+            list.innerHTML = "<li>まだスコアがありません。</li>";
+        } else {
+            data.forEach((item, index) => {
+                const li = document.createElement("li");
+                li.innerHTML = `<span>${index + 1}. ${item.name}</span><span>${item.score}m</span>`;
+                list.appendChild(li);
+            });
+        }
     } catch (e) {
-        document.getElementById("ranking-list").innerHTML = "<li>スコアサーバーに接続できません。</li>";
+        console.error("スコア送信またはランキング取得中にエラーが発生しました:", e);
+        document.getElementById("ranking-list").innerHTML = "<li>スコアサーバーに接続できませんでした。</li>";
+    } finally {
+        // 読み込み中状態を解除するための処理があればここに追加
+        // 今回のケースでは特にUI的な「読み込み中」表示がないため、追加の処理は不要
     }
 }
 </script>
