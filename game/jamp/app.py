@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 DB_FILE = "scores.db"
 
-# データベースの初期化（テーブルがなければ作成）
+# データベースの初期化
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -19,58 +19,55 @@ def init_db():
     conn.commit()
     conn.close()
 
-# 全てのレスポンスにCORSヘッダーを追加する設定（スマホや別ポートからのアクセスを許可）
+# CORS対策ヘッダーを付与
 @app.after_request
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT, DELETE'
+    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS'
     return response
-
-# CORSのプリフライト（OPTIONS）リクエストに対応
-@app.before_request
-def handle_options():
-    if request.method == 'OPTIONS':
-        response = jsonify({"status": "ok"})
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT, DELETE'
-        return response
 
 # ルートアクセス時にメインメニュー（index.html）を返す
 @app.route('/')
 def index():
     return send_from_directory(os.getcwd(), 'index.html')
 
-# 各種静的ファイル（jamp.html, exit_no8.html等）へのルーティング
+# 各種静的ファイルへのルーティングを整理
 @app.route('/<path:filename>')
 def serve_file(filename):
-    # index.htmlのリンクと実際のファイル名/パスの不一致を解決するマッピング
+    # メインのindex.htmlに記載されたパスと実際の配置ファイルをマッピング
     if filename == 'jamp/jamp.html':
         return send_from_directory(os.getcwd(), 'jamp.html')
     elif filename == 'game_no8.html':
         return send_from_directory(os.getcwd(), 'exit_no8.html')
     return send_from_directory(os.getcwd(), filename)
 
-# スコア登録API
+# スコア登録API（安全な削除ロジックに修正）
 @app.route('/api/score', methods=['POST'])
 def add_score():
     data = request.json
-    name = data.get("name", "Unknown")[:10] # 最大10文字
+    name = data.get("name", "Unknown")[:10]  # 最大10文字
     score = int(data.get("score", 0))
     
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
+    
+    # 1. スコアを挿入
     cursor.execute("INSERT INTO rankings (name, score) VALUES (?, ?)", (name, score))
-    
-    # スコアが多い順に3位までを保持
-    cursor.execute("DELETE FROM rankings WHERE id NOT IN (SELECT id FROM rankings ORDER BY score DESC LIMIT 3)")
-    
     conn.commit()
+    
+    # 2. 上位3番目のスコアを取得して、それ未満のデータを安全に削除（SQLiteエラー回避）
+    cursor.execute("SELECT score FROM rankings ORDER BY score DESC LIMIT 1 OFFSET 2")
+    row = cursor.fetchone()
+    if row:
+        cutoff_score = row[0]
+        cursor.execute("DELETE FROM rankings WHERE score < ?", (cutoff_score,))
+        conn.commit()
+        
     conn.close()
     return jsonify({"status": "success"})
 
-# ランキング取得API (上位10件)
+# ランキング取得API（上位3件）
 @app.route('/api/ranking', methods=['GET'])
 def get_ranking():
     conn = sqlite3.connect(DB_FILE)
