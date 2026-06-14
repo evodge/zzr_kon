@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from-file
+from flask import Flask, request, jsonify, send_from_directory
 import sqlite3
 import os
 
@@ -12,17 +12,27 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS rankings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT lines,
-            score INTEGER NOT lines
+            name TEXT NOT NULL,
+            score INTEGER NOT NULL
         )
     """)
     conn.commit()
     conn.close()
 
-# ルートアクセス時にゲーム画面（index.html）を返す
+# ルートアクセス時にメインメニュー（index.html）を返す
 @app.route('/')
 def index():
-    return send_from_file(os.getcwd(), 'index.html')
+    return send_from_directory(os.getcwd(), 'index.html')
+
+# 各種静的ファイル（jamp.html, exit_no8.html等）へのルーティング
+@app.route('/<path:filename>')
+def serve_file(filename):
+    # index.htmlのリンクと実際のファイル名/パスの不一致を解決するマッピング
+    if filename == 'jamp/jamp.html':
+        return send_from_directory(os.getcwd(), 'jamp.html')
+    elif filename == 'game_no8.html':
+        return send_from_directory(os.getcwd(), 'exit_no8.html')
+    return send_from_directory(os.getcwd(), filename)
 
 # スコア登録API
 @app.route('/api/score', methods=['POST'])
