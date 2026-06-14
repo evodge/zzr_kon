@@ -1,1 +1,403 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8番出口風ゲーム - Webグラフィック版</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #111;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            user-select: none;
+        }
+        #game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #status {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            height: 360px;
+            margin: 0 auto 20px auto;
+            border: 4px solid #444;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #room-text {
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 20px;
+            min-height: 24px;
+        }
+        .btn {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:hover:not(:disabled) { background-color: #666; transform: scale(1.05); }
+        .btn:active:not(:disabled) { transform: scale(0.95); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-forward { background-color: #2e7d32; }
+        .btn-forward:hover:not(:disabled) { background-color: #388e3c; }
+        .btn-back { background-color: #c62828; }
+        .btn-back:hover:not(:disabled) { background-color: #d32f2f; }
+        
+        #timer-info {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="status">現在のエリア: 0 番通路</div>
+    <div id="room-text">通路をよく観察してください。</div>
+    
+    <div id="canvas-container">
+        <canvas id="gameCanvas" width="640" height="360"></canvas>
+    </div>
+    
+    <div id="controls">
+        <button id="btn-back" class="btn btn-back" onclick="playerAction(true)">【←】引き返す (異変あり)</button>
+        <button id="btn-forward" class="btn btn-forward" onclick="playerAction(false)">【→】そのまま進む (異変なし)</button>
+    </div>
+    
+    <div id="timer-info">※ 5秒経過すると、さらに新たな「動的な変化」が発生することがあります...</div>
+</div>
+
+<script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    
+    // ゲーム状態
+    let currentStage = 0;
+    const targetStage = 8;
+    let hasAnomaly = false;
+    let aType = 0; // 1〜8の異変
+    let isTransitioning = false;
+    
+    // 動的アップデート用の状態
+    let secondsInRoom = 0;
+    let timerInterval = null;
+    let dynamicStep = 0; // 時間経過による変化のステップ
+    
+    // 描画設定
+    const CW = 640;
+    const CH = 360;
+
+    // 廊下のベースを描画
+    function drawCorridor(is_a, t, extraChange = false) {
+        // 背景クリア
+        ctx.fillStyle = "#191919";
+        ctx.fillRect(0, 0, CW, CH);
+
+        // 左壁
+        ctx.fillStyle = "#464646";
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(200, 100);
+        ctx.lineTo(200, 260);
+        ctx.lineTo(0, CH);
+        ctx.closePath();
+        ctx.fill();
+
+        // 右壁
+        ctx.fillStyle = "#464646";
+        ctx.beginPath();
+        ctx.moveTo(CW, 0);
+        ctx.lineTo(440, 100);
+        ctx.lineTo(440, 260);
+        ctx.lineTo(CW, CH);
+        ctx.closePath();
+        ctx.fill();
+
+        // 奥の壁 (異変7: 奥の壁の色が血のように赤くなる)
+        let wallColor = "#5a5a5a";
+        if (is_a && t === 7) {
+            wallColor = extraChange ? "#ff0000" : "#821414"; // 5秒後は真っ赤に！
+        }
+        ctx.fillStyle = wallColor;
+        ctx.fillRect(200, 100, 240, 160);
+
+        // 蛍光灯 (異変3: 蛍光灯の位置がずれる)
+        let lightX1 = 302;
+        if (is_a && t === 3) {
+            lightX1 = extraChange ? 280 : 295; // 5秒経過でさらにずれる！
+        }
+        const lights = [240, lightX1, 380];
+        ctx.fillStyle = "#f5f5f5";
+        lights.forEach(x => {
+            ctx.fillRect(x, 107, 20, 5);
+        });
+
+        // 左壁：換気扇の外枠
+        ctx.fillStyle = "#282828";
+        ctx.fillRect(50, 100, 50, 50);
+        ctx.fillStyle = "#141414";
+        ctx.beginPath();
+        ctx.arc(75, 125, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 換気扇の羽 (異変8: 羽が45度傾く。時間経過で逆回転する！)
+        ctx.fillStyle = "#646464";
+        ctx.save();
+        ctx.translate(75, 125);
+        if (is_a && t === 8) {
+            if (extraChange) {
+                // 5秒後は激しく逆回転！
+                const angle = (Date.now() / 100) % (Math.PI * 2);
+                ctx.rotate(-angle);
+            } else {
+                ctx.rotate(Math.PI / 4); // 45度
+            }
+        }
+        // 十字の羽を描画
+        ctx.fillRect(-3, -20, 6, 40);
+        ctx.fillRect(-20, -3, 40, 6);
+        ctx.restore();
+
+        // 換気扇のネジ (異変4: 右下のネジが消える。5秒後は全部消える！)
+        const screwPositions = [
+            {x: 55, y: 105},
+            {x: 95, y: 105},
+            {x: 55, y: 145},
+            {x: 95, y: 145}
+        ];
+        ctx.fillStyle = "#969696";
+        screwPositions.forEach((pos, idx) => {
+            if (is_a && t === 4) {
+                if (extraChange) return; // 5秒後はネジがすべて消え去る！
+                if (idx === 3) return;   // 通常異変時は右下(idx 3)が消える
+            }
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 右壁：ポスター
+        ctx.fillStyle = "#dcdcc8";
+        ctx.beginPath();
+        ctx.moveTo(525, 110);
+        ctx.lineTo(590, 120);
+        ctx.lineTo(590, 225);
+        ctx.lineTo(525, 210);
+        ctx.closePath();
+        ctx.fill();
+
+        // ポスターの赤い丸
+        ctx.fillStyle = "#c83232";
+        ctx.beginPath();
+        ctx.arc(557, 130, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ポスターの棒人間
+        ctx.strokeStyle = "#323232";
+        ctx.lineWidth = 1.5;
+        // 頭
+        ctx.fillStyle = "#323232";
+        ctx.beginPath();
+        ctx.arc(555, 155, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // 体
+        ctx.beginPath();
+        ctx.moveTo(555, 160);
+        ctx.lineTo(555, 175);
+        // 手足
+        ctx.moveTo(555, 165); ctx.lineTo(547, 168); // 左手
+        ctx.moveTo(555, 165); ctx.lineTo(563, 168); // 右手
+        ctx.moveTo(555, 175); ctx.lineTo(547, 190); // 左足
+        ctx.moveTo(555, 175); ctx.lineTo(563, 190); // 右足
+        ctx.stroke();
+
+        // 異変6: 持ち物の変化 (通常は青い傘、異変時は風船。5秒後は風船がさらに巨大化、もしくは傘が折れる！)
+        if (is_a && t === 6) {
+            // 風船
+            let balloonRadius = extraChange ? 12 : 5; // 5秒後は風船が巨大化！
+            ctx.fillStyle = "#dc3232";
+            ctx.beginPath();
+            ctx.arc(568, 150, balloonRadius, 0, Math.PI * 2);
+            ctx.fill();
+            // 糸
+            ctx.strokeStyle = "#c8c832";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(563, 168);
+            ctx.lineTo(568, 150 + balloonRadius);
+            ctx.stroke();
+        } else {
+            // 傘 (通常時。ただし5秒経つと傘が開く仕掛けを通常時にも追加！)
+            ctx.strokeStyle = "#3232c8";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(563, 168);
+            ctx.lineTo(568, 158); // 柄
+            ctx.stroke();
+
+            ctx.fillStyle = "#3232c8";
+            ctx.beginPath();
+            if (extraChange) {
+                // 5秒経過すると傘が丸く開く！
+                ctx.arc(568, 153, 5, 0, Math.PI, true);
+            } else {
+                // 閉じた傘
+                ctx.moveTo(565, 158);
+                ctx.lineTo(571, 158);
+                ctx.lineTo(568, 150);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 異変1: EXIT ポスター文字変化 (通常はEXIT, 異変時はEX1T。5秒経過でさらに文字が乱れる！)
+        let posterText = "EXIT";
+        if (is_a && t === 1) {
+            posterText = extraChange ? "E X I T" : "EX1T";
+        }
+        // 異変5: ポスター文字色変化 (通常黒、異変時は青。5秒後は禍々しい紫に！)
+        let textColor = "#000000";
+        if (is_a && t === 5) {
+            textColor = extraChange ? "#800080" : "#1e1ec8";
+        }
+        ctx.fillStyle = textColor;
+        ctx.font = "bold 9px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(posterText, 550, 200);
+
+        // 正面：ドア
+        ctx.fillStyle = "#32373c";
+        ctx.fillRect(295, 140, 50, 120);
+        // ドアノブ (異変2: ドアノブの位置が上にずれる。5秒経過でさらに上に！)
+        let knobY = 200;
+        if (is_a && t === 2) {
+            knobY = extraChange ? 180 : 192;
+        }
+        ctx.fillStyle = "#c8a028";
+        ctx.beginPath();
+        ctx.arc(340, knobY, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // 動的なループ描画 (換気扇の回転などのアニメーション用)
+    function animationLoop() {
+        if (!isTransitioning && currentStage < targetStage && currentStage >= 0) {
+            const extraChange = secondsInRoom >= 5;
+            drawCorridor(hasAnomaly, aType, extraChange);
+        }
+        requestAnimationFrame(animationLoop);
+    }
+
+    // 新しい通路の生成
+    function nextArea() {
+        if (currentStage === targetStage) {
+            document.getElementById("status").innerText = "脱出成功！";
+            document.getElementById("room-text").innerText = "おめでとうございます！無事に外の世界へ脱出できました！";
+            document.getElementById("controls").innerHTML = `<button class="btn btn-forward" onclick="resetGame()">もう一度遊ぶ</button>`;
+            return;
+        }
+
+        document.getElementById("status").innerText = `現在のエリア: ${currentStage} 番通路`;
+        document.getElementById("room-text").innerText = "周囲をよく観察し、異変があれば引き返し、なければ進んでください。";
+
+        // 50%の確率で異変
+        hasAnomaly = currentStage > 0 && Math.random() < 0.5;
+        aType = hasAnomaly ? Math.floor(Math.random() * 8) + 1 : 0;
+
+        // タイマーのリセット
+        secondsInRoom = 0;
+        clearInterval(timerInterval);
+        
+        // 1秒ごとに部屋の滞在時間をカウント
+        timerInterval = setInterval(() => {
+            secondsInRoom++;
+            if (secondsInRoom === 5) {
+                document.getElementById("room-text").innerText = "……おや？ 通路の様子に「更なる変化」が起きたようだ。";
+            }
+        }, 1000);
+
+        isTransitioning = false;
+        // ボタンを有効化
+        document.getElementById("btn-back").disabled = false;
+        document.getElementById("btn-forward").disabled = false;
+    }
+
+    // プレイヤーのアクション
+    function playerAction(choseBack) {
+        if (isTransitioning) return;
+        isTransitioning = true;
+        
+        // タイマーを止める
+        clearInterval(timerInterval);
+
+        // ボタンの無効化
+        document.getElementById("btn-back").disabled = true;
+        document.getElementById("btn-forward").disabled = true;
+
+        // 1秒間の移動暗転
+        ctx.fillStyle = "#050505";
+        ctx.fillRect(0, 0, CW, CH);
+        ctx.fillStyle = "#b4b4b4";
+        ctx.font = "bold 20px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("通路を進んでいます...", CW / 2, CH / 2);
+        document.getElementById("room-text").innerText = "暗い通路を移動中...";
+
+        setTimeout(() => {
+            // 判定
+            const correct = (hasAnomaly && choseBack) || (!hasAnomaly && !choseBack);
+            if (correct) {
+                currentStage++;
+                alert("正解！ 先へ進みます。");
+            } else {
+                currentStage = 0;
+                alert("間違い！ 強い眩暈がして、元の場所に戻された……。");
+            }
+            nextArea();
+        }, 1000);
+    }
+
+    function resetGame() {
+        currentStage = 0;
+        document.getElementById("controls").innerHTML = `
+            <button id="btn-back" class="btn btn-back" onclick="playerAction(true)">【←】引き返す (異変あり)</button>
+            <button id="btn-forward" class="btn btn-forward" onclick="playerAction(false)">【→】そのまま進む (異変なし)</button>
+        `;
+        nextArea();
+    }
+
+    // 初期化
+    nextArea();
+    animationLoop();
+</script>
+
+</body>
+</html>
