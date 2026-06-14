@@ -207,17 +207,26 @@ function gameLoop() {
         document.getElementById("score-ui").innerText = `高度: ${score}m`;
     }
 
-    // 足場の自動生成と削除
-    if (platforms[platforms.length - 1].y > player.y - V_HEIGHT) {
-        platforms = platforms.concat(generatePlatforms(platforms[platforms.length - 1].y - 60, 10));
+    // 最も高い位置にある足場のY座標を取得（新しい足場を生成する基準）
+    let highestPlatformY = V_HEIGHT;
+    platforms.forEach(p => {
+        if (p.y < highestPlatformY) {
+            highestPlatformY = p.y;
+        }
+    });
+
+    // プレイヤーの少し先まで足場を自動生成（足場を削除しないため、既存データを活かして正確に上部にだけ生成可能）
+    if (highestPlatformY > player.y - V_HEIGHT) {
+        platforms = platforms.concat(generatePlatforms(highestPlatformY - 60, 10));
     }
-    // プレイヤーの現在位置から一定範囲内（および初期地面）の足場のみを残すことで、落下時に足場が消えてしまうのを防ぐ
-    platforms = platforms.filter(p => p.isGround || Math.abs(p.y - player.y) < V_HEIGHT * 2);
+
+    // 画面外の余計な計算や描画を避けるため、プレイヤー周辺のアクティブな足場のみを抽出
+    const activePlatforms = platforms.filter(p => p.isGround || Math.abs(p.y - player.y) < V_HEIGHT * 1.5);
 
     // 衝突判定（下落中のみ足場に乗れる、自動バウンドはせず接地状態にする）
     if (player.vy >= 0) {
         let hitPlatform = false;
-        platforms.forEach(p => {
+        activePlatforms.forEach(p => {
             if (player.x > p.x && player.x < p.x + p.w &&
                 player.y + player.radius >= p.y && player.y - player.radius < p.y + p.h) {
                 player.y = p.y - player.radius;
@@ -235,7 +244,7 @@ function gameLoop() {
         }
     }
 
-    // 画面最下部に落ちたら強制着地（タイムアタックなので、一番下の地面や近くの足場に復帰させる）
+    // 画面最下部に落ちたら強制着地（通常はカメラ追従により落ちませんが、万が一のための安全策）
     if (player.y - cameraY > V_HEIGHT + 100) {
         player.y = cameraY + V_HEIGHT - 150;
         player.vy = 0;
@@ -248,7 +257,7 @@ function gameLoop() {
     
     // 足場の描画
     ctx.fillStyle = "#ffcc00";
-    platforms.forEach(p => {
+    activePlatforms.forEach(p => {
         ctx.fillRect(p.x, p.y - cameraY, p.w, p.h);
     });
 
