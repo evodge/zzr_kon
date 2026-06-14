@@ -62,6 +62,10 @@ def add_score():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO rankings (name, score) VALUES (?, ?)", (name, score))
+    
+    # スコアが多い順に3位までを保持
+    cursor.execute("DELETE FROM rankings WHERE id NOT IN (SELECT id FROM rankings ORDER BY score DESC LIMIT 3)")
+    
     conn.commit()
     conn.close()
     return jsonify({"status": "success"})
@@ -71,7 +75,7 @@ def add_score():
 def get_ranking():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    cursor.execute("SELECT name, score FROM rankings ORDER BY score DESC LIMIT 10")
+    cursor.execute("SELECT name, score FROM rankings ORDER BY score DESC LIMIT 3")
     rows = cursor.fetchall()
     conn.close()
     
