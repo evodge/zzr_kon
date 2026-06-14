@@ -3,54 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ゲームの部屋</title>
+    <title>タイムアタック・ジャンパー</title>
     <style>
         body {
             margin: 0; padding: 0; background: #222;
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: white; text-align: center;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            height: 100vh; box-sizing: border-box;
+            overflow: hidden; text-align: center; color: white;
+            user-select: none; -webkit-user-select: none;
         }
-        h1 {
-            font-size: 24px; margin-bottom: 30px; letter-spacing: 1px;
-            color: #eee;
+        #game-container {
+            position: relative; width: 100vw; height: 100vh; max-width: 480px;
+            margin: 0 auto; background: #333; overflow: hidden;
         }
-        .menu-container {
-            width: 90%; max-width: 360px;
-            display: flex; flex-direction: column; gap: 20px;
+        canvas { display: block; background: #111; width: 100%; height: 100%; }
+        .ui-element {
+            position: absolute; font-weight: bold; text-shadow: 2px 2px 0 #000;
         }
-        .btn {
-            display: block; padding: 20px; font-size: 18px; font-weight: bold;
-            text-decoration: none; color: #111; background: #ffcc00;
-            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: background 0.2s, transform 0.1s;
-        }
-        /* 8番出口風は少しシックな色合いに */
-        .btn-no8 { background: #ddd; color: #111; }
-        /* ジャンピングゲームはポップな色合いに */
-        .btn-jump { background: #00ffcc; color: #111; }
+        #score-ui { top: 15px; left: 20px; font-size: 24px; color: #ffcc00; }
+        #timer-ui { top: 15px; right: 20px; font-size: 24px; color: #ff5353; }
         
-        /* タップしたときのフィードバック */
-        .btn:active {
-            transform: scale(0.97); box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        /* 画面オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10;
+        }
+        input {
+            padding: 12px; font-size: 18px; border-radius: 5px; border: none;
+            width: 70%; max-width: 280px; text-align: center; margin-bottom: 15px;
+        }
+        button {
+            padding: 12px 30px; font-size: 18px; font-weight: bold;
+            background: #ffcc00; border: none; border-radius: 5px; cursor: pointer;
+        }
+        button:active { background: #cca300; }
+        .hidden { display: none !important; }
+        
+        /* ランキング表示用 */
+        #ranking-list {
+            width: 80%; max-height: 200px; overflow-y: auto;
+            margin: 15px 0; padding: 0; list-style: none; text-align: left;
+        }
+        #ranking-list li {
+            padding: 6px 10px; border-bottom: 1px solid #444;
+            display: flex; justify-content: space-between; font-size: 16px;
         }
     </style>
 </head>
 <body>
 
-    <h1>🎮 ゲームの部屋</h1>
+<div id="game-container">
+    <div id="score-ui" class="ui-element">高度: 0m</div>
+    <div id="timer-ui" class="ui-element">残り: 60s</div>
+    <canvas id="gameCanvas"></canvas>
 
-    <div class="menu-container">
-        <a href="game_no8.html" class="btn btn-no8">
-            8番出口風ゲーム
-        </a>
-
-        <a href="jamp/jamp.html" class="btn btn-jump">
-            ジャンピングゲーム
-        </a>
+    <div id="start-screen" class="overlay">
+        <h2>タイムアタック・ジャンパー</h2>
+        <p>1分間でどこまで高く登れるか！？</p>
+        <input type="text" id="username" placeholder="名前を入力してください" maxlength="10">
+        <button onclick="startGame()">ゲームスタート</button>
     </div>
 
+    <div id="result-screen" class="overlay hidden">
+        <h2 style="color: #ff5353;">タイムアップ！</h2>
+        <p id="final-score" style="font-size: 24px; color: #ffcc00;"></p>
+        <h3>🏆 世界ランキング</h3>
+        <ul id="ranking-list">
+            <li>読み込み中...</li>
+        </ul>
+        <button onclick="restartGame()">もう一度挑戦</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// 仮想解像度（スマホのサイズに依らず一定の比率で計算する）
+const V_WIDTH = 480;
+const V_HEIGHT = 800;
+canvas.width = V_WIDTH;
+canvas.height = V_HEIGHT;
+
+let gameInterval, timerInterval;
+let gameState = "START"; // START, PLAY, END
+
+// ゲーム内変数
+let player, platforms, cameraY, score, timeLeft;
+const GRAVITY = 0.4;
+
+class Player {
+    constructor() {
+        this.x = V_WIDTH / 2;
+        this.y = V_HEIGHT - 150;
+        this.vx = 0;
+        this.vy = 0;
+        this.radius = 18;
+        this.isGrounded = true; // 接地しているかどうかのフラグ
+    }
+    update() {
+        this.vy += GRAVITY;
+        this.y += this.vy;
+        this.x += this.vx;
+
+        // 左右の壁に当たったら跳ね返る、または折り返す
+        if (this.x < this.radius) {
+            this.x = this.radius;
+            this.vx = -this.vx * 0.5; // 少し跳ね返る
+        }
+        if (this.x > V_WIDTH - this.radius) {
+            this.x = V_WIDTH - this.radius;
+            this.vx = -this.vx * 0.5;
+        }
+    }
+    jump(toRight) {
+        if (this.isGrounded) {
+            this.vy = -13; // 上方向へのジャンプ力
+            this.vx = toRight ? 5 : -5; // タップした方向へ横移動
+            this.isGrounded = false; // 空中状態にする
+        }
+    }
+    draw() {
+        ctx.fillStyle = "#00ffcc";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y - cameraY, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function generatePlatforms(startY, count) {
+    let arr = [];
+    for(let i=0; i<count; i++) {
+        arr.push({
+            x: Math.random() * (V_WIDTH - 80),
+            y: startY - (i * 60) - Math.random() * 20,
+            w: 80,
+            h: 15
+        });
+    }
+    return arr;
+}
+
+function startGame() {
+    const name = document.getElementById("username").value.trim();
+    if (!name) { alert("名前を入力してください！"); return; }
+    
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("result-screen").classList.add("hidden");
+    
+    // 初期化
+    player = new Player();
+    cameraY = 0;
+    score = 0;
+    timeLeft = 60;
+    platforms = [{ x: 0, y: V_HEIGHT - 50, w: V_WIDTH, h: 50 }]; // 地面
+    platforms = platforms.concat(generatePlatforms(V_HEIGHT - 120, 20));
+    
+    gameState = "PLAY";
+    
+    // タイマー開始
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer-ui").innerText = `残り: ${timeLeft}s`;
+        if (timeLeft <= 0) endOriginalGame();
+    }, 1000);
+
+    // ループ開始
+    clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, 1000 / 60);
+}
+
+function gameLoop() {
+    if (gameState !== "PLAY") return;
+
+    player.update();
+
+    // カメラの追従（プレイヤーが画面中央より上にいったらカメラを上げる）
+    // 常にプレイヤーの上昇に合わせてカメラ座標 cameraY を引き上げます。
+    // player.y は上昇する（高度が上がる）につれてどんどん小さい（負の）値になっていきます。
+    // カメラの cameraY はプレイヤーの上昇を追いかけるため、常に減少していきます。
+    // 単純にプレイヤーが画面の真ん中 (V_HEIGHT / 2) より上に行ったら、その差分だけ cameraY を上に移動（減少）させます。
+    // もしプレイヤーが落下しても、カメラは下がらない（一方向にしか進まない）ようにします。
+    if (player.y - cameraY < V_HEIGHT / 2) {
+        cameraY = player.y - V_HEIGHT / 2;
+    }
+
+    // スコア計算（最高高度）
+    let currentScore = Math.floor((V_HEIGHT - 150 - player.y) / 10);
+    if (currentScore > score) {
+        score = currentScore;
+        document.getElementById("score-ui").innerText = `高度: ${score}m`;
+    }
+
+    // 足場の自動生成と削除
+    if (platforms[platforms.length - 1].y > player.y - V_HEIGHT) {
+        platforms = platforms.concat(generatePlatforms(platforms[platforms.length - 1].y - 60, 10));
+    }
+    platforms = platforms.filter(p => p.y < cameraY + V_HEIGHT + 100);
+
+    // 衝突判定（下落中のみ足場に乗れる、自動バウンドはせず接地状態にする）
+    if (player.vy >= 0) {
+        let hitPlatform = false;
+        platforms.forEach(p => {
+            if (player.x > p.x && player.x < p.x + p.w &&
+                player.y + player.radius >= p.y && player.y - player.radius < p.y + p.h) {
+                player.y = p.y - player.radius;
+                player.vy = 0;
+                player.vx = 0; // 足場の上でピタッと止まる
+                player.isGrounded = true; // 接地
+                hitPlatform = true;
+            }
+        });
+        if (!hitPlatform) {
+            // 足場から外れて落下している場合は接地フラグを外す（歩いて落ちる場合など）
+            if (player.vy > 0.5) {
+                player.isGrounded = false;
+            }
+        }
+    }
+
+    // 画面最下部に落ちたら強制着地（タイムアタックなので、一番下の地面や近くの足場に復帰させる）
+    if (player.y - cameraY > V_HEIGHT + 100) {
+        player.y = cameraY + V_HEIGHT - 150;
+        player.vy = 0;
+        player.vx = 0;
+        player.isGrounded = true;
+    }
+
+    // 描画処理
+    ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
+    
+    // 足場の描画
+    ctx.fillStyle = "#ffcc00";
+    platforms.forEach(p => {
+        ctx.fillRect(p.x, p.y - cameraY, p.w, p.h);
+    });
+
+    player.draw();
+}
+
+// 画面タッチ・クリックイベント（キャラクターより右側タップで右へ、左側タップで左へジャンプ。接地時のみジャンプ可能）
+const handleTap = (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
+        return;
+    }
+    e.preventDefault();
+    
+    if (gameState === "PLAY" && player) {
+        // タップ位置の取得（仮想解像度の比率に合わせる）
+        const rect = canvas.getBoundingClientRect();
+        let clientX = 0;
+        if (e.touches && e.touches[0]) {
+            clientX = e.touches[0].clientX;
+        } else {
+            clientX = e.clientX;
+        }
+        
+        // キャンバス内の相対X座標を計算
+        const relativeX = ((clientX - rect.left) / rect.width) * V_WIDTH;
+        
+        // プレイヤーの位置より右をタップしたか左をタップしたか判定
+        const toRight = relativeX > player.x;
+        player.jump(toRight);
+    }
+};
+window.addEventListener("touchstart", handleTap, { passive: false });
+window.addEventListener("mousedown", handleTap);
+
+function endOriginalGame() {
+    gameState = "END";
+    clearInterval(gameInterval);
+    clearInterval(timerInterval);
+    
+    document.getElementById("final-score").innerText = `記録: ${score}m`;
+    document.getElementById("result-screen").classList.remove("hidden");
+    
+    // サーバーへスコア送信＆ランキング取得
+    sendScore();
+}
+
+function restartGame() {
+    startGame();
+}
+
+// --- サーバー通信処理 ---
+async function sendScore() {
+    const name = document.getElementById("username").value;
+    try {
+        // スコア送信
+        await fetch('/api/score', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name: name, score: score })
+        });
+        // ランキング更新
+        const response = await fetch('/api/ranking');
+        const data = await response.json();
+        
+        const list = document.getElementById("ranking-list");
+        list.innerHTML = "";
+        data.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.innerHTML = `<span>${index + 1}. ${item.name}</span><span>${item.score}m</span>`;
+            list.appendChild(li);
+        });
+    } catch (e) {
+        document.getElementById("ranking-list").innerHTML = "<li>スコアサーバーに接続できません。</li>";
+    }
+}
+</script>
 </body>
 </html>
