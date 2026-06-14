@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -172,8 +171,14 @@ function gameLoop() {
     player.update();
 
     // カメラの追従（プレイヤーが画面中央より上にいったらカメラを上げる）
-    let targetCameraY = player.y - V_HEIGHT / 2;
-    if (targetCameraY > cameraY) cameraY += (targetCameraY - cameraY) * 0.1;
+    // 常にプレイヤーの上昇に合わせてカメラ座標 cameraY を引き上げます。
+    // player.y は上昇する（高度が上がる）につれてどんどん小さい（負の）値になっていきます。
+    // カメラの cameraY はプレイヤーの上昇を追いかけるため、常に減少していきます。
+    // 単純にプレイヤーが画面の真ん中 (V_HEIGHT / 2) より上に行ったら、その差分だけ cameraY を上に移動（減少）させます。
+    // もしプレイヤーが落下しても、カメラは下がらない（一方向にしか進まない）ようにします。
+    if (player.y - cameraY < V_HEIGHT / 2) {
+        cameraY = player.y - V_HEIGHT / 2;
+    }
 
     // スコア計算（最高高度）
     let currentScore = Math.floor((V_HEIGHT - 150 - player.y) / 10);
@@ -218,8 +223,12 @@ function gameLoop() {
     player.draw();
 }
 
-// 画面タッチ・クリックイベント（どこをタップしてもジャンプ）
+// 画面タッチ・クリックイベント（どこをタップしてもジャンプ、ただしインプット要素は除く）
 const handleTap = (e) => {
+    // クリックされたターゲットがinput要素などのインタラクティブ要素である場合はジャンプやデフォルト防止（preventDefault）を行わない
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
+        return;
+    }
     e.preventDefault();
     if (gameState === "PLAY" && player) player.jump();
 };
