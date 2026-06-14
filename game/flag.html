@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>脳トレ！色と漢字の旗揚げ</title>
+    <style>
+        body {
+            margin: 0; padding: 10px; background: #1c1c1e;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: white; text-align: center;
+            box-sizing: border-box; min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .game-container {
+            width: 100%; max-width: 400px;
+            background: #2c2c2e; padding: 25px; border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-sizing: border-box;
+        }
+        h1 { font-size: 20px; margin: 0 0 5px 0; color: #00ffcc; }
+        .stage-title { font-size: 14px; color: #aeaeb2; margin-bottom: 3px; }
+        .feint-indicator { font-size: 13px; color: #ffd60a; margin-bottom: 15px; font-weight: bold; }
+        
+        /* 指示エリア */
+        .voice-box {
+            background: #121212; border-left: 4px solid #00ffcc;
+            padding: 15px; margin-bottom: 25px; border-radius: 6px;
+            font-size: 16px; font-weight: bold; min-height: 50px;
+            display: flex; justify-content: center; align-items: center;
+            color: #fff; line-height: 1.5;
+        }
+
+        /* キャラクターと旗の描画 */
+        .stage-area {
+            height: 140px; display: flex; justify-content: center; align-items: flex-end;
+            margin-bottom: 25px;
+        }
+        .character {
+            width: 60px; height: 90px; background: #3a3a3c;
+            border-radius: 10px 10px 0 0; position: relative; border: 2px solid #555;
+        }
+        .char-head {
+            width: 36px; height: 36px; background: #ffdbac; border-radius: 50%;
+            position: absolute; top: -32px; left: 10px;
+        }
+        .char-eye {
+            width: 5px; height: 5px; background: #222; border-radius: 50%;
+            position: absolute; top: 14px; left: 9px;
+        }
+        .char-eye.right { left: 22px; }
+
+        /* 腕と旗 */
+        .arm-container {
+            position: absolute; top: 15px; width: 20px; height: 60px;
+            transition: transform 0.15s ease-out;
+        }
+        .left-side { left: -15px; transform-origin: top right; }  
+        .right-side { right: -15px; transform-origin: top left; } 
+        .arm { width: 8px; height: 35px; background: #ffdbac; border-radius: 4px; margin: 0 auto; }
+        .flag {
+            width: 26px; height: 18px; position: absolute; top: 30px;
+            border: 1px solid #333; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .red-flag { background: #ff453a; left: -18px; }
+        .white-flag { background: #ffffff; right: -18px; }
+
+        /* 操作パネル */
+        .control-panel { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+        .btn-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        
+        /* 選択肢ボタンの基本スタイル */
+        .game-btn {
+            padding: 15px 10px; font-size: 18px; font-weight: bold; border: none;
+            border-radius: 10px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background 0.2s, transform 0.1s, color 0.2s;
+            color: #111;
+        }
+        .game-btn:active { transform: scale(0.95); }
+
+        /* 動的に変わるボタンの色クラス */
+        .bg-red { background: #ff453a !important; color: white !important; }
+        .bg-white { background: #ffffff !important; color: #111 !important; }
+
+        .btn-action { background: #bf5af2; color: white; padding: 12px; font-size: 15px; border-radius: 8px; width: 100%; margin-top: 5px; border: none; font-weight: bold; cursor: pointer;}
+        .btn-action:hover { background: #af52de; }
+        .back-menu { background: #48484a; color: white; margin-top: 15px; display: inline-block; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px;}
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🧠 旗揚げ：色と漢字の罠</h1>
+    <div class="stage-title" id="stage-num">Stage 1 / 3</div>
+    <div class="feint-indicator" id="feint-text">フェイント：なし</div>
+    
+    <div class="voice-box" id="command-display">
+        「ボタンを押すとミッションが始まるぞ」
+    </div>
+
+    <div class="stage-area">
+        <div class="character">
+            <div class="char-head">
+                <div class="char-eye"></div>
+                <div class="char-eye right"></div>
+            </div>
+            <!-- 左手（赤旗） -->
+            <div class="arm-container left-side" id="red-arm">
+                <div class="arm"></div>
+                <div class="flag red-flag"></div>
+            </div>
+            <!-- 右手（白旗） -->
+            <div class="arm-container right-side" id="white-arm">
+                <div class="arm"></div>
+                <div class="flag white-flag"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <!-- 4つの選択肢（色と漢字がステージごとにシャッフルされる） -->
+        <div class="btn-grid">
+            <button class="game-btn" id="btn-0" onclick="pressButton(0)">ボタン1</button>
+            <button class="game-btn" id="btn-1" onclick="pressButton(1)">ボタン2</button>
+            <button class="game-btn" id="btn-2" onclick="pressButton(2)">ボタン3</button>
+            <button class="game-btn" id="btn-3" onclick="pressButton(3)">ボタン4</button>
+        </div>
+        
+        <button class="btn-action" id="action-btn" onclick="processStageButton()">ミッション開始！</button>
+    </div>
+</div>
+
+<a href="index.html" class="back-menu">◀ ゲームの部屋に戻る</a>
+
+<script>
+    let currentStatus = { red: false, white: false };
+    let targetStatus = { red: false, white: false };
+    let currentStage = 0;
+    let gameState = "ready"; 
+
+    // 各ボタンが現在持っている「効果」を記録する配列
+    let buttonConfigs = [];
+
+    const stages = [
+        {
+            feint: "難易度★：フェイントなし（基本）",
+            text: "「まずは基本だ。文字と色が一致しているぞ。<br><span style='color:#ff453a;'>赤を上げて</span>、<span style='color:#fff;'>白は下げるんだ</span>」",
+            target: { red: true, white: false },
+            // ボタンの配置：[表示する漢字, ボタンの背景色, 押した時の効果(color, isUp)]
+            buttons: [
+                { text: "赤 上", bg: "bg-red",   action: { color: "red",   up: true } },
+                { text: "赤 下", bg: "bg-red",   action: { color: "red",   up: false } },
+                { text: "白 上", bg: "bg-white", action: { color: "white", up: true } },
+                { text: "白 下", bg: "bg-white", action: { color: "white", up: false } }
+            ]
+        },
+        {
+            feint: "難易度★★：色が逆転（ストループ効果）",
+            text: "「文字に騙されるな！<br><span style='color:#00ffcc;'>『ボタンの見た目の色』</span>を信じて、<br>赤いボタンを上げろ！白いボタンは下げろ！」",
+            target: { red: true, white: false },
+            buttons: [
+                { text: "白 上", bg: "bg-red",   action: { color: "red",   up: true } },   // 文字は「白」だけど【赤いボタン】
+                { text: "白 下", bg: "bg-red",   action: { color: "red",   up: false } },  // 文字は「白」だけど【赤いボタン】
+                { text: "赤 上", bg: "bg-white", action: { color: "white", up: true } },   // 文字は「赤」だけど【白いボタン】
+                { text: "赤 下", bg: "bg-white", action: { color: "white", up: false } }   // 文字は「赤」だけど【白いボタン】
+            ]
+        },
+        {
+            feint: "難易度★★★：漢字も色も大パニック",
+            text: "「最後だ！文字の色、背景、漢字、すべてがバラバラだ！<br>正しく<span style='color:#ff453a;'>赤を下げて</span>、<span style='color:#fff;'>白を上げろ！</span>」",
+            target: { red: false, white: true },
+            buttons: [
+                { text: "赤 下", bg: "bg-white", action: { color: "white", up: false } }, // 漢字は「赤下」だけど【白を下げる】ボタン
+                { text: "白 上", bg: "bg-red",   action: { color: "red",   up: true } },   // 漢字は「白上」だけど【赤を上げる】ボタン
+                { text: "赤 上", bg: "bg-white", action: { color: "white", up: true } },   // 漢字は「赤上」だけど【白を上げる】ボタン（正解の片方）
+                { text: "白 下", bg: "bg-red",   action: { color: "red",   up: false } }   // 漢字は「白下」だけど【赤を下げる】ボタン（正解の片方）
+            ]
+        }
+    ];
+
+    function loadStage() {
+        const stage = stages[currentStage];
+        document.getElementById('stage-num').innerText = `Stage ${currentStage + 1} / ${stages.length}`;
+        document.getElementById('feint-text').innerText = stage.feint;
+        document.getElementById('command-display').innerHTML = stage.text;
+        
+        targetStatus = { ...stage.target };
+        buttonConfigs = stage.buttons;
+
+        // ボタンの見た目（漢字と色）をステージのデータに合わせて書き換える
+        for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById(`btn-${i}`);
+            btn.innerText = buttonConfigs[i].text;
+            btn.className = `game-btn ${buttonConfigs[i].bg}`;
+            btn.style.display = "block";
+        }
+        
+        const actionBtn = document.getElementById('action-btn');
+        actionBtn.innerText = "これで決定！";
+        actionBtn.style.background = "#ffd60a";
+        actionBtn.style.color = "#111";
+        
+        gameState = "playing";
+    }
+
+    function pressButton(index) {
+        if (gameState !== "playing") return;
+        
+        // 押されたボタンの設定を取得して、キャラの旗状態を動かす
+        const config = buttonConfigs[index].action;
+        currentStatus[config.color] = config.up;
+        
+        updateCharacterVisual();
+    }
+
+    function processStageButton() {
+        if (gameState === "ready") {
+            currentStatus = { red: false, white: false };
+            updateCharacterVisual();
+            loadStage();
+        } else if (gameState === "playing") {
+            checkAnswer();
+        } else if (gameState === "cleared") {
+            currentStage++;
+            if (currentStage >= stages.length) {
+                currentStage = 0;
+                gameState = "ready";
+                document.getElementById('action-btn').innerText = "ミッション開始！";
+                document.getElementById('action-btn').style.background = "#bf5af2";
+                document.getElementById('action-btn').style.color = "white";
+                document.getElementById('command-display').innerHTML = "「完全クリア！君の脳の柔軟性は素晴らしいな！」";
+                // ボタンを隠す
+                for(let i=0; i<4; i++) document.getElementById(`btn-${i}`).style.display = "none";
+            } else {
+                loadStage();
+            }
+        }
+    }
+
+    function updateCharacterVisual() {
+        const redArm = document.getElementById('red-arm');
+        const whiteArm = document.getElementById('white-arm');
+        redArm.style.transform = currentStatus.red ? "rotate(-140deg)" : "rotate(0deg)";
+        whiteArm.style.transform = currentStatus.white ? "rotate(140deg)" : "rotate(0deg)";
+    }
+
+    function checkAnswer() {
+        const display = document.getElementById('command-display');
+        const actionBtn = document.getElementById('action-btn');
+
+        if (currentStatus.red === targetStatus.red && currentStatus.white === targetStatus.white) {
+            if (currentStage === stages.length - 1) {
+                display.innerHTML = "<span style='color:#30d158; font-size:18px;'>🎉 クリア！色と漢字の呪縛を完全に解き明かしたな！</span>";
+                actionBtn.innerText = "タイトルに戻る";
+            } else {
+                display.innerHTML = "<span style='color:#30d158;'>🎉 正解！脳の錯覚に打ち勝ったぞ！</span>";
+                actionBtn.innerText = "次のステージへ";
+            }
+            actionBtn.style.background = "#30d158";
+            actionBtn.style.color = "#fff";
+            gameState = "cleared";
+        } else {
+            display.innerHTML = "<span style='color:#ff453a;'>❌ 残念、引っかかった！<br>ボタンの『本当の効果』をよく見極めるんだ！</span>";
+            actionBtn.innerText = "もう一度やり直す";
+            actionBtn.style.background = "#ff453a";
+            actionBtn.style.color = "#fff";
+            
+            currentStatus = { red: false, white: false };
+            updateCharacterVisual();
+            gameState = "playing"; 
+        }
+    }
+
+    // 最初はボタンを隠しておく
+    window.onload = function() {
+        for(let i=0; i<4; i++) document.getElementById(`btn-${i}`).style.display = "none";
+    }
+</script>
+
+</body>
+</html>
