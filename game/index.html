@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ゲームの部屋</title>
+    <style>
+        body {
+            margin: 0; padding: 0; background: #222;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: white; text-align: center;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            height: 100vh; box-sizing: border-box;
+        }
+        h1 {
+            font-size: 24px; margin-bottom: 30px; letter-spacing: 1px;
+            color: #eee;
+        }
+        .menu-container {
+            width: 90%; max-width: 360px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .btn {
+            display: block; padding: 20px; font-size: 18px; font-weight: bold;
+            text-decoration: none; color: #111; background: #ffcc00;
+            border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background 0.2s, transform 0.1s;
+        }
+        /* 8番出口風は少しシックな色合いに */
+        .btn-no8 { background: #ddd; color: #111; }
+        /* ジャンピングゲームはポップな色合いに */
+        .btn-jump { background: #00ffcc; color: #111; }
+        
+        /* タップしたときのフィードバック */
+        .btn:active {
+            transform: scale(0.97); box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎮 ゲームの部屋</h1>
+
+    <div class="menu-container">
+        <a href="game_no8.html" class="btn btn-no8">
+            8番出口風ゲーム
+        </a>
+
+        <a href="jamp/jamp.html" class="btn btn-jump">
+            ジャンピングゲーム
+        </a>
+    </div>
+
+</body>
+</html>
