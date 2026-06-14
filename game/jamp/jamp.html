@@ -19,8 +19,8 @@
         .ui-element {
             position: absolute; font-weight: bold; text-shadow: 2px 2px 0 #000;
         }
-        #score-ui { top: 15px; left: 20px; font-size: 24px; color: #ffcc00; }
-        #timer-ui { top: 15px; right: 20px; font-size: 24px; color: #ff5353; }
+        #score-ui { top: calc(40px + env(safe-area-inset-top, 0px)); left: 20px; font-size: 24px; color: #ffcc00; }
+        #timer-ui { top: calc(40px + env(safe-area-inset-top, 0px)); right: 20px; font-size: 24px; color: #ff5353; }
         
         /* 画面オーバーレイ */
         .overlay {
@@ -99,20 +99,38 @@ class Player {
         this.vx = 0;
         this.vy = 0;
         this.radius = 18;
+        this.isGrounded = true; // 接地しているかどうかのフラグ
     }
     update() {
         this.vy += GRAVITY;
         this.y += this.vy;
         this.x += this.vx;
 
-        // 画面端の折り返し
-        if (this.x < 0) this.x = V_WIDTH;
-        if (this.x > V_WIDTH) this.x = 0;
+        // 左右の壁に当たったら跳ね返る、または折り返す
+        if (this.x < this.radius) {
+            this.x = this.radius;
+            this.vx = -this.vx * 0.5; // 少し跳ね返る
+        }
+        if (this.x > V_WIDTH - this.radius) {
+            this.x = V_WIDTH - this.radius;
+            this.vx = -this.vx * 0.5;
+        }
     }
-    jump() {
-        this.vy = -12; // タップで上方向へ加速
-        // 爽快感を出すため、タップした瞬間に少し左右ランダムに慣性をのせる
-        this.vx = (Math.random() - 0.5) * 6;
+    jump(dx) {
+        if (this.isGrounded) {
+            this.vy = -13; // 上方向へのジャンプ力
+            
+            // タップされた位置への距離（dx）に応じて横移動速度（vx）を変化させる
+            const baseVx = dx * 0.035; // 距離に比例した速度
+            const sign = Math.sign(dx) || 1;
+            const absVx = Math.abs(baseVx);
+            
+            // 飛びすぎや全然動かないのを防ぐために、速度の最小値と最大値を制限する
+            const clampedVx = Math.max(1.5, Math.min(8.5, absVx));
+            
+            this.vx = clampedVx * sign;
+            this.isGrounded = false; // 空中状態にする
+        }
     }
     draw() {
         ctx.fillStyle = "#00ffcc";
@@ -193,22 +211,33 @@ function gameLoop() {
     }
     platforms = platforms.filter(p => p.y < cameraY + V_HEIGHT + 100);
 
-    // 衝突判定（下落中のみ足場に乗れる）
-    if (player.vy > 0) {
+    // 衝突判定（下落中のみ足場に乗れる、自動バウンドはせず接地状態にする）
+    if (player.vy >= 0) {
+        let hitPlatform = false;
         platforms.forEach(p => {
             if (player.x > p.x && player.x < p.x + p.w &&
-                player.y + player.radius > p.y && player.y - player.radius < p.y + p.h) {
+                player.y + player.radius >= p.y && player.y - player.radius < p.y + p.h) {
                 player.y = p.y - player.radius;
-                player.vy = -8; // 足場を踏むと自動で少しバウンド
+                player.vy = 0;
+                player.vx = 0; // 足場の上でピタッと止まる
+                player.isGrounded = true; // 接地
+                hitPlatform = true;
             }
         });
+        if (!hitPlatform) {
+            // 足場から外れて落下している場合は接地フラグを外す（歩いて落ちる場合など）
+            if (player.vy > 0.5) {
+                player.isGrounded = false;
+            }
+        }
     }
 
-    // 画面最下部に落ちたら強制バウンド（タイムアタックなのでゲームオーバーにはしない）
+    // 画面最下部に落ちたら強制着地（タイムアタックなので、一番下の地面や近くの足場に復帰させる）
     if (player.y - cameraY > V_HEIGHT + 100) {
         player.y = cameraY + V_HEIGHT - 150;
-        player.vy = -10;
+        player.vy = 0;
         player.vx = 0;
+        player.isGrounded = true;
     }
 
     // 描画処理
@@ -223,14 +252,30 @@ function gameLoop() {
     player.draw();
 }
 
-// 画面タッチ・クリックイベント（どこをタップしてもジャンプ、ただしインプット要素は除く）
+// 画面タッチ・クリックイベント（キャラクターより右側タップで右へ、左側タップで左へジャンプ。接地時のみジャンプ可能）
 const handleTap = (e) => {
-    // クリックされたターゲットがinput要素などのインタラクティブ要素である場合はジャンプやデフォルト防止（preventDefault）を行わない
     if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
         return;
     }
     e.preventDefault();
-    if (gameState === "PLAY" && player) player.jump();
+    
+    if (gameState === "PLAY" && player) {
+        // タップ位置の取得（仮想解像度の比率に合わせる）
+        const rect = canvas.getBoundingClientRect();
+        let clientX = 0;
+        if (e.touches && e.touches[0]) {
+            clientX = e.touches[0].clientX;
+        } else {
+            clientX = e.clientX;
+        }
+        
+        // キャンバス内の相対X座標を計算
+        const relativeX = ((clientX - rect.left) / rect.width) * V_WIDTH;
+        
+        // プレイヤーの位置からの距離を計算してジャンプに渡す
+        const dx = relativeX - player.x;
+        player.jump(dx);
+    }
 };
 window.addEventListener("touchstart", handleTap, { passive: false });
 window.addEventListener("mousedown", handleTap);
