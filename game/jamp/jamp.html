@@ -67,7 +67,7 @@
     <div id="result-screen" class="overlay hidden">
         <h2 style="color: #ff5353;">タイムアップ！</h2>
         <p id="final-score" style="font-size: 24px; color: #ffcc00;"></p>
-        <h3>🏆 世界ランキング</h3>
+        <h3>🏆 世界ランキング (TOP 3)</h3>
         <ul id="ranking-list">
             <li>読み込み中...</li>
         </ul>
@@ -79,16 +79,14 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// 仮想解像度（スマホのサイズに依らず一定の比率で計算する）
 const V_WIDTH = 480;
 const V_HEIGHT = 800;
 canvas.width = V_WIDTH;
 canvas.height = V_HEIGHT;
 
 let gameInterval, timerInterval;
-let gameState = "START"; // START, PLAY, END
+let gameState = "START";
 
-// ゲーム内変数
 let player, platforms, cameraY, score, timeLeft;
 const GRAVITY = 0.4;
 
@@ -99,17 +97,16 @@ class Player {
         this.vx = 0;
         this.vy = 0;
         this.radius = 18;
-        this.isGrounded = true; // 接地しているかどうかのフラグ
+        this.isGrounded = true;
     }
     update() {
         this.vy += GRAVITY;
         this.y += this.vy;
         this.x += this.vx;
 
-        // 左右の壁に当たったら跳ね返る、または折り返す
         if (this.x < this.radius) {
             this.x = this.radius;
-            this.vx = -this.vx * 0.5; // 少し跳ね返る
+            this.vx = -this.vx * 0.5;
         }
         if (this.x > V_WIDTH - this.radius) {
             this.x = V_WIDTH - this.radius;
@@ -118,18 +115,14 @@ class Player {
     }
     jump(dx) {
         if (this.isGrounded) {
-            this.vy = -13; // 上方向へのジャンプ力
-            
-            // タップされた位置への距離（dx）に応じて横移動速度（vx）を変化させる
-            const baseVx = dx * 0.035; // 距離に比例した速度
+            this.vy = -13;
+            const baseVx = dx * 0.035;
             const sign = Math.sign(dx) || 1;
             const absVx = Math.abs(baseVx);
-            
-            // 飛びすぎや全然動かないのを防ぐために、速度の最小値と最大値を制限する
             const clampedVx = Math.max(1.5, Math.min(8.5, absVx));
             
             this.vx = clampedVx * sign;
-            this.isGrounded = false; // 空中状態にする
+            this.isGrounded = false;
         }
     }
     draw() {
@@ -160,17 +153,15 @@ function startGame() {
     document.getElementById("start-screen").classList.add("hidden");
     document.getElementById("result-screen").classList.add("hidden");
     
-    // 初期化
     player = new Player();
     cameraY = 0;
     score = 0;
     timeLeft = 60;
-    platforms = [{ x: 0, y: V_HEIGHT - 50, w: V_WIDTH, h: 50, isGround: true }]; // 地面
+    platforms = [{ x: 0, y: V_HEIGHT - 50, w: V_WIDTH, h: 50, isGround: true }];
     platforms = platforms.concat(generatePlatforms(V_HEIGHT - 120, 20));
     
     gameState = "PLAY";
     
-    // タイマー開始
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
         timeLeft--;
@@ -178,7 +169,6 @@ function startGame() {
         if (timeLeft <= 0) endOriginalGame();
     }, 1000);
 
-    // ループ開始
     clearInterval(gameInterval);
     gameInterval = setInterval(gameLoop, 1000 / 60);
 }
@@ -188,42 +178,31 @@ function gameLoop() {
 
     player.update();
 
-    // カメラの追従（プレイヤーが画面中央付近から外れそうになったら上下両方にカメラを追従させる）
     if (player.y - cameraY < V_HEIGHT * 0.4) {
         cameraY = player.y - V_HEIGHT * 0.4;
     } else if (player.y - cameraY > V_HEIGHT * 0.6) {
         cameraY = player.y - V_HEIGHT * 0.6;
     }
 
-    // カメラが初期位置（地面）より下に行かないように制限
-    if (cameraY > 0) {
-        cameraY = 0;
-    }
+    if (cameraY > 0) cameraY = 0;
 
-    // スコア計算（最高高度）
     let currentScore = Math.floor((V_HEIGHT - 150 - player.y) / 10);
     if (currentScore > score) {
         score = currentScore;
         document.getElementById("score-ui").innerText = `高度: ${score}m`;
     }
 
-    // 最も高い位置にある足場のY座標を取得（新しい足場を生成する基準）
     let highestPlatformY = V_HEIGHT;
     platforms.forEach(p => {
-        if (p.y < highestPlatformY) {
-            highestPlatformY = p.y;
-        }
+        if (p.y < highestPlatformY) highestPlatformY = p.y;
     });
 
-    // プレイヤーの少し先まで足場を自動生成（足場を削除しないため、既存データを活かして正確に上部にだけ生成可能）
     if (highestPlatformY > player.y - V_HEIGHT) {
         platforms = platforms.concat(generatePlatforms(highestPlatformY - 60, 10));
     }
 
-    // 画面外の余計な計算や描画を避けるため、プレイヤー周辺のアクティブな足場のみを抽出
     const activePlatforms = platforms.filter(p => p.isGround || Math.abs(p.y - player.y) < V_HEIGHT * 1.5);
 
-    // 衝突判定（下落中のみ足場に乗れる、自動バウンドはせず接地状態にする）
     if (player.vy >= 0) {
         let hitPlatform = false;
         activePlatforms.forEach(p => {
@@ -231,20 +210,16 @@ function gameLoop() {
                 player.y + player.radius >= p.y && player.y - player.radius < p.y + p.h) {
                 player.y = p.y - player.radius;
                 player.vy = 0;
-                player.vx = 0; // 足場の上でピタッと止まる
-                player.isGrounded = true; // 接地
+                player.vx = 0;
+                player.isGrounded = true;
                 hitPlatform = true;
             }
         });
-        if (!hitPlatform) {
-            // 足場から外れて落下している場合は接地フラグを外す（歩いて落ちる場合など）
-            if (player.vy > 0.5) {
-                player.isGrounded = false;
-            }
+        if (!hitPlatform && player.vy > 0.5) {
+            player.isGrounded = false;
         }
     }
 
-    // 画面最下部に落ちたら強制着地（通常はカメラ追従により落ちませんが、万が一のための安全策）
     if (player.y - cameraY > V_HEIGHT + 100) {
         player.y = cameraY + V_HEIGHT - 150;
         player.vy = 0;
@@ -252,10 +227,7 @@ function gameLoop() {
         player.isGrounded = true;
     }
 
-    // 描画処理
     ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
-    
-    // 足場の描画
     ctx.fillStyle = "#ffcc00";
     activePlatforms.forEach(p => {
         ctx.fillRect(p.x, p.y - cameraY, p.w, p.h);
@@ -264,27 +236,14 @@ function gameLoop() {
     player.draw();
 }
 
-// 画面タッチ・クリックイベント（キャラクターより右側タップで右へ、左側タップで左へジャンプ。接地時のみジャンプ可能）
 const handleTap = (e) => {
-    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") {
-        return;
-    }
+    if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
     e.preventDefault();
     
     if (gameState === "PLAY" && player) {
-        // タップ位置の取得（仮想解像度の比率に合わせる）
         const rect = canvas.getBoundingClientRect();
-        let clientX = 0;
-        if (e.touches && e.touches[0]) {
-            clientX = e.touches[0].clientX;
-        } else {
-            clientX = e.clientX;
-        }
-        
-        // キャンバス内の相対X座標を計算
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const relativeX = ((clientX - rect.left) / rect.width) * V_WIDTH;
-        
-        // プレイヤーの位置からの距離を計算してジャンプに渡す
         const dx = relativeX - player.x;
         player.jump(dx);
     }
@@ -300,7 +259,6 @@ function endOriginalGame() {
     document.getElementById("final-score").innerText = `記録: ${score}m`;
     document.getElementById("result-screen").classList.remove("hidden");
     
-    // サーバーへスコア送信＆ランキング取得
     sendScore();
 }
 
@@ -308,33 +266,25 @@ function restartGame() {
     startGame();
 }
 
-// --- サーバー通信処理 ---
+// --- サーバー通信処理（完全に相対パスへ修正） ---
 async function sendScore() {
     const userName = document.getElementById("username").value;
-    
-    // スマホからの別ポート接続やfile://スキーム起動に対応するためのAPIベースURLのインテリジェント解決
-    const apiBase = (window.location.protocol === "file:") 
-        ? "http://localhost:5000" 
-        : (window.location.port && window.location.port !== "5000" 
-            ? `${window.location.protocol}//${window.location.hostname}:5000` 
-            : "");
+    const list = document.getElementById("ranking-list");
+    list.innerHTML = "<li>データを送信中...</li>";
 
     try {
-        // スコア送信
-        await fetch(`${apiBase}/api/score`, {
+        // 1. スコアを送信
+        await fetch("/api/score", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ name: userName, score: score })
         });
 
-        // ランキング更新
-        const response = await fetch(`${apiBase}/api/ranking`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        // 2. 最新のランキングを即座に取得
+        const response = await fetch("/api/ranking");
+        if (!response.ok) throw new Error("ランキングの取得に失敗しました");
         const data = await response.json();
         
-        const list = document.getElementById("ranking-list");
         list.innerHTML = "";
         if (data.length === 0) {
             list.innerHTML = "<li>まだスコアがありません。</li>";
@@ -346,11 +296,8 @@ async function sendScore() {
             });
         }
     } catch (e) {
-        console.error("スコア送信またはランキング取得中にエラーが発生しました:", e);
-        document.getElementById("ranking-list").innerHTML = "<li>スコアサーバーに接続できませんでした。</li>";
-    } finally {
-        // 読み込み中状態を解除するための処理があればここに追加
-        // 今回のケースでは特にUI的な「読み込み中」表示がないため、追加の処理は不要
+        console.error("エラー:", e);
+        list.innerHTML = "<li>スコアサーバーに接続できませんでした。</li>";
     }
 }
 </script>
