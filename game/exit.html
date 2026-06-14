@@ -1,1 +1,230 @@
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プレミアム・ボックス・エスケープ</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 { color: #333; font-size: 24px; margin-bottom: 5px; }
+        .stage-indicator { color: #888; font-size: 14px; margin-bottom: 20px; }
+        
+        /* ヒントエリア */
+        .hint-box {
+            background-color: #eef2ff;
+            border-left: 5px solid #4f46e5;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            text-align: left;
+            font-weight: bold;
+            line-height: 1.6;
+            color: #312e81;
+        }
+
+        /* 箱の並び */
+        .boxes-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        /* 箱の共通スタイル */
+        .box {
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        /* 形のバリエーション */
+        .shape-square { border-radius: 8px; }
+        .shape-circle { border-radius: 50%; }
+        .shape-hexagon { clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+
+        /* メッセージ */
+        .message {
+            height: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+
+        /* ボタン */
+        .btn {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+        }
+        .btn:hover { background-color: #4338ca; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🔑 Box Escape</h1>
+    <div class="stage-indicator" id="stage-title">Stage 1 / 3</div>
+    
+    <div class="hint-box" id="hint-text">
+        <!-- ヒントがここに表示されます -->
+    </div>
+
+    <div class="boxes-grid" id="boxes-container">
+        <!-- 箱がここに自動生成されます -->
+    </div>
+
+    <div class="message" id="message-text"></div>
+    <button class="btn" id="next-btn" onclick="nextStage()">次のステージへ</button>
+</div>
+
+<script>
+    // ステージのデータ定義（色、形、正解フラグ、ラベル）
+    const stages = [
+        {
+            // ステージ1：基本（3つの箱から選ぶ）
+            hint: "「鍵は『丸い形』の箱の中にある。色は情熱の赤だ。」",
+            boxes: [
+                { color: '#ef4444', shape: 'shape-square', isKey: false, label: '四角い赤' },
+                { color: '#ef4444', shape: 'shape-circle', isKey: true,  label: '丸い赤' },
+                { color: '#3b82f6', shape: 'shape-circle', isKey: false, label: '丸い青' }
+            ]
+        },
+        {
+            // ステージ2：少し難易度アップ（4つの箱、消去法）
+            hint: "「鍵は四角い箱の中ではない。また、緑色の箱でもないようだ。」",
+            boxes: [
+                { color: '#10b981', shape: 'shape-circle', isKey: false, label: '丸い緑' },
+                { color: '#f59e0b', shape: 'shape-square', isKey: false, label: '四角い黄' },
+                { color: '#f59e0b', shape: 'shape-circle', isKey: true,  label: '丸い黄' },
+                { color: '#10b981', shape: 'shape-square', isKey: false, label: '四角い緑' }
+            ]
+        },
+        {
+            // ステージ3：最終試練（6つの箱、なぞなぞ風）
+            hint: "「鍵が入っているのは『六角形』の箱だ。色は、信号の『進め』の色ではない方（止まれ・注意）のどちらかを混ぜた色（＝オレンジ）だ。」",
+            boxes: [
+                { color: '#10b981', shape: 'shape-hexagon',isKey: false, label: '六角緑' },
+                { color: '#f97316', shape: 'shape-square', isKey: false, label: '四角橙' },
+                { color: '#ef4444', shape: 'shape-circle', isKey: false, label: '丸い赤' },
+                { color: '#f97316', shape: 'shape-hexagon',isKey: true,  label: '六角橙' },
+                { color: '#3b82f6', shape: 'shape-hexagon',isKey: false, label: '六角青' },
+                { color: '#f59e0b', shape: 'shape-circle', isKey: false, label: '丸い黄' }
+            ]
+        }
+    ];
+
+    let currentStage = 0;
+    let isStageCleared = false;
+
+    // ステージの読み込み関数
+    function loadStage() {
+        isStageCleared = false;
+        const stage = stages[currentStage];
+        
+        // タイトルとヒントの更新
+        document.getElementById('stage-title').innerText = `Stage ${currentStage + 1} / ${stages.length}`;
+        document.getElementById('hint-text').innerText = stage.hint;
+        document.getElementById('message-text').innerText = "";
+        document.getElementById('message-text').className = "message";
+        document.getElementById('next-btn').style.display = 'none';
+
+        // 箱のエリアをクリアして再生成
+        const container = document.getElementById('boxes-container');
+        container.innerHTML = '';
+
+        stage.boxes.forEach((boxData, index) => {
+            const boxDiv = document.createElement('div');
+            // クラス（共通＋形）を追加
+            boxDiv.className = `box ${boxData.shape}`;
+            // 背景色を設定
+            boxDiv.style.backgroundColor = boxData.color;
+            // 分かりやすいようにラベルを表示
+            boxDiv.innerText = boxData.label;
+            
+            // クリックイベント
+            boxDiv.onclick = () => selectBox(boxData.isKey, boxDiv);
+            
+            container.appendChild(boxDiv);
+        });
+    }
+
+    // 箱を選んだ時の処理
+    function selectBox(isKey, element) {
+        if (isStageCleared) return; // クリア済みの場合は反応しない
+
+        const msgElement = document.getElementById('message-text');
+        
+        if (isKey) {
+            msgElement.innerText = "🎉 正解！鍵を見つけた！扉が開いた。";
+            msgElement.className = "message success";
+            isStageCleared = true;
+            
+            // ボタンのテキスト切り替え（最終ステージなら「脱出成功」）
+            const nextBtn = document.getElementById('next-btn');
+            if (currentStage === stages.length - 1) {
+                nextBtn.innerText = "ゲームクリア！最初に戻る";
+            } else {
+                nextBtn.innerText = "次のステージへ";
+            }
+            nextBtn.style.display = 'inline-block';
+        } else {
+            msgElement.innerText = "❌ ハズレ！ここには何も入っていない。";
+            msgElement.className = "message error";
+            // 揺れる演出（簡易）
+            element.style.transform = 'translateX(5px)';
+            setTimeout(() => element.style.transform = 'none', 100);
+        }
+    }
+
+    // 次のステージ（またはリセット）への移行
+    function nextStage() {
+        currentStage++;
+        if (currentStage >= stages.length) {
+            currentStage = 0; // 最初に戻る
+        }
+        loadStage();
+    }
+
+    // ゲーム開始時の初期化
+    window.onload = loadStage;
+</script>
+
+</body>
+</html>
