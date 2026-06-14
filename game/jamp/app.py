@@ -19,6 +19,24 @@ def init_db():
     conn.commit()
     conn.close()
 
+# 全てのレスポンスにCORSヘッダーを追加する設定（スマホや別ポートからのアクセスを許可）
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT, DELETE'
+    return response
+
+# CORSのプリフライト（OPTIONS）リクエストに対応
+@app.before_request
+def handle_options():
+    if request.method == 'OPTIONS':
+        response = jsonify({"status": "ok"})
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT, DELETE'
+        return response
+
 # ルートアクセス時にメインメニュー（index.html）を返す
 @app.route('/')
 def index():
