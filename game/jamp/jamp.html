@@ -19,8 +19,8 @@
         .ui-element {
             position: absolute; font-weight: bold; text-shadow: 2px 2px 0 #000;
         }
-        #score-ui { top: calc(220px + env(safe-area-inset-top, 0px)); left: 20px; font-size: 24px; color: #ffcc00; }
-        #timer-ui { top: calc(220px + env(safe-area-inset-top, 0px)); right: 20px; font-size: 24px; color: #ff5353; }
+        #score-ui { top: 120px; left: 20px; font-size: 24px; color: #ffcc00; }
+        #timer-ui { top: 120px; right: 20px; font-size: 24px; color: #ff5353; }
         
         /* 画面オーバーレイ */
         .overlay {
@@ -311,15 +311,21 @@ function restartGame() {
 // --- サーバー通信処理 ---
 async function sendScore() {
     const name = document.getElementById("username").value;
+    
+    // スマホからの別ポート接続やfile://スキーム起動に対応するためのAPIベースURLのインテリジェント解決
+    const apiBase = (window.location.protocol === "file:") 
+        ? "http://localhost:5000" 
+        : (window.location.port !== "5000" ? `${window.location.protocol}//${window.location.hostname}:5000` : "");
+
     try {
         // スコア送信
-        await fetch('/api/score', {
+        await fetch(`${apiBase}/api/score`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ name: name, score: score })
         });
         // ランキング更新
-        const response = await fetch('/api/ranking');
+        const response = await fetch(`${apiBase}/api/ranking`);
         const data = await response.json();
         
         const list = document.getElementById("ranking-list");
