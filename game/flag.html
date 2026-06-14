@@ -3,101 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>脳トレ！色と漢字の旗揚げ</title>
+    <title>超脳トレ！ハイスピード旗揚げ</title>
     <style>
         body {
-            margin: 0; padding: 10px; background: #1c1c1e;
+            margin: 0; padding: 10px; background: #121214;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             color: white; text-align: center;
             box-sizing: border-box; min-height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
+            overflow: hidden;
         }
         .game-container {
             width: 100%; max-width: 400px;
-            background: #2c2c2e; padding: 25px; border-radius: 14px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            background: #1c1c1e; padding: 20px; border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
             box-sizing: border-box;
+            position: relative;
         }
-        h1 { font-size: 20px; margin: 0 0 5px 0; color: #00ffcc; }
-        .stage-title { font-size: 14px; color: #aeaeb2; margin-bottom: 3px; }
-        .feint-indicator { font-size: 13px; color: #ffd60a; margin-bottom: 15px; font-weight: bold; }
-        
-        /* 指示エリア */
-        .voice-box {
-            background: #121212; border-left: 4px solid #00ffcc;
-            padding: 15px; margin-bottom: 25px; border-radius: 6px;
-            font-size: 16px; font-weight: bold; min-height: 50px;
-            display: flex; justify-content: center; align-items: center;
-            color: #fff; line-height: 1.5;
+        h1 { font-size: 22px; margin: 0 0 5px 0; color: #ffd60a; }
+        .score-board {
+            display: flex; justify-content: space-between;
+            font-size: 16px; color: #aeaeb2; margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .score-val { color: #30d158; font-size: 20px; }
+
+        /* タイムゲージ */
+        .progress-bar-container {
+            width: 100%; height: 8px; background: #3a3a3c;
+            border-radius: 4px; margin-bottom: 15px; overflow: hidden;
+        }
+        .progress-bar {
+            width: 100%; height: 100%; background: #00ffcc;
+            transition: width 0.1s linear;
         }
 
-        /* キャラクターと旗の描画 */
+        /* 指示表示エリア */
+        .command-box {
+            background: #000; border: 2px solid #3a3a3c;
+            padding: 20px 10px; margin-bottom: 20px; border-radius: 10px;
+            min-height: 70px; display: flex; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: bold; line-height: 1.4;
+        }
+
+        /* キャラクターと旗 */
         .stage-area {
-            height: 140px; display: flex; justify-content: center; align-items: flex-end;
+            height: 120px; display: flex; justify-content: center; align-items: flex-end;
             margin-bottom: 25px;
         }
         .character {
-            width: 60px; height: 90px; background: #3a3a3c;
-            border-radius: 10px 10px 0 0; position: relative; border: 2px solid #555;
+            width: 50px; height: 70px; background: #2c2c2e;
+            border-radius: 8px 8px 0 0; position: relative; border: 2px solid #444;
         }
         .char-head {
-            width: 36px; height: 36px; background: #ffdbac; border-radius: 50%;
-            position: absolute; top: -32px; left: 10px;
+            width: 32px; height: 32px; background: #ffdbac; border-radius: 50%;
+            position: absolute; top: -28px; left: 9px;
         }
         .char-eye {
-            width: 5px; height: 5px; background: #222; border-radius: 50%;
-            position: absolute; top: 14px; left: 9px;
+            width: 4px; height: 4px; background: #222; border-radius: 50%;
+            position: absolute; top: 12px; left: 8px;
         }
-        .char-eye.right { left: 22px; }
+        .char-eye.right { left: 20px; }
 
-        /* 腕と旗 */
         .arm-container {
-            position: absolute; top: 15px; width: 20px; height: 60px;
-            transition: transform 0.15s ease-out;
+            position: absolute; top: 12px; width: 16px; height: 50px;
+            transition: transform 0.1s ease-out;
         }
-        .left-side { left: -15px; transform-origin: top right; }  
-        .right-side { right: -15px; transform-origin: top left; } 
-        .arm { width: 8px; height: 35px; background: #ffdbac; border-radius: 4px; margin: 0 auto; }
+        .left-side { left: -12px; transform-origin: top right; }  
+        .right-side { right: -12px; transform-origin: top left; } 
+        .arm { width: 6px; height: 30px; background: #ffdbac; border-radius: 3px; margin: 0 auto; }
         .flag {
-            width: 26px; height: 18px; position: absolute; top: 30px;
-            border: 1px solid #333; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            width: 24px; height: 16px; position: absolute; top: 25px;
+            border: 1px solid #333;
         }
         .red-flag { background: #ff453a; left: -18px; }
         .white-flag { background: #ffffff; right: -18px; }
 
-        /* 操作パネル */
-        .control-panel { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .btn-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        /* 入力ボタン */
+        .input-panel {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%;
         }
-        
-        /* 選択肢ボタンの基本スタイル */
-        .game-btn {
-            padding: 15px 10px; font-size: 18px; font-weight: bold; border: none;
-            border-radius: 10px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: background 0.2s, transform 0.1s, color 0.2s;
-            color: #111;
+        .action-btn {
+            padding: 20px 10px; font-size: 22px; font-weight: bold; border: none;
+            border-radius: 12px; cursor: pointer; box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            transition: transform 0.05s, opacity 0.2s;
         }
-        .game-btn:active { transform: scale(0.95); }
+        .action-btn:active { transform: scale(0.92); }
+        .btn-red { background: #ff453a; color: white; }
+        .btn-white { background: #ffffff; color: #111; }
 
-        /* 動的に変わるボタンの色クラス */
-        .bg-red { background: #ff453a !important; color: white !important; }
-        .bg-white { background: #ffffff !important; color: #111 !important; }
-
-        .btn-action { background: #bf5af2; color: white; padding: 12px; font-size: 15px; border-radius: 8px; width: 100%; margin-top: 5px; border: none; font-weight: bold; cursor: pointer;}
-        .btn-action:hover { background: #af52de; }
-        .back-menu { background: #48484a; color: white; margin-top: 15px; display: inline-block; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px;}
+        /* スタート・オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(28,28,30,0.95); border-radius: 16px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; padding: 20px; box-sizing: border-box;
+        }
+        .start-btn {
+            background: #ffd60a; color: #111; border: none; padding: 15px 40px;
+            font-size: 20px; font-weight: bold; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,214,10,0.4);
+        }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>🧠 旗揚げ：色と漢字の罠</h1>
-    <div class="stage-title" id="stage-num">Stage 1 / 3</div>
-    <div class="feint-indicator" id="feint-text">フェイント：なし</div>
+    <div class="overlay" id="overlay">
+        <h2 id="overlay-title">🧠 限界突破！旗揚げ</h2>
+        <p id="overlay-desc" style="color:#aeaeb2; font-size:14px; margin-bottom:25px; line-height:1.5;">
+            指示に従って素早くボタンを押せ！<br>
+            正解するほどスピードがアップするぞ。<br>
+            音量をオンにして挑戦しよう！
+        </p>
+        <button class="start-btn" onclick="startGame()" id="start-btn">ゲーム開始</button>
+    </div>
+
+    <h1>⚡ HASTE FLAG</h1>
+    <div class="score-board">
+        <div>SCORE: <span class="score-val" id="score-text">0</span></div>
+        <div>SPEED: <span style="color:#ffd60a;" id="speed-text">Lv.1</span></div>
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="timer-gauge"></div>
+    </div>
     
-    <div class="voice-box" id="command-display">
-        「ボタンを押すとミッションが始まるぞ」
+    <div class="command-box" id="command-text">
+        音声をONにして<br>スタートしてね！
     </div>
 
     <div class="stage-area">
@@ -106,12 +139,10 @@
                 <div class="char-eye"></div>
                 <div class="char-eye right"></div>
             </div>
-            <!-- 左手（赤旗） -->
             <div class="arm-container left-side" id="red-arm">
                 <div class="arm"></div>
                 <div class="flag red-flag"></div>
             </div>
-            <!-- 右手（白旗） -->
             <div class="arm-container right-side" id="white-arm">
                 <div class="arm"></div>
                 <div class="flag white-flag"></div>
@@ -119,163 +150,256 @@
         </div>
     </div>
 
-    <div class="control-panel">
-        <!-- 4つの選択肢（色と漢字がステージごとにシャッフルされる） -->
-        <div class="btn-grid">
-            <button class="game-btn" id="btn-0" onclick="pressButton(0)">ボタン1</button>
-            <button class="game-btn" id="btn-1" onclick="pressButton(1)">ボタン2</button>
-            <button class="game-btn" id="btn-2" onclick="pressButton(2)">ボタン3</button>
-            <button class="game-btn" id="btn-3" onclick="pressButton(3)">ボタン4</button>
-        </div>
-        
-        <button class="btn-action" id="action-btn" onclick="processStageButton()">ミッション開始！</button>
+    <div class="input-panel">
+        <button class="action-btn btn-red" onclick="pressButton('red')">赤</button>
+        <button class="action-btn btn-white" onclick="pressButton('white')">白</button>
     </div>
 </div>
 
-<a href="index.html" class="back-menu">◀ ゲームの部屋に戻る</a>
-
 <script>
-    let currentStatus = { red: false, white: false };
-    let targetStatus = { red: false, white: false };
-    let currentStage = 0;
-    let gameState = "ready"; 
+    // ゲーム状態変数
+    let score = 0;
+    let isPlaying = false;
+    let currentTarget = null; // 'red' か 'white'
+    let timeLimit = 3500;     // 初期制限時間(ms)
+    let timeLeft = 3500;
+    let timerInterval = null;
+    let lastTickTime = 0;
 
-    // 各ボタンが現在持っている「効果」を記録する配列
-    let buttonConfigs = [];
+    // オーディオコンテキスト（自作BGM・効果音用）
+    let audioCtx = null;
+    let bgmInterval = null;
+    let beatCount = 0;
+    let currentBPM = 125;
 
-    const stages = [
-        {
-            feint: "難易度★：フェイントなし（基本）",
-            text: "「まずは基本だ。文字と色が一致しているぞ。<br><span style='color:#ff453a;'>赤を上げて</span>、<span style='color:#fff;'>白は下げるんだ</span>」",
-            target: { red: true, white: false },
-            // ボタンの配置：[表示する漢字, ボタンの背景色, 押した時の効果(color, isUp)]
-            buttons: [
-                { text: "赤 上", bg: "bg-red",   action: { color: "red",   up: true } },
-                { text: "赤 下", bg: "bg-red",   action: { color: "red",   up: false } },
-                { text: "白 上", bg: "bg-white", action: { color: "white", up: true } },
-                { text: "白 下", bg: "bg-white", action: { color: "white", up: false } }
-            ]
-        },
-        {
-            feint: "難易度★★：色が逆転（ストループ効果）",
-            text: "「文字に騙されるな！<br><span style='color:#00ffcc;'>『ボタンの見た目の色』</span>を信じて、<br>赤いボタンを上げろ！白いボタンは下げろ！」",
-            target: { red: true, white: false },
-            buttons: [
-                { text: "白 上", bg: "bg-red",   action: { color: "red",   up: true } },   // 文字は「白」だけど【赤いボタン】
-                { text: "白 下", bg: "bg-red",   action: { color: "red",   up: false } },  // 文字は「白」だけど【赤いボタン】
-                { text: "赤 上", bg: "bg-white", action: { color: "white", up: true } },   // 文字は「赤」だけど【白いボタン】
-                { text: "赤 下", bg: "bg-white", action: { color: "white", up: false } }   // 文字は「赤」だけど【白いボタン】
-            ]
-        },
-        {
-            feint: "難易度★★★：漢字も色も大パニック",
-            text: "「最後だ！文字の色、背景、漢字、すべてがバラバラだ！<br>正しく<span style='color:#ff453a;'>赤を下げて</span>、<span style='color:#fff;'>白を上げろ！</span>」",
-            target: { red: false, white: true },
-            buttons: [
-                { text: "赤 下", bg: "bg-white", action: { color: "white", up: false } }, // 漢字は「赤下」だけど【白を下げる】ボタン
-                { text: "白 上", bg: "bg-red",   action: { color: "red",   up: true } },   // 漢字は「白上」だけど【赤を上げる】ボタン
-                { text: "赤 上", bg: "bg-white", action: { color: "white", up: true } },   // 漢字は「赤上」だけど【白を上げる】ボタン（正解の片方）
-                { text: "白 下", bg: "bg-red",   action: { color: "red",   up: false } }   // 漢字は「白下」だけど【赤を下げる】ボタン（正解の片方）
-            ]
-        }
-    ];
+    // 演出用カラー設定
+    const COLOR_CODE = { '赤': '#ff453a', '白': '#ffffff' };
 
-    function loadStage() {
-        const stage = stages[currentStage];
-        document.getElementById('stage-num').innerText = `Stage ${currentStage + 1} / ${stages.length}`;
-        document.getElementById('feint-text').innerText = stage.feint;
-        document.getElementById('command-display').innerHTML = stage.text;
-        
-        targetStatus = { ...stage.target };
-        buttonConfigs = stage.buttons;
+    // --- ゲームループ & 出題システム ---
 
-        // ボタンの見た目（漢字と色）をステージのデータに合わせて書き換える
-        for (let i = 0; i < 4; i++) {
-            const btn = document.getElementById(`btn-${i}`);
-            btn.innerText = buttonConfigs[i].text;
-            btn.className = `game-btn ${buttonConfigs[i].bg}`;
-            btn.style.display = "block";
+    function startGame() {
+        // オーディオの初期化（ブラウザ制限解除のためクリック内で行う）
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
         
-        const actionBtn = document.getElementById('action-btn');
-        actionBtn.innerText = "これで決定！";
-        actionBtn.style.background = "#ffd60a";
-        actionBtn.style.color = "#111";
+        score = 0;
+        timeLimit = 3500; 
+        currentBPM = 125;
+        isPlaying = true;
         
-        gameState = "playing";
+        document.getElementById('score-text').innerText = score;
+        document.getElementById('speed-text').innerText = "Lv.1";
+        document.getElementById('overlay').style.display = "none";
+        
+        resetFlags();
+        startBGM();
+        nextQuestion();
     }
 
-    function pressButton(index) {
-        if (gameState !== "playing") return;
-        
-        // 押されたボタンの設定を取得して、キャラの旗状態を動かす
-        const config = buttonConfigs[index].action;
-        currentStatus[config.color] = config.up;
-        
-        updateCharacterVisual();
-    }
+    function nextQuestion() {
+        if (!isPlaying) return;
 
-    function processStageButton() {
-        if (gameState === "ready") {
-            currentStatus = { red: false, white: false };
-            updateCharacterVisual();
-            loadStage();
-        } else if (gameState === "playing") {
-            checkAnswer();
-        } else if (gameState === "cleared") {
-            currentStage++;
-            if (currentStage >= stages.length) {
-                currentStage = 0;
-                gameState = "ready";
-                document.getElementById('action-btn').innerText = "ミッション開始！";
-                document.getElementById('action-btn').style.background = "#bf5af2";
-                document.getElementById('action-btn').style.color = "white";
-                document.getElementById('command-display').innerHTML = "「完全クリア！君の脳の柔軟性は素晴らしいな！」";
-                // ボタンを隠す
-                for(let i=0; i<4; i++) document.getElementById(`btn-${i}`).style.display = "none";
+        // 難易度（スコア）に応じて制限時間を少しずつ短縮（最低1.0秒）
+        timeLimit = Math.max(1000, 3500 - (score * 120));
+        // スコアに応じてBGMのテンポを上げる（最大BPM 180）
+        currentBPM = Math.min(180, 125 + (score * 2));
+        updateBGMInterval();
+
+        document.getElementById('speed-text').innerText = `Lv.${Math.floor(score/3) + 1}`;
+
+        // ランダム出題ロジック
+        const questionTypes = [
+            'normal',    // 素直な問題
+            'stroop',    // 文字と色が逆
+            'negative'   // 「〜あげないで、〜さげる」系
+        ];
+        // スコアが低いうちは素直な問題多め
+        const type = score < 3 ? 'normal' : questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+        let displayWord = "";
+        let displayColor = "";
+        
+        if (type === 'normal') {
+            currentTarget = Math.random() < 0.5 ? 'red' : 'white';
+            displayWord = currentTarget === 'red' ? "赤 あげて！" : "白 あげて！";
+            displayColor = currentTarget === 'red' ? '赤' : '白';
+        } 
+        else if (type === 'stroop') {
+            // 文字と色をあえてバラバラにする（正解は「文字の指示」に従う）
+            currentTarget = Math.random() < 0.5 ? 'red' : 'white';
+            displayWord = currentTarget === 'red' ? "赤 あげて！" : "白 あげて！";
+            // 視覚的な罠として逆の色を塗る
+            displayColor = currentTarget === 'red' ? '白' : '赤';
+        } 
+        else if (type === 'negative') {
+            // 例：「白あげないで赤さげる」＝ 正解は【白】（赤は下げるので何もしない、または白を動かす）
+            // ここではシンプルに最終的に「今上げるべき方」を1択で指示します
+            if (Math.random() < 0.5) {
+                displayWord = "白あげないで<br><span style='font-size:20px;'>赤あげる！</span>";
+                currentTarget = 'red';
+                displayColor = Math.random() < 0.5 ? '赤' : '白';
             } else {
-                loadStage();
+                displayWord = "赤あげないで<br><span style='font-size:20px;'>白あげる！</span>";
+                currentTarget = 'white';
+                displayColor = Math.random() < 0.5 ? '白' : '赤';
             }
         }
+
+        // 画面に反映
+        const textEl = document.getElementById('command-text');
+        textEl.innerHTML = displayWord;
+        textEl.style.color = COLOR_CODE[displayColor] || '#fff';
+
+        // タイマー開始
+        timeLeft = timeLimit;
+        lastTickTime = performance.now();
+        
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, 33);
     }
 
-    function updateCharacterVisual() {
-        const redArm = document.getElementById('red-arm');
-        const whiteArm = document.getElementById('white-arm');
-        redArm.style.transform = currentStatus.red ? "rotate(-140deg)" : "rotate(0deg)";
-        whiteArm.style.transform = currentStatus.white ? "rotate(140deg)" : "rotate(0deg)";
+    function updateTimer() {
+        const now = performance.now();
+        const delta = now - lastTickTime;
+        lastTickTime = now;
+
+        timeLeft -= delta;
+        
+        // ゲージの長さを更新
+        const percentage = Math.max(0, (timeLeft / timeLimit) * 100);
+        document.getElementById('timer-gauge').style.width = percentage + "%";
+
+        if (timeLeft <= 0) {
+            gameOver("タイムアップ！時間切れだ…");
+        }
     }
 
-    function checkAnswer() {
-        const display = document.getElementById('command-display');
-        const actionBtn = document.getElementById('action-btn');
+    function pressButton(color) {
+        if (!isPlaying) return;
 
-        if (currentStatus.red === targetStatus.red && currentStatus.white === targetStatus.white) {
-            if (currentStage === stages.length - 1) {
-                display.innerHTML = "<span style='color:#30d158; font-size:18px;'>🎉 クリア！色と漢字の呪縛を完全に解き明かしたな！</span>";
-                actionBtn.innerText = "タイトルに戻る";
-            } else {
-                display.innerHTML = "<span style='color:#30d158;'>🎉 正解！脳の錯覚に打ち勝ったぞ！</span>";
-                actionBtn.innerText = "次のステージへ";
-            }
-            actionBtn.style.background = "#30d158";
-            actionBtn.style.color = "#fff";
-            gameState = "cleared";
-        } else {
-            display.innerHTML = "<span style='color:#ff453a;'>❌ 残念、引っかかった！<br>ボタンの『本当の効果』をよく見極めるんだ！</span>";
-            actionBtn.innerText = "もう一度やり直す";
-            actionBtn.style.background = "#ff453a";
-            actionBtn.style.color = "#fff";
+        // 1秒未満で即答、または時間内に正しいボタンを押せたか
+        if (color === currentTarget) {
+            score++;
+            document.getElementById('score-text').innerText = score;
+            playSE(880, 0.1); // ピッ（正解音）
             
-            currentStatus = { red: false, white: false };
-            updateCharacterVisual();
-            gameState = "playing"; 
+            // 旗のアニメーションをチラつかせる
+            animateFlag(color);
+            
+            // 次の問題へ
+            nextQuestion();
+        } else {
+            gameOver("そっちじゃない！引っかかったな？");
         }
     }
 
-    // 最初はボタンを隠しておく
-    window.onload = function() {
-        for(let i=0; i<4; i++) document.getElementById(`btn-${i}`).style.display = "none";
+    function gameOver(message) {
+        isPlaying = false;
+        clearInterval(timerInterval);
+        stopBGM();
+        playSE(220, 0.4); // ブー（不正解音）
+
+        document.getElementById('overlay-title').innerText = "❌ GAME OVER";
+        document.getElementById('overlay-desc').innerHTML = `${message}<br><br><span style='font-size:24px; color:#30d158;'>SCORE: ${score}</span>`;
+        document.getElementById('start-btn').innerText = "もう一度挑戦";
+        document.getElementById('overlay').style.display = "flex";
+    }
+
+    // --- ビジュアル演出（キャラの旗の動き） ---
+    function animateFlag(color) {
+        resetFlags();
+        const arm = document.getElementById(`${color}-arm`);
+        const deg = color === 'red' ? "-140deg" : "140deg";
+        arm.style.transform = `rotate(${deg})`;
+        
+        // 0.2秒後に自動で下ろす
+        setTimeout(() => {
+            if(isPlaying) resetFlags();
+        }, 200);
+    }
+
+    function resetFlags() {
+        document.getElementById('red-arm').style.transform = "rotate(0deg)";
+        document.getElementById('white-arm').style.transform = "rotate(0deg)";
+    }
+
+
+    // --- Web Audio API によるシンセBGMシステム ---
+    // 外部ファイル不要で、スクリプトから直接リズム（ドラムとベース）を鳴らします。
+
+    function playSE(freq, duration) {
+        if (!audioCtx) return;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playDrumBeat(type) {
+        if (!audioCtx) return;
+        // 簡易的なホワイトノイズ（スネア用）やサイン波（バスドラ用）でリズムを刻む
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'kick') {
+            // 重低音バスドラム
+            osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.12);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.12);
+        } else if (type === 'hat') {
+            // 高音ハイハット
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(8000, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.05);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        }
+    }
+
+    function startBGM() {
+        beatCount = 0;
+        updateBGMInterval();
+    }
+
+    function updateBGMInterval() {
+        if (!isPlaying) return;
+        if (bgmInterval) clearInterval(bgmInterval);
+
+        // BPM（1分間の拍数）から4分音符の間隔（ミリ秒）を計算
+        const intervalMs = (60 / currentBPM) * 1000 / 2; // 8ビート単位で刻む
+
+        bgmInterval = setInterval(() => {
+            if (!isPlaying) return;
+            
+            // 4拍子のリズムパターンを作る
+            const step = beatCount % 8;
+            if (step === 0 || step === 4) {
+                playDrumBeat('kick'); // ドン、ドン
+            } else if (step === 2 || step === 6) {
+                playDrumBeat('hat');  // チッ、チッ
+            } else {
+                if (Math.random() < 0.3) playDrumBeat('hat'); // ランダムな裏拍
+            }
+            beatCount++;
+        }, intervalMs);
+    }
+
+    function stopBGM() {
+        if (bgmInterval) clearInterval(bgmInterval);
     }
 </script>
 
