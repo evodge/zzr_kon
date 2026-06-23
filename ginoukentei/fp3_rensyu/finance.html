@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>金融資産運用 - 練習問題</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        h3 { color: #2c3e50; margin-top: 35px; border-left: 5px solid #3498db; padding-left: 10px; }
+        .question { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .question p { margin-bottom: 10px; font-weight: 500; }
+        label { cursor: pointer; }
+        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; display: block; margin: 30px auto; font-size: 1em; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        .back-link { display: block; text-align: center; color: #7f8c8d; text-decoration: none; margin-top: 20px; font-weight: bold; }
+        .back-link:hover { color: #34495e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>3. 金融資産運用</h1>
+    <p style="text-align: center; color: #666;">◯×問題と4択問題が混ざっています。全25問</p>
+    
+    <div id="quiz-content"></div>
+    
+    <button onclick="checkAnswers()">答え合わせをする</button>
+    <a href="index.html" class="back-link">← ポータル（メニュー）に戻る</a>
+</div>
+
+<script>
+const quizData = [
+    // 1. 預貯金と債券の基本
+    { cat: "1. 預貯金と債券の基本", q: "預金保険制度（ペイオフ）により、金融機関が破綻した場合、決済用預金を除く一般預金等は、預金者1人あたり元本1,000万円までとその利息が保護される。", a: "◯" },
+    { cat: "1. 預貯金と債券の基本", q: "外貨預金や譲渡性預金（CD）は、預金保険制度（ペイオフ）による保護の対象に含まれる。", a: "×" },
+    { cat: "1. 預貯金と債券の基本", q: "一般に、市場金利が上昇すると、すでに発行されている債券の価格は上昇する。", a: "×" },
+    { cat: "1. 預貯金と債券の基本", q: "個人向け国債は、購入後1年が経過すれば、いつでも国が中途換金に応じてくれ、中途換金調整額を差し引いても元本割れすることはない。", a: "◯" },
+    { cat: "1. 預貯金と債券の基本", q: "個人向け国債のうち、適用利率（実質金利）が半年ごとに見直される「変動金利」タイプはどれか？", options: ["変動10年", "固定5年", "固定3年", "据置1年"], a: "変動10年" },
+
+    // 2. 株式投資と投資指標
+    { cat: "2. 株式投資と投資指標", q: "株式の注文において、価格を指定しない「成行（なりゆき）注文」は、価格を指定する「指値（さしね）注文」よりも優先して成立する。", a: "◯" },
+    { cat: "2. 株式投資と投資指標", q: "株価が1,000円、1株当たり純利益（EPS）が100円の場合、PER（株価収益率）は10倍である。", a: "◯" },
+    { cat: "2. 株式投資と投資指標", q: "PBR（株価純資産倍率）は、数値が高ければ高いほど、その株式の株価は割安であると判断される。", a: "×" },
+    { cat: "2. 株式投資と投資指標", q: "当期純利益を自己資本で除して算出され、この数値が高いほど「企業の経営効率が良い」とされる指標はどれか？", options: ["PER（株価収益率）", "PBR（株価純資産倍率）", "ROE（自己資本利益率）", "配当利回り"], a: "ROE（自己資本利益率）" },
+    { cat: "2. 株式投資と投資指標", q: "ある株式の株価が2,000円、1株当たりの年間配当金が40円の場合、この株式の配当利回りはいくらか？", options: ["0.5%", "1.0%", "2.0%", "4.0%"], a: "2.0%" },
+
+    // 3. 投資信託の仕組みと運用手法
+    { cat: "3. 投資信託の仕組みと運用手法", q: "投資信託の保有期間中に、信託財産から自動的に（間接的に）差し引かれる管理コストを「信託報酬」という。", a: "◯" },
+    { cat: "3. 投資信託の仕組みと運用手法", q: "投資信託を換金（解約）する際、信託財産内に留保され、投資家が実質的に負担するペナルティ的な費用を「信託財産留保額」という。", a: "◯" },
+    { cat: "3. 投資信託の仕組みと運用手法", q: "日経平均株価などの特定の指標（ベンチマーク）に連動した運用成果を目指す手法を「アクティブ運用」という。", a: "×" },
+    { cat: "3. 投資信託の仕組みと運用手法", q: "インデックス運用は、ベンチマークを上回る成果を目指すアクティブ運用に比べて、一般に運用管理費用（信託報酬）が低い傾向がある。", a: "◯" },
+    { cat: "3. 投資信託の仕組みと運用手法", q: "購入時手数料が無料（0円）である投資信託のことを何と呼ぶか？", options: ["ノーロード型", "スポット型", "オープン型", "ブル・ベア型"], a: "ノーロード型" },
+
+    // 4. NISA・iDeCo
+    { cat: "4. NISA・iDeCo", q: "NISA（少額投資非課税制度）における「つみたて投資枠」と「成長投資枠」は、同一年に併用して投資することができる。", a: "◯" },
+    { cat: "4. NISA・iDeCo", q: "NISAで購入した金融資産の非課税保有期間は、生涯にわたって「無期限」である。", a: "◯" },
+    { cat: "4. NISA・iDeCo", q: "iDeCo（個人型確定拠出年金）の老齢給付金は、加入期間にかかわらず、原則として55歳から受け取ることができる。", a: "×" },
+    { cat: "4. NISA・iDeCo", q: "iDeCoの掛金は、その全額が所得控除（小規模企業共済等掛金控除）の対象となり、所得税や住民税が軽減される。", a: "◯" },
+    { cat: "4. NISA・iDeCo", q: "NISA口座を開設して投資を行うことができるのは、日本国内に居住する何歳以上の個人か？", options: ["15歳以上", "18歳以上", "20歳以上", "制限なし"], a: "18歳以上" },
+
+    // 5. 外貨建て商品と為替リスク
+    { cat: "5. 外貨建て商品と為替リスク", q: "顧客が円を外貨に換える（外貨預金を預け入れる）際に適用される為替レートを「TTS（対顧客電信売相場）」という。", a: "◯" },
+    { cat: "5. 外貨建て商品と為替リスク", q: "顧客が外貨を円に換える（外貨預金を払い戻す）際に適用される為替レートは「TTB（対顧客電信買相場）」である。", a: "◯" },
+    { cat: "5. 外貨建て商品と為替リスク", q: "外貨建ての商品を運用する際、為替ヘッジを「あり」にすると為替変動リスクを回避できるが、一般にヘッジコストがかかる。", a: "◯" },
+    { cat: "5. 外貨建て商品と為替リスク", q: "為替レートが「1ドル＝110円」から「1ドル＝100円」になった場合、これは「円高・ドル安」に進んだことを意味する。", a: "◯" },
+    { cat: "5. 外貨建て商品と為替リスク", q: "円を米ドルに換えて外貨預金を始め、満期時に再び円に戻した。預入時のTTSが110円、払戻時のTTBが115円だった場合、為替差損益はどうなるか（手数料は考慮しない）？", options: ["為替差損が発生する", "為替差益が発生する", "為替による影響はない", "元本割れが確定する"], a: "為替差益が発生する" }
+];
+
+// クイズの出力処理
+let html = "";
+let currentCat = "";
+quizData.forEach((item, idx) => {
+    if (item.cat !== currentCat) {
+        currentCat = item.cat;
+        html += `<h3>${currentCat}</h3>`;
+    }
+    
+    html += `<div class="question"><p><strong>問${idx+1}.</strong> ${item.q}</p>`;
+    
+    if (item.options) {
+        // 4択問題
+        item.options.forEach(opt => {
+            html += `<label style="display:block; margin:6px 0;"><input type="radio" name="q${idx}" value="${opt}"> ${opt}</label>`;
+        });
+    } else {
+        // ◯×問題
+        html += `<label><input type="radio" name="q${idx}" value="◯"> ◯</label>
+                 <label style="margin-left:30px;"><input type="radio" name="q${idx}" value="×"> ×</label>`;
+    }
+    
+    html += `<div id="res${idx}" style="margin-top:8px; font-weight:bold;"></div></div>`;
+});
+document.getElementById('quiz-content').innerHTML = html;
+
+// 答え合わせ処理
+function checkAnswers() {
+    let score = 0;
+    quizData.forEach((item, idx) => {
+        const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+        const resDiv = document.getElementById(`res${idx}`);
+        
+        if (selected && selected.value === item.a) {
+            resDiv.innerHTML = "<span style='color:green;'>解：正解です！</span>";
+            score++;
+        } else {
+            resDiv.innerHTML = `<span style='color:red;'>解：不正解（正解は「${item.a}」）</span>`;
+        }
+    });
+    alert(`答え合わせが完了しました！\nあなたの正解数: ${score} / 25`);
+}
+</script>
+</body>
+</html>
