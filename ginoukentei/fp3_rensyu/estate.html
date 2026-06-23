@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>不動産 - 練習問題</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        h3 { color: #2c3e50; margin-top: 35px; border-left: 5px solid #3498db; padding-left: 10px; }
+        .question { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .question p { margin-bottom: 10px; font-weight: 500; }
+        label { cursor: pointer; }
+        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; display: block; margin: 30px auto; font-size: 1em; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        .back-link { display: block; text-align: center; color: #7f8c8d; text-decoration: none; margin-top: 20px; font-weight: bold; }
+        .back-link:hover { color: #34495e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>5. 不動産</h1>
+    <p style="text-align: center; color: #666;">◯×問題と4択問題が混ざっています。全25問</p>
+    
+    <div id="quiz-content"></div>
+    
+    <button onclick="checkAnswers()">答え合わせをする</button>
+    <a href="index.html" class="back-link">← ポータル（メニュー）に戻る</a>
+</div>
+
+<script>
+const quizData = [
+    // 1. 不動産の登記と売買契約
+    { cat: "1. 不動産の登記と売買契約", q: "不動産登記簿の「甲区」には、所有権の移転や差し押さえなど、所有権に関する事項が記載される。", a: "◯" },
+    { cat: "1. 不動産の登記と売買契約", q: "不動産登記には公信力（登記を信じて取引した人を法的に100%保護する力）が認められているため、登記簿が真実と異なっていた場合でも、買い手の権利は常に保護される。", a: "×" },
+    { cat: "1. 不動産の登記と売買契約", q: "宅地建物取引業者が自ら売主となり、宅地建物取引業者ではない個人が買主となる売買契約において、業者が受領できる手付金の額は、代金の何％までと制限されているか？", options: ["10％", "20％", "30％", "制限なし"], a: "20％" },
+    { cat: "1. 不動産の登記と売買契約", q: "不動産の売買契約において、買主が手付金を支払っている場合、相手方（売主）が契約の履行に着手するまでは、買主はその手付金を放棄（解約手付）することで契約を解除できる。", a: "◯" },
+    { cat: "1. 不動産の登記と売買契約", q: "宅地建物取引業法第35条に基づき、売買契約が成立する「前」に、宅地建物取引士が買主に対して物件や取引条件の重要事項を説明する書面のことを何というか？", options: ["35条書面（重要事項説明書）", "37条書面（契約書面）", "登記原因証明情報", "媒介契約書"], a: "35条書面（重要事項説明書）" },
+
+    // 2. 都市計画法と建築基準法
+    { cat: "2. 都市計画法と建築基準法", q: "都市計画法において、市街化調整区域は「すでに市街化を形成している区域、または、おおむね10年以内に優先的かつ計画的に市街化を図るべき区域」と定義されている。", a: "×" },
+    { cat: "2. 都市計画法と建築基準法", q: "建築基準法に基づき、建築物の敷地は、原則として法で定める道路に何メートル以上接していなければならない（接道義務）か？", options: ["1メートル以上", "2メートル以上", "3メートル以上", "4メートル以上"], a: "2メートル以上" },
+    { cat: "2. 都市計画法と建築基準法", q: "建築物の延べ面積の敷地面積に対する割合のことを「建ぺい率」という。", a: "×" },
+    { cat: "2. 都市計画法と建築基準法", q: "用途地域の指定のない区域を除き、都市計画法において定められている用途地域は全部で何種類あるか？", options: ["8種類", "11種類", "12種類", "13種類"], a: "13種類" },
+    { cat: "2. 都市計画法と建築基準法", q: "建ぺい率の限度が80％の地域内で、かつ「防火地域」内にある「耐火建築物」については、建ぺい率の制限が緩和され、制限なし（100％）となる。", a: "◯" },
+
+    // 3. 借地借家法
+    { cat: "3. 借地借家法", q: "借地借家法に基づく普通借地権の創設において、契約で期間を定めなかった場合、その存続期間は自動的に30年となる。", a: "◯" },
+    { cat: "3. 借地借家法", q: "契約の更新がなく、期間満了によって当然に借地関係が終了する「一般定期借地権」を設定する場合、その存続期間は何年以上としなければならないか？", options: ["10年以上", "30年以上", "50年以上", "100年以上"], a: "50年以上" },
+    { cat: "3. 借地借家法", q: "普通借家契約において、賃貸借期間を「1年未満」と定めた場合、その契約は「期間の定めがない建物の賃貸借」とみなされる。", a: "◯" },
+    { cat: "3. 借地借家法", q: "「定期借家契約」を締結する場合、公正証書による等、必ず書面（電磁的記録を含む）によって契約を行う必要がある。", a: "◯" },
+    { cat: "3. 借地借家法", q: "定期借家契約において、期間が1年以上である場合、賃賃人は期間満了の何ヶ月前から何ヶ月前までの間に、賃借人に対して「期間満了により契約が終了する旨」の通知をする必要があるか？", options: ["1年前から6ヶ月前まで", "6ヶ月前から3ヶ月前まで", "3ヶ月前から1ヶ月前まで", "特段の通知は不要"], a: "1年前から6ヶ月前まで" },
+
+    // 4. 不動産に係る税金（取得・保有・譲渡）
+    { cat: "4. 不動産に係る税金（取得・保有・譲渡）", q: "「不動産取得税」は、地方税であり、相続によって不動産を取得した場合であっても原則として課される。", a: "×" },
+    { cat: "4. 不動産に係る税金（取得・保有・譲渡）", q: "「固定資産税」は、毎年1月1日現在において、固定資産課税台帳に所有者として登録されている人に対して課される税金である。", a: "◯" },
+    { cat: "4. 不動産に係る税金（取得・保有・譲渡）", q: "個人が土地や建物を譲渡した際の譲渡所得において、譲渡した年の1月1日時点における所有期間が5年を超えるものは「長期譲渡所得」に分類され、5年以下の「短期譲渡所得」よりも税率が低く設定されている。", a: "◯" },
+    { cat: "4. 不動産に係る税金（取得・保有・譲渡）", q: "居住用財産（マイホーム）を譲渡した場合、所有期間の長短に関わらず、譲渡益から最高いくらまで控除できる特例があるか？", options: ["1,000万円", "2,000万円", "3,000万円", "5,000万円"], a: "3,000万円" },
+    { cat: "4. 不動産に係る税金（取得・保有・譲渡）", q: "不動産の売買契約書や金銭消費貸借契約書（ローンの契約書）など、特定の文書を作成した際に課される税金はどれか？", options: ["登録免許税", "印紙税", "固定資産税", "不動産取得税"], a: "印紙税" },
+
+    // 5. 不動産の有効活用と投資判断指標
+    { cat: "5. 不動産の有効活用と投資判断指標", q: "土地所有者が民間のデベロッパー等に土地を提供し、デベロッパーが建築資金を負担して建物を建て、それぞれの出資比率に応じて土地・建物の権利を按分して取得する手法を「等価交換方式」という。", a: "◯" },
+    { cat: "5. 不動産の有効活用と投資判断指標", q: "不動産投資において、年間の総家賃収入を購入総額（物件価格）で単純に除して算出した、諸経費を一切考慮しない利回りのことを何というか？", options: ["表面利回り（グロス利回り）", "実質利回り（ネット利回り）", "自己資金利益率（CCR）", "借入金償還率"], a: "表面利回り（グロス利回り）" },
+    { cat: "5. 不動産の有効活用と投資判断指標", q: "不動産の有効活用において、土地所有者が自ら資金を調達して建物を建設し、その管理・運営のすべてを専門の業者等に委託する方式を「自主建設方式」という。", a: "◯" },
+    { cat: "5. 不動産の有効活用と投資判断指標", q: "不動産投資の指標において、年間家賃収入から管理費や固定資産税などの諸経費（運営費用）を差し引いた「純営業利益（NOI）」を購入総額で除して求める、より正確で実質的な利回りのことを「ネット利回り」という。", a: "◯" },
+    { cat: "5. 不動産の有効活用と投資判断指標", q: "土地所有者が土地を一定期間賃貸し、テナント（賃借人）がその土地上に自費で建物を建設して商業施設などを運営する方式を「事業用定期借地権方式」という。", a: "◯" }
+];
+
+// クイズの出力処理
+let html = "";
+let currentCat = "";
+quizData.forEach((item, idx) => {
+    if (item.cat !== currentCat) {
+        currentCat = item.cat;
+        html += `<h3>${currentCat}</h3>`;
+    }
+    
+    html += `<div class="question"><p><strong>問${idx+1}.</strong> ${item.q}</p>`;
+    
+    if (item.options) {
+        // 4択問題
+        item.options.forEach(opt => {
+            html += `<label style="display:block; margin:6px 0;"><input type="radio" name="q${idx}" value="${opt}"> ${opt}</label>`;
+        });
+    } else {
+        // ◯×問題
+        html += `<label><input type="radio" name="q${idx}" value="◯"> ◯</label>
+                 <label style="margin-left:30px;"><input type="radio" name="q${idx}" value="×"> ×</label>`;
+    }
+    
+    html += `<div id="res${idx}" style="margin-top:8px; font-weight:bold;"></div></div>`;
+});
+document.getElementById('quiz-content').innerHTML = html;
+
+// 答え合わせ処理
+function checkAnswers() {
+    let score = 0;
+    quizData.forEach((item, idx) => {
+        const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+        const resDiv = document.getElementById(`res${idx}`);
+        
+        if (selected && selected.value === item.a) {
+            resDiv.innerHTML = "<span style='color:green;'>解：正解です！</span>";
+            score++;
+        } else {
+            resDiv.innerHTML = `<span style='color:red;'>解：不正解（正解は「${item.a}」）</span>`;
+        }
+    });
+    alert(`答え合わせが完了しました！\nあなたの正解数: ${score} / 25`);
+}
+</script>
+</body>
+</html>
