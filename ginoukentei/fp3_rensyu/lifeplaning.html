@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>FP3級 ライフプランニングと資金計画 練習問題</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; text-align: center; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .question { margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #eee; }
+        .result { font-weight: bold; margin-top: 5px; }
+        button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; display: block; margin: 20px auto; }
+        button:hover { background: #2980b9; }
+    </style>
+</head>
+<body>
+
+<h1>FP3級 練習問題：ライフプランニング</h1>
+
+<div id="quiz-container"></div>
+<button onclick="checkAnswers()">回答を確認する</button>
+
+<script>
+const quizData = [
+    { section: "1. 公的年金", questions: [
+        { q: "国民年金の第3号被保険者は、保険料を自分で納付する必要がある（◯×）", a: "×" },
+        { q: "老齢基礎年金の受給資格期間は、原則として25年以上である（◯×）", a: "×" },
+        { q: "老齢基礎年金を繰り下げると、最大で84%増額される（◯×）", a: "◯" },
+        { q: "障害基礎年金は、初診日に被保険者でなくても受給できる（◯×）", a: "×" },
+        { q: "遺族基礎年金は、子のある配偶者または子が受給できる（◯×）", a: "◯" }
+    ]},
+    { section: "2. 社会保険制度", questions: [
+        { q: "健康保険の傷病手当金は、業務上のケガに対して支給される（◯×）", a: "×" },
+        { q: "出産手当金は、出産日の前後計98日間支給される（◯×）", a: "◯" },
+        { q: "雇用保険の基本手当を受けるには、離職日以前2年間に被保険者期間が通算12ヶ月以上必要である（◯×）", a: "◯" },
+        { q: "高額療養費制度は、世帯合算が可能である（◯×）", a: "◯" },
+        { q: "雇用保険の受給期間は、離職日から原則2年間である（◯×）", a: "×" }
+    ]},
+    { section: "3. 6つの係数", questions: [
+        { q: "将来の目標額のために、毎年いくら積み立てるかを求める係数はどれ？", options: ["A: 終価係数", "B: 減債基金係数", "C: 年金終価係数", "D: 現価係数"], a: "B" },
+        { q: "現在の元本を一定期間運用した後の合計額を求める係数はどれ？", options: ["A: 終価係数", "B: 資本回収係数", "C: 年金現価係数", "D: 減債基金係数"], a: "A" },
+        { q: "年金受取のために必要な元本を求める係数はどれ？", options: ["A: 年金終価係数", "B: 減債基金係数", "C: 年金現価係数", "D: 終価係数"], a: "C" },
+        { q: "目標額を現在の価値に割り引く係数はどれ？", options: ["A: 現価係数", "B: 終価係数", "C: 年金終価係数", "D: 資本回収係数"], a: "A" },
+        { q: "元本を一定期間で取り崩す時の毎年の受取額を求める係数はどれ？", options: ["A: 資本回収係数", "B: 減債基金係数", "C: 年金現価係数", "D: 終価係数"], a: "A" }
+    ]},
+    { section: "4. FP関連法規", questions: [
+        { q: "FPが顧客の税務申告書を代理作成することは、税理士法に違反する（◯×）", a: "◯" },
+        { q: "FPが法律的な紛争の示談交渉を行うことは、弁護士法に違反する（◯×）", a: "◯" },
+        { q: "FPは一般的な制度の仕組みを説明することは問題ない（◯×）", a: "◯" },
+        { q: "FPが具体的な年金書類の申請代行を行うことは、社労士法に違反する（◯×）", a: "◯" },
+        { q: "FPは常に顧客の利益を最優先する職業倫理を持つべきである（◯×）", a: "◯" }
+    ]},
+    { section: "5. ライフプラン表", questions: [
+        { q: "キャッシュフロー表における可処分所得とは、年収から税金・社会保険料を引いたものである（◯×）", a: "◯" },
+        { q: "ライフプラン表作成において、将来の運用利回りは考慮する必要がない（◯×）", a: "×" },
+        { q: "キャッシュフロー表は、年次ごとの貯蓄残高を予測するために作成する（◯×）", a: "◯" },
+        { q: "ライフプラン表は、人生のイベントを時系列に整理したものである（◯×）", a: "◯" },
+        { q: "キャッシュフロー表作成時の物価上昇率は0%に固定して計算する（◯×）", a: "×" }
+    ]}
+];
+
+const container = document.getElementById('quiz-container');
+quizData.forEach((sec, sIdx) => {
+    container.innerHTML += `<h2>${sec.section}</h2>`;
+    sec.questions.forEach((q, qIdx) => {
+        container.innerHTML += `<div class="question" id="q-${sIdx}-${qIdx}">
+            <p>${q.q}</p>
+            ${q.options ? q.options.map(o => `<label><input type="radio" name="q-${sIdx}-${qIdx}" value="${o[0]}"> ${o}</label><br>`).join('') : 
+              `<label><input type="radio" name="q-${sIdx}-${qIdx}" value="◯"> ◯</label> 
+               <label><input type="radio" name="q-${sIdx}-${qIdx}" value="×"> ×</label>`}
+            <div class="result" id="r-${sIdx}-${qIdx}"></div>
+        </div>`;
+    });
+});
+
+function checkAnswers() {
+    quizData.forEach((sec, sIdx) => {
+        sec.questions.forEach((q, qIdx) => {
+            const selected = document.querySelector(`input[name="q-${sIdx}-${qIdx}"]:checked`);
+            const resDiv = document.getElementById(`r-${sIdx}-${qIdx}`);
+            if (selected && selected.value === q.a) {
+                resDiv.innerText = "正解！"; resDiv.style.color = "green";
+            } else {
+                resDiv.innerText = "不正解。正解は " + q.a + " です。"; resDiv.style.color = "red";
+            }
+        });
+    });
+}
+</script>
+</body>
+</html>
