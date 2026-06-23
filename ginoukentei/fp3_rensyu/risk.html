@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>リスク管理 - 練習問題</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; }
+        .container { max-width: 650px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        h3 { color: #2c3e50; margin-top: 35px; border-left: 5px solid #3498db; padding-left: 10px; pb-5; }
+        .question { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .question p { margin-bottom: 10px; font-weight: 500; }
+        label { cursor: pointer; }
+        button { background: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; display: block; margin: 30px auto; font-size: 1em; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        .back-link { display: block; text-align: center; color: #7f8c8d; text-decoration: none; margin-top: 20px; font-weight: bold; }
+        .back-link:hover { color: #34495e; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>2. リスク管理</h1>
+    <p style="text-align: center; color: #666;">◯×問題と4択問題が混ざっています。全25問</p>
+    
+    <div id="quiz-content"></div>
+    
+    <button onclick="checkAnswers()">答え合わせをする</button>
+    <a href="index.html" class="back-link">← ポータル（メニュー）に戻る</a>
+</div>
+
+<script>
+const quizData = [
+    // 1. 生命保険の基本
+    { cat: "1. 生命保険の基本", q: "定期保険は、保険期間が一生涯であり、解約返戻金があるため貯蓄性がある。", a: "×" },
+    { cat: "1. 生命保険の基本", q: "養老保険は、死亡保険金額と満期保険金額が同額である。", a: "◯" },
+    { cat: "1. 生命保険の基本", q: "終身保険は、保険期間があらかじめ定まっており、満期時に満期保険金が支払われる。", a: "×" },
+    { cat: "1. 生命保険の基本", q: "定期付終身保険は、終身保険をベースに、一定期間だけ大きな死亡保障を上乗せするものである。", a: "◯" },
+    { cat: "1. 生命保険の基本", q: "一般的な生命保険のうち、最も掛け捨て性が高く、同じ保険料であれば最も大きな死亡保障を得られるものはどれか？", options: ["終身保険", "養老保険", "定期保険", "変額保険（終身型）"], a: "定期保険" },
+
+    // 2. 損害保険の基本
+    { cat: "2. 損害保険の基本", q: "一般的な火災保険では、地震・噴火、またはこれらによる津波を原因とする火災損害も原則として補償される。", a: "×" },
+    { cat: "2. 損害保険の基本", q: "自動車保険の「自賠責保険（自動車損害賠償責任保険）」は、すべての自動車に加入が義務付けられており、対人賠償のみが補償対象となる。", a: "◯" },
+    { cat: "2. 損害保険の基本", q: "火災保険において「家財」のみを保険の対象として契約した場合、火災によって建物自体が受けた損害も補償される。", a: "×" },
+    { cat: "2. 損害保険の基本", q: "自動車保険の任意保険において、契約車両の事故によって「相手の車」や「道路のガードレール」などを破損させ、法律上の損害賠償責任を負った場合に補償されるものはどれか？", options: ["人身傷害補償保険", "対人賠償責任保険", "対物賠償責任保険", "車両保険"], a: "対物賠償責任保険" },
+    { cat: "2. 損害保険の基本", q: "個人賠償責任保険（特約）では、買い物の途中に誤ってお店の商品を壊してしまい、法律上の損害賠償責任を負った場合も補償の対象となる。", a: "◯" },
+
+    // 3. 保険の税務
+    { cat: "3. 保険の税務", q: "契約者（保険料負担者）および被保険者が夫、死亡保険金受取人が妻である場合、妻が受け取る死亡保険金は「所得税」の課税対象となる。", a: "×" },
+    { cat: "3. 保険の税務", q: "契約者（保険料負担者）および満期保険金受取人が夫、被保険者が妻である場合、夫が受け取る満期保険金は「所得税（一時所得）」の課税対象となる。", a: "◯" },
+    { cat: "3. 保険の税務", q: "契約者（保険料負担者）が夫、被保険者が妻、死亡保険金受取人が子である場合、子が受け取る死亡保険金は「贈与税」の課税対象となる。", a: "◯" },
+    { cat: "3. 保険の税務", q: "所得税における生命保険料控除の所得控除限度額は、平成24年以降に締結した新契約の場合、1枠（一般・介護医療・個人年金）あたりいくらか？", options: ["最高 20,000円", "最高 40,000円", "最高 50,000円", "最高 120,000円"], a: "最高 40,000円" },
+    { cat: "3. 保険の税務", q: "生命保険料控除の対象となる3つの区分（枠）は、「一般生命保険料」「介護医療保険料」ともう一つはどれか？", options: ["個人年金保険料", "火災保険料", "傷害保険料", "定期死亡保険料"], a: "個人年金保険料" },
+
+    // 4. 法人保険
+    { cat: "4. 法人保険", q: "法人が生命保険に加入し、契約者が法人、被保険者が役員、死亡保険金受取人が会社である場合、支払った保険料は原則として「全額損金」として処理する。", a: "×" },
+    { cat: "4. 法人保険", q: "法人が定期保険に加入し、最高解約返戻率が50％以下である場合、支払った保険料は原則として「全額損金」として処理できる。", a: "◯" },
+    { cat: "4. 法人保険", q: "法人が契約者、役員・従業員の全員を被保険者とし、満期保険金受取人を法人、死亡保険金受取人を被保険者の遺族とする養老保険（通称ハーフタックスプラン）を契約した場合、支払保険料の1/2を資産に計上し、残りの1/2を損金に算入することができる。", a: "◯" },
+    { cat: "4. 法人保険", q: "法人が契約者、被保険者が特定の役員、死亡保険金受取人がその役員の遺族である定期保険を契約した場合、支払った保険料は原則としてどのように処理するか？", options: ["全額を資産（保険料）に計上する", "全額を役員に対する「給与」等として損金に算入する", "半分を資産に計上、半分を損金に算入する", "経理処理は行わず、法人の売上から直接差し引く"], a: "全額を役員に対する「給与」等として損金に算入する" },
+    { cat: "4. 法人保険", q: "法人が支払う保険料の経理処理（損金算入か資産計上か）は、保険の種類や「最高解約返戻率」の高さなどによって細かくルールが定められている。", a: "◯" },
+
+    // 5. 第三分野の保険
+    { cat: "5. 第三分野の保険", q: "一般的な医療保険の入院給付金は、病気による入院だけでなく、不慮の事故によるケガでの入院も給付の対象となる。", a: "◯" },
+    { cat: "5. 第三分野の保険", q: "がん保険では、がんと診断された際に「がん診断給付金」が支払われるが、責任開始日から90日間（または3ヶ月）程度の免責期間（不担保期間）が設けられているのが一般的である。", a: "◯" },
+    { cat: "5. 第三分野の保険", q: "医療保険の「先進医療特約」において、給付金の支給対象となる先進医療とは、療養を受けた時点において厚生労働大臣により認められているものをいう。", a: "◯" },
+    { cat: "5. 第三分野の保険", q: "特定疾病保障保険（三大疾病保障保険）において、保障の対象となる3つの特定疾病の組み合わせとして正しいものはどれか？", options: ["がん・糖尿病・高血圧症", "がん・急性心筋梗塞・脳卒中", "心臓病・脳卒中・慢性腎不全", "がん・白血病・肺炎"], a: "がん・急性心筋梗塞・脳卒中" },
+    { cat: "5. 第三分野の保険", q: "がん保険において、がん診断給付金が「複数回」支払われるタイプの商品であっても、2回目以降の受取には、前回の受取から一定期間が経過していることや、入院・治療中であることなどの所定の要件を満たす必要があることが多い。", a: "◯" }
+];
+
+// クイズの出力処理
+let html = "";
+let currentCat = "";
+quizData.forEach((item, idx) => {
+    if (item.cat !== currentCat) {
+        currentCat = item.cat;
+        html += `<h3>${currentCat}</h3>`;
+    }
+    
+    html += `<div class="question"><p><strong>問${idx+1}.</strong> ${item.q}</p>`;
+    
+    if (item.options) {
+        // 4択問題のレンダリング
+        item.options.forEach(opt => {
+            html += `<label style="display:block; margin:6px 0;"><input type="radio" name="q${idx}" value="${opt}"> ${opt}</label>`;
+        });
+    } else {
+        // ◯×問題のレンダリング
+        html += `<label><input type="radio" name="q${idx}" value="◯"> ◯</label>
+                 <label style="margin-left:30px;"><input type="radio" name="q${idx}" value="×"> ×</label>`;
+    }
+    
+    html += `<div id="res${idx}" style="margin-top:8px; font-weight:bold;"></div></div>`;
+});
+document.getElementById('quiz-content').innerHTML = html;
+
+// 答え合わせ処理
+function checkAnswers() {
+    let score = 0;
+    quizData.forEach((item, idx) => {
+        const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+        const resDiv = document.getElementById(`res${idx}`);
+        
+        if (selected && selected.value === item.a) {
+            resDiv.innerHTML = "<span style='color:green;'>解：正解です！</span>";
+            score++;
+        } else {
+            resDiv.innerHTML = `<span style='color:red;'>解：不正解（正解は「${item.a}」）</span>`;
+        }
+    });
+    alert(`答え合わせが完了しました！\nあなたの正解数: ${score} / 25`);
+}
+</script>
+</body>
+</html>
