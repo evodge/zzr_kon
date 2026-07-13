@@ -102,6 +102,16 @@
   .debug-panel{background:#0a0a0a;border:1px solid #333;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-family:'Share Tech Mono',monospace;font-size:.72rem;color:#888;}
   .debug-panel summary{cursor:pointer;color:var(--dim);margin-bottom:6px;}
   .debug-pre{white-space:pre-wrap;word-break:break-all;max-height:200px;overflow-y:auto;color:#0f0;}
+
+  /* グラフのレスポンシブ高さ設定（追加箇所） */
+  .panel canvas {
+    height: 200px !important;
+  }
+  @media(min-width: 560px){
+    .panel canvas {
+      height: 240px !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -182,11 +192,11 @@
 
     <div class="panel">
       <div class="panel-title">▸ 温度推移グラフ</div>
-      <canvas id="tempChart" height="80"></canvas>
+      <canvas id="tempChart"></canvas>
     </div>
     <div class="panel">
       <div class="panel-title">▸ 湿度推移グラフ</div>
-      <canvas id="humChart" height="80"></canvas>
+      <canvas id="humChart"></canvas>
     </div>
     <div class="panel">
       <div class="panel-title">▸ 受信ログ（最新50件）</div>
@@ -226,7 +236,7 @@
 
     <div class="panel">
       <div class="panel-title">▸ CPU温度推移グラフ（直近200件）</div>
-      <canvas id="cpuChart" height="80"></canvas>
+      <canvas id="cpuChart"></canvas>
     </div>
 
     <div class="panel">
@@ -288,7 +298,9 @@ function mkChart(id, datasets, unit) {
     type: 'line',
     data: { labels: [], datasets },
     options: {
-      responsive: true, animation: { duration: 300 },
+      responsive: true,
+      maintainAspectRatio: false, // 縦横比を固定せず、CSSの高さ設定を有効にする（追加箇所）
+      animation: { duration: 300 },
       plugins: {
         legend: { labels: { color: '#4a7fa5', font: { family: 'Share Tech Mono', size: 11 } } },
         tooltip: { backgroundColor: '#0f1729', borderColor: '#1e3a5f', borderWidth: 1, titleColor: '#00d4ff', bodyColor: '#c8e0f4' }
@@ -333,6 +345,10 @@ function cpuClass(t) {
 }
 function cpuStatus(t) {
   if (t < 50) return '正常'; if (t < 60) return '普通'; if (t < 70) return '高温'; return '危険';
+}
+
+function isValidTemp(v) {
+  return typeof v === 'number' && Number.isFinite(v);
 }
 
 const DAY_JA = ['日','月','火','水','木','金','土'];
@@ -407,25 +423,40 @@ async function fetchAndRender() {
       : '<tr><td colspan="4" class="no-data">データなし</td></tr>';
 
     // ---------- CPUタブ ----------
-    const cpuHist = d.cpu_history || [];
-    if (cpuHist.length) {
-      const temps = cpuHist.map(h => h.temp);
-      const latest = temps[temps.length - 1];
-      const max = Math.max(...temps), min = Math.min(...temps);
-      const avg = (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1);
+    const cpuCurrent = d.cpu && isValidTemp(d.cpu.temp) ? d.cpu.temp : null;
+    const cpuHist = (d.cpu_history || []).filter(h => h && isValidTemp(h.temp));
+    const chartHist = cpuHist.slice(-200);
+    const statTemps = cpuHist.map(h => h.temp);
+    const latest = cpuCurrent ?? (statTemps.length ? statTemps[statTemps.length - 1] : null);
 
+    if (latest != null) {
       const nowEl = document.getElementById('cpu-now');
       nowEl.className = 'card-val ' + cpuClass(latest);
       nowEl.innerHTML = latest + '<span class="unit">°C</span>';
+    }
+
+    if (statTemps.length) {
+      const max = Math.max(...statTemps), min = Math.min(...statTemps);
+      const avg = (statTemps.reduce((a,b)=>a+b,0)/statTemps.length).toFixed(1);
+
       document.getElementById('cpu-max').innerHTML = max + '<span class="unit">°C</span>';
       document.getElementById('cpu-min').innerHTML = min + '<span class="unit">°C</span>';
       document.getElementById('cpu-avg').innerHTML = avg + '<span class="unit">°C</span>';
 
-      cpuChart.data.labels = cpuHist.map(h => h.time);
-      cpuChart.data.datasets[0].data = temps;
+      const graphRows = chartHist.slice();
+      const lastHist = graphRows[graphRows.length - 1];
+      if (cpuCurrent != null && (!lastHist || lastHist.temp !== cpuCurrent || lastHist.datetime !== d.cpu.ts)) {
+        graphRows.push({
+          time: d.cpu.ts ? new Date(d.cpu.ts).toLocaleTimeString('ja-JP', { hour12: false }) : 'now',
+          datetime: d.cpu.ts || d.updated || '',
+          temp: cpuCurrent
+        });
+      }
+      cpuChart.data.labels = graphRows.map(h => h.time);
+      cpuChart.data.datasets[0].data = graphRows.map(h => h.temp);
       cpuChart.update();
 
-      document.getElementById('cpu-log-count').textContent = cpuHist.length + ' / 200 件';
+      document.getElementById('cpu-log-count').textContent = cpuHist.length + ' 件';
       document.getElementById('cpu-log-body').innerHTML = [...cpuHist].reverse().map((h, i, arr) => {
         const no = arr.length - i;
         return `<tr>
@@ -435,10 +466,22 @@ async function fetchAndRender() {
           <td class="${cpuClass(h.temp)}">${cpuStatus(h.temp)}</td>
         </tr>`;
       }).join('');
+    } else if (latest == null) {
+      document.getElementById('cpu-log-body').innerHTML =
+        '<tr><td colspan="4" class="no-data">データなし</td></tr>';
+      document.getElementById('cpu-log-count').textContent = '';
     } else {
-      ['cpu-log-body'].forEach(id =>
-        document.getElementById(id).innerHTML = '<tr><td colspan="4" class="no-data">データなし</td></tr>'
-      );
+      cpuChart.data.labels = [];
+      cpuChart.data.datasets[0].data = [];
+      cpuChart.update();
+      const ts = d.cpu.ts ? new Date(d.cpu.ts).toLocaleTimeString('ja-JP', { hour12: false }) : '--';
+      document.getElementById('cpu-log-count').textContent = '履歴なし / 現在値のみ';
+      document.getElementById('cpu-log-body').innerHTML = `<tr>
+        <td style="color:var(--dim)">1</td>
+        <td>${ts}</td>
+        <td class="${cpuClass(latest)}" style="font-weight:bold">${latest}</td>
+        <td class="${cpuClass(latest)}">${cpuStatus(latest)}</td>
+      </tr>`;
     }
 
     // 週間最高温度
