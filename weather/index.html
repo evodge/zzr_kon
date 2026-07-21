@@ -2,12 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weather Digital Signage</title>
-  <!-- Chart.js (グラフ描画ライブラリ) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* 16:9 (1920x1080) 固定レイアウト＆ダークサイネージスタイル */
     :root {
       --bg-color: #0b0f19;
       --card-bg: #151c2e;
@@ -21,52 +20,111 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; }
+    
     body {
-      width: 1920px; height: 1080px; background-color: var(--bg-color); color: var(--text-main);
-      overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; p: 30px;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 10px;
     }
 
     /* ヘッダー */
     header {
-      height: 90px; display: flex; justify-content: space-between; align-items: center;
-      background: var(--card-bg); border-radius: 16px; padding: 0 40px; border: 1px solid #1e293b;
+      height: 55px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 0 20px;
+      border: 1px solid #1e293b;
+      flex-shrink: 0;
     }
-    .header-title { font-size: 32px; font-weight: bold; color: var(--accent-blue); letter-spacing: 2px; }
-    .header-clock { font-size: 38px; font-weight: bold; font-family: monospace; }
-    .status-badge { font-size: 18px; padding: 6px 16px; border-radius: 20px; background: #1e293b; }
+    .header-title { font-size: 22px; font-weight: bold; color: var(--accent-blue); letter-spacing: 1px; }
+    .header-clock { font-size: 28px; font-weight: bold; font-family: monospace; }
+    .status-badge { font-size: 14px; padding: 4px 12px; border-radius: 16px; background: #1e293b; }
     .status-online { color: #4ade80; border: 1px solid #22c55e; }
     .status-offline { color: #f87171; border: 1px solid #ef4444; }
 
-    /* メインコンテンツ表示エリア */
-    main { height: 870px; position: relative; margin: 20px 0; }
+    /* メインエリア */
+    main {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+    }
     .view-page {
-      position: absolute; width: 100%; height: 100%; display: none;
-      grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(12, 1fr); gap: 20px;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: none;
+      grid-template-columns: repeat(12, 1fr);
+      grid-template-rows: repeat(12, 1fr);
+      gap: 10px;
     }
     .view-page.active { display: grid; }
 
-    /* コンポーネントカード */
+    /* カード */
     .card {
-      background: var(--card-bg); border-radius: 20px; padding: 25px; border: 1px solid #1e293b;
-      display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 15px;
+      border: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      min-height: 0;
     }
-    .card-title { font-size: 22px; color: var(--text-sub); font-weight: 600; }
+    .card-title { font-size: 16px; color: var(--text-sub); font-weight: 600; }
 
-    /* 熱中症指数カード（最大強調） */
+    /* 熱中症カード */
     .wbgt-card { background: linear-gradient(135deg, #1e1b4b 0%, #151c2e 100%); border: 2px solid var(--accent-blue); }
     .wbgt-value-box { text-align: center; margin: auto 0; }
-    .wbgt-value { font-size: 110px; font-weight: 900; line-height: 1; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
-    .wbgt-status { font-size: 36px; font-weight: bold; margin-top: 10px; border-radius: 12px; padding: 8px 0; }
+    .wbgt-value { font-size: 85px; font-weight: 900; line-height: 1; }
+    .wbgt-status { font-size: 24px; font-weight: bold; margin-top: 6px; border-radius: 8px; padding: 6px 0; }
 
-    /* 通常の大型数値表示 */
-    .hero-temp { font-size: 90px; font-weight: bold; color: var(--accent-blue); }
-    .sub-temp { font-size: 28px; color: var(--text-sub); }
+    /* 数値表示 */
+    .hero-temp { font-size: 65px; font-weight: bold; color: var(--accent-blue); line-height: 1; }
+    .sub-temp { font-size: 20px; color: var(--text-sub); }
 
-    /* フッター ＆ プログレスバー */
-    footer { height: 50px; display: flex; flex-direction: column; justify-content: space-between; }
-    .ticker-bar { font-size: 20px; color: #facc15; font-weight: bold; background: #1e1b4b; padding: 8px 20px; border-radius: 8px; }
-    .progress-container { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+    /* グラフコンテナ */
+    .chart-container {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      width: 100%;
+    }
+
+    /* フッター */
+    footer {
+      height: 42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .ticker-bar { font-size: 15px; color: #facc15; font-weight: bold; background: #1e1b4b; padding: 6px 15px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .progress-container { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; margin-top: 4px; }
     .progress-bar { height: 100%; width: 0%; background: var(--accent-blue); transition: width 0.1s linear; }
+
+    /* 時間帯別WBGTミニボックス */
+    .wbgt-hourly-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .wbgt-hourly-item {
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -82,54 +140,50 @@
   <main>
     <!-- PAGE 1: 本日 (Today) -->
     <div id="page-today" class="view-page active">
-      <!-- 現在気温 & 本日最高最低 -->
       <div class="card" style="grid-column: span 5; grid-row: span 6;">
         <div class="card-title">現在の気温 & 本日の予想</div>
         <div style="text-align: center; margin: auto 0;">
-          <div class="hero-temp"><span id="cur-temp">--</span><span style="font-size:40px;">℃</span></div>
-          <div class="sub-temp" style="margin-top: 20px;">
+          <div class="hero-temp"><span id="cur-temp">--</span><span style="font-size:30px;">℃</span></div>
+          <div class="sub-temp" style="margin-top: 10px;">
             最高: <span id="today-max-temp" style="color:#f87171; font-weight:bold;">--</span>℃ / 
             最低: <span id="today-min-temp" style="color:#38bdf8; font-weight:bold;">--</span>℃
           </div>
         </div>
       </div>
 
-      <!-- 熱中症指数 WBGT (最重要・特大表示) -->
+      <!-- 熱中症指数 WBGT -->
       <div class="card wbgt-card" style="grid-column: span 7; grid-row: span 8;">
-        <div class="card-title" style="color:#f43f5e; font-size: 26px;">⚠️ 現在の熱中症指数 (WBGT)</div>
+        <div class="card-title" style="color:#f43f5e; font-size: 18px;">⚠️ 現在の熱中症指数 (WBGT)</div>
         <div class="wbgt-value-box">
           <div class="wbgt-value" id="wbgt-val">--</div>
           <div class="wbgt-status" id="wbgt-status-badge">読込中...</div>
         </div>
-        <div style="font-size: 24px; display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px;">
-          <div>本日最高予想: <strong id="wbgt-max-val" style="color:#facc15;">--℃</strong></div>
+        <div style="font-size: 18px; display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+          <div>本日最高予想: <strong id="wbgt-max-val" style="color:#facc15;">--</strong></div>
           <div>ピーク時間帯: <strong id="wbgt-max-time">--:--</strong></div>
         </div>
       </div>
 
-      <!-- 気圧変化 グラフ -->
       <div class="card" style="grid-column: span 5; grid-row: span 6;">
-        <div class="card-title">気圧の変化 <span id="pressure-trend" style="font-size:18px; color:var(--accent-blue);">(--)</span></div>
-        <div style="height: 250px; position: relative;">
+        <div class="card-title">気圧の変化 (hPa)</div>
+        <div class="chart-container">
           <canvas id="pressureChart"></canvas>
         </div>
       </div>
 
-      <!-- 紫外線指数 -->
       <div class="card" style="grid-column: span 3; grid-row: span 4;">
         <div class="card-title">紫外線指数 (UV)</div>
         <div style="margin: auto 0; text-align: center;">
-          <div style="font-size: 50px; font-weight: bold;" id="uv-cur">--</div>
-          <div class="sub-temp" style="font-size: 18px; margin-top: 10px;">
+          <div style="font-size: 38px; font-weight: bold;" id="uv-cur">--</div>
+          <div class="sub-temp" style="font-size: 14px; margin-top: 4px;">
             本日最高: <span id="uv-max">--</span> (<span id="uv-max-time">--:--</span>)
           </div>
         </div>
       </div>
 
-      <!-- 降水確率 -->
       <div class="card" style="grid-column: span 4; grid-row: span 4;">
-        <div class="card-title">これからの降水確率</div>
-        <div style="height: 180px; position: relative;">
+        <div class="card-title">これからの降水確率 (%)</div>
+        <div class="chart-container">
           <canvas id="precipChart"></canvas>
         </div>
       </div>
@@ -137,22 +191,40 @@
 
     <!-- PAGE 2: 明日 (Tomorrow) -->
     <div id="page-tomorrow" class="view-page">
-      <div class="card" style="grid-column: span 12; grid-row: span 3; background: linear-gradient(90deg, #1e293b, #0f172a);">
-        <div style="font-size: 36px; font-weight: bold; color: var(--accent-blue);">📅 明日の気象予測サマリー</div>
-        <div style="font-size: 24px; color: var(--text-sub); margin-top: 10px;" id="tomorrow-summary">
-          明日の最高気温は --℃ の予想です。熱中症予防の準備を行いましょう。
+      <div class="card" style="grid-column: span 12; grid-row: span 2; background: linear-gradient(90deg, #1e293b, #0f172a);">
+        <div style="font-size: 22px; font-weight: bold; color: var(--accent-blue);">📅 明日の気象 & 熱中症警戒サマリー</div>
+        <div style="font-size: 15px; color: var(--text-sub); margin-top: 4px;" id="tomorrow-summary">
+          明日の熱中症リスクと時間帯別の天候変化に備えましょう。
         </div>
       </div>
-      <div class="card" style="grid-column: span 6; grid-row: span 9;">
-        <div class="card-title">明日の気温 & 熱中症ピーク</div>
-        <div style="margin: auto 0; text-align: center;">
-          <div class="hero-temp" style="color: #f87171;" id="tomorrow-max-temp">--℃</div>
-          <div class="sub-temp" style="font-size: 32px;">予想最高WBGT: <span id="tomorrow-max-wbgt" style="color:#facc15; font-weight:bold;">--℃</span></div>
+
+      <!-- 明日の熱中症 & 気温詳細 -->
+      <div class="card wbgt-card" style="grid-column: span 5; grid-row: span 10;">
+        <div class="card-title" style="color:#f43f5e; font-size: 18px;">⚠️ 明日の熱中症予測 (WBGT)</div>
+        <div style="text-align: center; margin: 10px 0;">
+          <div style="font-size: 18px; color: var(--text-sub);">最高予想WBGT</div>
+          <div class="hero-temp" style="color: #facc15; font-size: 75px;" id="tomorrow-max-wbgt">--</div>
+          <div id="tom-wbgt-badge" class="wbgt-status" style="font-size:20px; margin-top:6px;">計算中...</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 16px; margin-bottom: 10px;">
+          <div>最高気温予想: <strong id="tomorrow-max-temp" style="color:#f87171;">--℃</strong></div>
+          <div>ピーク時間帯: <strong id="tomorrow-wbgt-time" style="color:#38bdf8;">--:-- 頃</strong></div>
+        </div>
+
+        <div class="card-title" style="font-size:14px; margin-top:5px;">主要時間帯の予想WBGT</div>
+        <div class="wbgt-hourly-grid">
+          <div class="wbgt-hourly-item"><div style="font-size:12px; color:var(--text-sub);">9時</div><div id="wbgt-9h" style="font-weight:bold; font-size:18px;">--</div></div>
+          <div class="wbgt-hourly-item"><div style="font-size:12px; color:var(--text-sub);">12時</div><div id="wbgt-12h" style="font-weight:bold; font-size:18px;">--</div></div>
+          <div class="wbgt-hourly-item"><div style="font-size:12px; color:var(--text-sub);">15時</div><div id="wbgt-15h" style="font-weight:bold; font-size:18px;">--</div></div>
+          <div class="wbgt-hourly-item"><div style="font-size:12px; color:var(--text-sub);">18時</div><div id="wbgt-18h" style="font-weight:bold; font-size:18px;">--</div></div>
         </div>
       </div>
-      <div class="card" style="grid-column: span 6; grid-row: span 9;">
+
+      <!-- 明日の時間帯別 降水確率 -->
+      <div class="card" style="grid-column: span 7; grid-row: span 10;">
         <div class="card-title">明日の時間帯別 降水確率 (%)</div>
-        <div style="height: 400px; position: relative; margin-top: 20px;">
+        <div class="chart-container" style="margin-top: 10px;">
           <canvas id="tomorrowPrecipChart"></canvas>
         </div>
       </div>
@@ -161,15 +233,15 @@
     <!-- PAGE 3: これから 7日間 (Weekly) -->
     <div id="page-weekly" class="view-page">
       <div class="card" style="grid-column: span 12; grid-row: span 12;">
-        <div class="card-title" style="font-size: 28px; margin-bottom: 20px;">🗓️ 週間ウェザー・アラート（今後7日間）</div>
-        <div id="weekly-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; height: 100%;">
-          <!-- JSで7日分のカードを動的生成 -->
+        <div class="card-title" style="font-size: 22px; margin-bottom: 8px;">🗓️ 週間ウェザー・アラート（今後7日間）</div>
+        <div id="weekly-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; height: 100%;">
+          <!-- JSで生成 -->
         </div>
       </div>
     </div>
   </main>
 
-  <!-- フッター ＆ アニメーションプログレスバー -->
+  <!-- フッター -->
   <footer>
     <div class="ticker-bar" id="action-guideline">💡 熱中症注意：こまめな水分・塩分補給と適度な休憩を心掛けましょう。</div>
     <div class="progress-container">
@@ -178,17 +250,14 @@
   </footer>
 
   <script>
-    // --- 設定（設置場所の緯度・経度：例として岩手県北上市） ---
     const LAT = 39.2868;
     const LON = 141.1133;
 
-    // 定期タイマー用
     let weatherData = null;
-    let pageIndex = 0; // 0: Today, 1: Tomorrow, 2: Weekly
+    let pageIndex = 0;
     const PAGES = ['page-today', 'page-tomorrow', 'page-weekly'];
     const ROTATE_INTERVAL_SEC = 20;
 
-    // --- 時計更新 ---
     function updateClock() {
       const now = new Date();
       document.getElementById('clock').innerText = now.toLocaleTimeString('ja-JP', { hour12: false });
@@ -196,22 +265,19 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- データ取得ロジック（Open-Meteo API） ---
     async function fetchWeatherData() {
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,surface_pressure,uv_index,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,uv_index_max,apparent_temperature_max&timezone=Asia%2FTokyo&forecast_days=7`;
       
       try {
         const res = await fetch(url);
-        if (!res.ok) throw new Error("Network response was not ok");
+        if (!res.ok) throw new Error("Network error");
         const data = await res.json();
         
-        // 取得成功時：ローカルストレージへキャッシュ保存
         localStorage.setItem('cached_weather', JSON.stringify({ timestamp: Date.now(), data: data }));
         weatherData = data;
         updateStatusBadge(true);
         renderDashboard();
       } catch (err) {
-        console.warn("通信エラー。キャッシュデータを使用します:", err);
         updateStatusBadge(false);
         const cached = localStorage.getItem('cached_weather');
         if (cached) {
@@ -232,45 +298,38 @@
       }
     }
 
-    // --- ダッシュボード描画処理 ---
     function renderDashboard() {
       if (!weatherData) return;
-
       const now = new Date();
       const currentHour = now.getHours();
 
-      // 1. 本日データの抽出 (Today index = 0)
-      const curTemp = weatherData.hourly.temperature_2m[currentHour];
-      const todayMax = weatherData.daily.temperature_2m_max[0];
-      const todayMin = weatherData.daily.temperature_2m_min[0];
+      // --- PAGE 1: Today ---
+      document.getElementById('cur-temp').innerText = weatherData.hourly.temperature_2m[currentHour].toFixed(1);
+      document.getElementById('today-max-temp').innerText = weatherData.daily.temperature_2m_max[0].toFixed(1);
+      document.getElementById('today-min-temp').innerText = weatherData.daily.temperature_2m_min[0].toFixed(1);
 
-      document.getElementById('cur-temp').innerText = curTemp.toFixed(1);
-      document.getElementById('today-max-temp').innerText = todayMax.toFixed(1);
-      document.getElementById('today-min-temp').innerText = todayMin.toFixed(1);
-
-      // 2. 熱中症指数（WBGT概算：Apparent Temperatureを基準に設定）
       const curWBGT = weatherData.hourly.apparent_temperature[currentHour];
       const todayWBGTArr = weatherData.hourly.apparent_temperature.slice(0, 24);
       const maxWBGT = Math.max(...todayWBGTArr);
       const maxWBGTHour = todayWBGTArr.indexOf(maxWBGT);
 
-      document.getElementById('wbgt-val').innerText = curWBGT.toFixed(1) + "℃";
-      document.getElementById('wbgt-max-val').innerText = maxWBGT.toFixed(1) + "℃";
+      // WBGTから「℃」を削除
+      document.getElementById('wbgt-val').innerText = curWBGT.toFixed(1);
+      document.getElementById('wbgt-max-val').innerText = maxWBGT.toFixed(1);
       document.getElementById('wbgt-max-time').innerText = `${String(maxWBGTHour).padStart(2, '0')}:00`;
 
-      // 熱中症レベルによる色指定 & ガイドライン切り替え
       const wbgtBadge = document.getElementById('wbgt-status-badge');
       const guideline = document.getElementById('action-guideline');
       if (curWBGT >= 31) {
-        wbgtBadge.innerText = "🚨 危険 (運動・屋外作業は原則中止)";
+        wbgtBadge.innerText = "🚨 危険 (屋外作業中止)";
         wbgtBadge.style.background = "var(--wbgt-danger)";
-        guideline.innerText = "🚨 【熱中症厳重警報】屋外作業は中止し、冷房の効いた部屋で水分・塩分を補給してください。";
+        guideline.innerText = "🚨 【熱中症厳重警報】屋外作業は中止し、水分・塩分を補給してください。";
       } else if (curWBGT >= 28) {
-        wbgtBadge.innerText = "⚠️ 厳重警戒 (激しい運動は中止)";
+        wbgtBadge.innerText = "⚠️ 厳重警戒 (定期休憩)";
         wbgtBadge.style.background = "var(--wbgt-severe)";
-        guideline.innerText = "⚠️ 【厳重警戒】定期的な休憩（15分毎）と水分・塩分補給を義務付けてください。";
+        guideline.innerText = "⚠️ 【厳重警戒】定期的な休憩（15分毎）と水分補給を行ってください。";
       } else if (curWBGT >= 25) {
-        wbgtBadge.innerText = "⚡ 警戒 (積極的に休憩)";
+        wbgtBadge.innerText = "⚡ 警戒 (注意)";
         wbgtBadge.style.background = "var(--wbgt-warn)";
         wbgtBadge.style.color = "#000";
       } else {
@@ -278,27 +337,50 @@
         wbgtBadge.style.background = "var(--wbgt-safe)";
       }
 
-      // 3. 紫外線 (UV)
-      const curUV = weatherData.hourly.uv_index[currentHour];
-      const maxUV = weatherData.daily.uv_index_max[0];
-      document.getElementById('uv-cur').innerText = curUV.toFixed(1);
-      document.getElementById('uv-max').innerText = maxUV.toFixed(1);
+      document.getElementById('uv-cur').innerText = weatherData.hourly.uv_index[currentHour].toFixed(1);
+      document.getElementById('uv-max').innerText = weatherData.daily.uv_index_max[0].toFixed(1);
 
-      // 4. チャート更新 (気圧 & 降水確率)
       renderPressureChart(weatherData.hourly.surface_pressure.slice(0, 24));
       renderPrecipChart(weatherData.hourly.precipitation_probability.slice(currentHour, currentHour + 6));
+
+      // --- PAGE 2: Tomorrow ---
+      document.getElementById('tomorrow-max-temp').innerText = weatherData.daily.temperature_2m_max[1].toFixed(1) + "℃";
+      
+      const tomWBGTArr = weatherData.hourly.apparent_temperature.slice(24, 48);
+      const tomMaxWBGT = Math.max(...tomWBGTArr);
+      const tomMaxWBGTHour = tomWBGTArr.indexOf(tomMaxWBGT);
+
+      // 明日のWBGTから「℃」を削除
+      document.getElementById('tomorrow-max-wbgt').innerText = tomMaxWBGT.toFixed(1);
+      document.getElementById('tomorrow-wbgt-time').innerText = `${String(tomMaxWBGTHour).padStart(2, '0')}:00`;
+
+      document.getElementById('wbgt-9h').innerText = tomWBGTArr[9].toFixed(1);
+      document.getElementById('wbgt-12h').innerText = tomWBGTArr[12].toFixed(1);
+      document.getElementById('wbgt-15h').innerText = tomWBGTArr[15].toFixed(1);
+      document.getElementById('wbgt-18h').innerText = tomWBGTArr[18].toFixed(1);
+
+      const tomBadge = document.getElementById('tom-wbgt-badge');
+      if (tomMaxWBGT >= 31) {
+        tomBadge.innerText = "🚨 危険警戒日";
+        tomBadge.style.background = "var(--wbgt-danger)";
+      } else if (tomMaxWBGT >= 28) {
+        tomBadge.innerText = "⚠️ 厳重警戒日";
+        tomBadge.style.background = "var(--wbgt-severe)";
+      } else if (tomMaxWBGT >= 25) {
+        tomBadge.innerText = "⚡ 警戒日";
+        tomBadge.style.background = "var(--wbgt-warn)";
+        tomBadge.style.color = "#000";
+      } else {
+        tomBadge.innerText = "✅ 安全予想";
+        tomBadge.style.background = "var(--wbgt-safe)";
+      }
+
       renderTomorrowPrecipChart(weatherData.hourly.precipitation_probability.slice(24, 48));
 
-      // 5. 明日データの更新
-      document.getElementById('tomorrow-max-temp').innerText = weatherData.daily.temperature_2m_max[1].toFixed(1) + "℃";
-      const tomWBGTArr = weatherData.hourly.apparent_temperature.slice(24, 48);
-      document.getElementById('tomorrow-max-wbgt').innerText = Math.max(...tomWBGTArr).toFixed(1) + "℃";
-
-      // 6. 週間カード生成
+      // --- PAGE 3: Weekly ---
       renderWeeklyCards();
     }
 
-    // --- Chart.js 描画関数群 ---
     let pressureChartObj, precipChartObj, tomPrecipChartObj;
 
     function renderPressureChart(pressureArr) {
@@ -309,20 +391,14 @@
         type: 'line',
         data: {
           labels: Array.from({length: 24}, (_, i) => `${i}時`),
-          datasets: [{
-            data: pressureArr,
-            borderColor: '#38bdf8',
-            borderWidth: 3,
-            fill: false,
-            tension: 0.3
-          }]
+          datasets: [{ data: pressureArr, borderColor: '#38bdf8', borderWidth: 2, fill: false, tension: 0.3 }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: '#334155' } }
           }
         }
       });
@@ -336,18 +412,14 @@
         type: 'bar',
         data: {
           labels: Array.from({length: 6}, (_, i) => `+${i+1}h`),
-          datasets: [{
-            data: precipArr,
-            backgroundColor: '#3b82f6',
-            borderRadius: 6
-          }]
+          datasets: [{ data: precipArr, backgroundColor: '#3b82f6', borderRadius: 4 }]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-            y: { min: 0, max: 100, ticks: { color: '#94a3b8' } }
+            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
+            y: { min: 0, max: 100, ticks: { color: '#94a3b8', font: { size: 10 } } }
           }
         }
       });
@@ -366,11 +438,15 @@
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: { y: { min: 0, max: 100, ticks: { color: '#94a3b8' } } }
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } },
+            y: { min: 0, max: 100, ticks: { color: '#94a3b8', font: { size: 11 } } }
+          }
         }
       });
     }
 
+    // 週間カード（WBGTの数値から℃を削除）
     function renderWeeklyCards() {
       const container = document.getElementById('weekly-grid');
       container.innerHTML = '';
@@ -384,24 +460,30 @@
         const minTemp = weatherData.daily.temperature_2m_min[i].toFixed(1);
         const maxWBGT = weatherData.daily.apparent_temperature_max[i].toFixed(1);
 
+        let wbgtBg = '#0f172a';
+        let wbgtColor = '#facc15';
+        if (maxWBGT >= 31) { wbgtBg = '#ef4444'; wbgtColor = '#fff'; }
+        else if (maxWBGT >= 28) { wbgtBg = '#f97316'; wbgtColor = '#fff'; }
+
         const card = document.createElement('div');
         card.className = 'card';
         card.style.textAlign = 'center';
         card.style.background = i === 0 ? '#1e293b' : 'var(--card-bg)';
+        card.style.padding = '12px 6px';
         card.innerHTML = `
-          <div style="font-size: 20px; font-weight:bold; color: var(--accent-blue);">${i===0 ? '本日': dayStr}</div>
-          <div style="font-size: 40px; margin: 20px 0;">☀️</div>
-          <div style="font-size: 22px; font-weight:bold;">${maxTemp}℃</div>
-          <div style="font-size: 16px; color:var(--text-sub);">${minTemp}℃</div>
-          <div style="margin-top: 20px; padding: 8px; border-radius: 8px; background: #0f172a; font-size: 14px;">
-            熱中症最高<br><strong style="font-size:18px; color:#facc15;">${maxWBGT}℃</strong>
+          <div style="font-size: 20px; font-weight:bold; color: ${i===0 ? '#38bdf8' : '#e2e8f0'};">${i===0 ? '本日': dayStr}</div>
+          <div style="font-size: 36px; margin: 8px 0;">☀️</div>
+          <div style="font-size: 26px; font-weight:bold; color:#f87171;">${maxTemp}<span style="font-size:16px;">℃</span></div>
+          <div style="font-size: 18px; color:var(--text-sub);">${minTemp}℃</div>
+          <div style="margin-top: 10px; padding: 8px 4px; border-radius: 8px; background: ${wbgtBg}; font-size: 13px; color: #fff;">
+            熱中症最高<br><strong style="font-size:22px; color:${wbgtColor};">${maxWBGT}</strong>
           </div>
         `;
         container.appendChild(card);
       }
     }
 
-    // --- 20秒おきの画面スライド制御 & プログレスバーアニメーション ---
+    // 画面切り替え制御
     let progressVal = 0;
     const progressStep = 100 / (ROTATE_INTERVAL_SEC * 10);
 
@@ -411,22 +493,15 @@
 
       if (progressVal >= 100) {
         progressVal = 0;
-        // 画面の切り替え
         document.getElementById(PAGES[pageIndex]).classList.remove('active');
         pageIndex = (pageIndex + 1) % PAGES.length;
         document.getElementById(PAGES[pageIndex]).classList.add('active');
       }
     }, 100);
 
-    // --- 通信＆データ更新のスケジュール設計 ---
-    // 1. 起動時に初回取得
     fetchWeatherData();
-
-    // 2. 20分おきに通信試行 (1000 * 60 * 20)
-    setInterval(fetchWeatherData, 20 * 60 * 1000);
-
-    // 3. 30分おきに画面データを「最新の現在時刻」に合わせて再レンダリング (1000 * 60 * 30)
-    setInterval(renderDashboard, 30 * 60 * 1000);
+    setInterval(fetchWeatherData, 20 * 60 * 1000); // 20分毎通信
+    setInterval(renderDashboard, 30 * 60 * 1000);  // 30分毎再描画
   </script>
 </body>
 </html>
