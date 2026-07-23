@@ -1,6 +1,0 @@
-PyMuPDF
-opencv-python-headless
-Pillow
-flask
-pytesseract
-winocr; sys_platform == 'win32'
